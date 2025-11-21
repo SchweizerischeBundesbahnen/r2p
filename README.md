@@ -5,7 +5,7 @@ Prototype for RU - RU - Partner communication
 ## Technologies
 
 - Spring Boot 4
-- OpenAPI 3.1.0 / Swagger UI
+- OpenAPI 3.0.3 / Swagger UI
 - Flyway (Database Migration)
 - Spring Security
 - H2 Database
