@@ -143,6 +143,22 @@
 							<output>${project.build.directory}/generated-sources/openapi</output>
 						</configuration>
 					</execution>
+					<execution>
+						<id>generate-openapi-asciidoc</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<inputSpec>src/main/resources/openapi/helloworld.yaml</inputSpec>
+							<generatorName>asciidoc</generatorName>
+							<output>${project.build.directory}/generated-openapi-docs</output>
+							<skipValidateSpec>false</skipValidateSpec>
+							<configOptions>
+								<hideGenerationTimestamp>true</hideGenerationTimestamp>
+							</configOptions>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -174,42 +190,70 @@
 				<version>${asciidoctor-maven-plugin.version}</version>
 				<executions>
 					<execution>
-						<id>generate-docs</id>
+						<id>manual-html</id>
 						<phase>prepare-package</phase>
-						<goals>
-							<goal>process-asciidoc</goal>
-						</goals>
+						<goals><goal>process-asciidoc</goal></goals>
 						<configuration>
 							<sourceDirectory>${project.basedir}/docs</sourceDirectory>
 							<outputDirectory>${project.build.directory}/docs</outputDirectory>
 							<backend>html</backend>
+							<sourceDocumentName>manual.adoc</sourceDocumentName>
+							<outputFile>${project.build.directory}/docs/r2p-manual.html</outputFile>
 							<resources>
-								<resource>
-									<directory>${project.basedir}/docs/images</directory>
-								</resource>
+								<resource><directory>${project.basedir}/docs/images</directory></resource>
 							</resources>
 							<attributes>
 								<project-name>${project.artifactId}</project-name>
 								<revnumber>${project.version}</revnumber>
 							</attributes>
-							<sourceDocumentName>manual.adoc</sourceDocumentName>
 						</configuration>
 					</execution>
 					<execution>
-						<id>generate-pdf</id>
+						<id>manual-pdf</id>
 						<phase>prepare-package</phase>
-						<goals>
-							<goal>process-asciidoc</goal>
-						</goals>
+						<goals><goal>process-asciidoc</goal></goals>
 						<configuration>
 							<sourceDirectory>${project.basedir}/docs</sourceDirectory>
 							<outputDirectory>${project.build.directory}/docs</outputDirectory>
 							<backend>pdf</backend>
+							<sourceDocumentName>manual.adoc</sourceDocumentName>
+							<outputFile>${project.build.directory}/docs/r2p-manual.pdf</outputFile>
 							<attributes>
 								<project-name>${project.artifactId}</project-name>
 								<revnumber>${project.version}</revnumber>
 							</attributes>
-							<sourceDocumentName>manual.adoc</sourceDocumentName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>api-html</id>
+						<phase>prepare-package</phase>
+						<goals><goal>process-asciidoc</goal></goals>
+						<configuration>
+							<sourceDirectory>${project.build.directory}/generated-openapi-docs</sourceDirectory>
+							<outputDirectory>${project.build.directory}/docs</outputDirectory>
+							<backend>html</backend>
+							<sourceDocumentName>index.adoc</sourceDocumentName>
+							<outputFile>${project.build.directory}/docs/r2p-api.html</outputFile>
+							<attributes>
+								<revnumber>${project.version}</revnumber>
+								<toclevels>3</toclevels>
+							</attributes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>api-pdf</id>
+						<phase>prepare-package</phase>
+						<goals><goal>process-asciidoc</goal></goals>
+						<configuration>
+							<sourceDirectory>${project.build.directory}/generated-openapi-docs</sourceDirectory>
+							<outputDirectory>${project.build.directory}/docs</outputDirectory>
+							<backend>pdf</backend>
+							<sourceDocumentName>index.adoc</sourceDocumentName>
+							<outputFile>${project.build.directory}/docs/r2p-api.pdf</outputFile>
+							<attributes>
+								<revnumber>${project.version}</revnumber>
+								<toclevels>3</toclevels>
+							</attributes>
 						</configuration>
 					</execution>
 				</executions>
@@ -225,6 +269,23 @@
 						<version>${asciidoctorj.pdf.version}</version>
 					</dependency>
 				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>cleanup-doc-artifacts</id>
+						<phase>package</phase>
+						<goals><goal>run</goal></goals>
+						<configuration>
+							<target>
+								<delete dir="${project.build.directory}/docs/.openapi-generator" failonerror="false"/>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

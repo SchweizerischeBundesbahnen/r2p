@@ -9,7 +9,8 @@
 
 == Overview
 
-R2P is a prototype demonstrating RU - RU - partner communication.
+R2P is a prototype demonstrating RU - RU - partner communication. To keep things leightweight and portable
+the prototype uses Java and H2 (no need for a dedicated database server).
 
 == Quick Start
 
