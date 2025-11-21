@@ -2,37 +2,26 @@
 
 Prototype for RU - RU - Partner communication
 
-## Technologies
-
-- Spring Boot 4
-- OpenAPI 3.0.3 / Swagger UI
-- Flyway (Database Migration)
-- Spring Security
-- H2 Database
-
 ## Prerequisites
 
 - Java 25 or higher
 - Maven 3.6+
 
-## Build & Run
+## Package & Run
 
 ```bash
-# Compile
-mvn clean compile
-
-# Test
-mvn test
-
-# Package
+# Package (includes docs generation)
 mvn package
 
 # Run
 mvn spring-boot:run
-# or
-java -jar target/r2p-0.0.1-SNAPSHOT.jar
 ```
 
-## Accessing the Application
+Access the application under http://localhost:8080/
 
-- **Root**: http://localhost:8080/ → redirects to Swagger UI
+You will find the generated documentation under `target/docs/`.
+
+## Structure
+
+* docs: Generated documentation (Asciidoctor)
+* src: Source code of the prototype
