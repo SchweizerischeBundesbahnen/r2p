@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: R2P HelloWorld API
+  title: OpenAPI Spezifikation für R2P
   version: 1.0.0
   description: API specification for the HelloWorld endpoint.
 servers:
@@ -20,6 +20,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HelloWorldResponse'
+        '401':
+          description: Unauthorized – missing or invalid credentials.
 components:
   schemas:
     HelloWorldResponse:
@@ -30,4 +32,3 @@ components:
           description: Text returned to the caller.
       required:
         - message
-
