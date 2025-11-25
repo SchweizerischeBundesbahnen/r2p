@@ -1,4 +1,4 @@
-package ch.rail.com.config;
+package ch.rail.r2p.config;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Bean;

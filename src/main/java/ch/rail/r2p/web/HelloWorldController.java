@@ -1,7 +1,7 @@
-package ch.rail.com.web;
+package ch.rail.r2p.web;
 
-import ch.rail.com.api.HelloworldApi;
-import ch.rail.com.dto.HelloWorldResponse;
+import ch.rail.r2p.api.HelloworldApi;
+import ch.rail.r2p.api.dto.HelloWorldResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 

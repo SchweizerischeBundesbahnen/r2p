@@ -1,4 +1,4 @@
-package ch.rail.com.config;
+package ch.rail.r2p.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -31,7 +31,7 @@ public class OpenApiSecurityConfig {
                 .type(SecurityScheme.Type.OAUTH2)
                 .flows(flows);
 
-        // this ensures that the "authorize" buttion appears in swagger-ui
+        // this ensures that the "authorize" button appears in swagger-ui
         return new OpenAPI()
                 .components(new Components().addSecuritySchemes("oauth2", oauthScheme))
                 .addSecurityItem(new SecurityRequirement().addList("oauth2"));

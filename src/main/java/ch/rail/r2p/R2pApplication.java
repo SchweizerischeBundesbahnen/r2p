@@ -1,4 +1,4 @@
-package ch.rail.com;
+package ch.rail.r2p;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

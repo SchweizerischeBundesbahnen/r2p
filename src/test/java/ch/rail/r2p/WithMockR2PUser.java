@@ -1,4 +1,4 @@
-package ch.rail.com;
+package ch.rail.r2p;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

@@ -1,4 +1,4 @@
-package ch.rail.com.web;
+package ch.rail.r2p.web;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,4 +1,4 @@
-package ch.rail.com.config;
+package ch.rail.r2p.config;
 
 import java.util.Objects;
 import org.junit.jupiter.api.Test;
