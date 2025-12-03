@@ -59,6 +59,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jackson</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -103,6 +107,10 @@
 			<groupId>jakarta.annotation</groupId>
 			<artifactId>jakarta.annotation-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -112,6 +120,10 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</path>
 						<path>
 							<groupId>org.springframework.boot</groupId>
 							<artifactId>spring-boot-configuration-processor</artifactId>
@@ -125,13 +137,13 @@
 				<version>${openapi-generator-maven-plugin.version}</version>
 				<executions>
 					<execution>
-						<id>generate-helloworld-api</id>
+						<id>generate-r2p-api</id>
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<inputSpec>src/main/resources/openapi/helloworld.yaml</inputSpec>
+							<inputSpec>src/main/resources/openapi/r2p-spec.yaml</inputSpec>
 							<generatorName>spring</generatorName>
 							<apiPackage>ch.rail.r2p.api</apiPackage>
 							<modelPackage>ch.rail.r2p.api.dto</modelPackage>
@@ -141,6 +153,7 @@
 								<skipDefaultInterface>true</skipDefaultInterface>
 								<useSpringBoot3>true</useSpringBoot3>
 								<useJakartaEe>true</useJakartaEe>
+								<dateLibrary>java8</dateLibrary>
 							</configOptions>
 							<output>${project.build.directory}/generated-sources/openapi</output>
 						</configuration>
@@ -152,7 +165,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<inputSpec>src/main/resources/openapi/helloworld.yaml</inputSpec>
+							<inputSpec>src/main/resources/openapi/r2p-spec.yaml</inputSpec>
 							<generatorName>asciidoc</generatorName>
 							<output>${project.build.directory}/generated-openapi-docs</output>
 							<skipValidateSpec>false</skipValidateSpec>
@@ -185,6 +198,14 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
