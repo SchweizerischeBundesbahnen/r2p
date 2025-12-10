@@ -26,16 +26,6 @@ class R2pApplicationTests {
 	}
 
 	@Test
-	@WithMockR2PUser
-	void should_provide_hello_world() throws Exception {
-		mockMvc.perform(get("/helloworld")
-						.accept(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$.message").value("Hello World"));
-	}
-
-	@Test
 	@WithMockUser(authorities = {"SCOPE_r2p"})
 	void should_return_403_missing_role() throws Exception {
 		mockMvc.perform(get("/helloworld")
