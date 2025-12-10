@@ -1,0 +1,176 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v4
+        # Note: Configuration is managed via release-please-config.json
+        # and .release-please-manifest.json files
+
+  # Build for Linux
+  build-linux:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build with Maven (Release Profile)
+        run: mvn clean package -Prelease
+
+      - name: Create Linux archive
+        run: |
+          mkdir -p dist-archives
+          cd target/dist
+          tar -czf ../../dist-archives/r2p-linux.tar.gz *
+          cd ../..
+
+      - name: Upload to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ needs.release-please.outputs.tag_name }} dist-archives/r2p-linux.tar.gz
+
+      - name: Upload documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: target/docs/
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-linux
+          path: target/surefire-reports/
+
+  # Build for Windows
+  build-windows:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build with Maven (Release Profile)
+        run: mvn clean package -Prelease
+
+      - name: Create Windows archive
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist-archives
+          Compress-Archive -Path target/dist/* -DestinationPath dist-archives/r2p-windows.zip
+
+      - name: Upload to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ needs.release-please.outputs.tag_name }} dist-archives/r2p-windows.zip
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-windows
+          path: target/surefire-reports/
+
+  # Build for macOS
+  build-macos:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build with Maven (Release Profile)
+        run: mvn clean package -Prelease
+
+      - name: Create macOS archive
+        run: |
+          mkdir -p dist-archives
+          cd target/dist
+          tar -czf ../../dist-archives/r2p-macos.tar.gz *
+          cd ../..
+
+      - name: Upload to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ needs.release-please.outputs.tag_name }} dist-archives/r2p-macos.tar.gz
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-macos
+          path: target/surefire-reports/
+
+  # Combine and upload documentation and test results
+  upload-docs-and-tests:
+    needs: [release-please, build-linux, build-windows, build-macos]
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Create documentation archive
+        run: |
+          cd artifacts/documentation
+          zip -r ../r2p-documentation.zip *
+          cd ../..
+
+      - name: Create combined test results archive
+        run: |
+          mkdir -p artifacts/combined-test-results
+          cp -r artifacts/test-results-linux/* artifacts/combined-test-results/ 2>/dev/null || true
+          cp -r artifacts/test-results-windows/* artifacts/combined-test-results/ 2>/dev/null || true
+          cp -r artifacts/test-results-macos/* artifacts/combined-test-results/ 2>/dev/null || true
+          cd artifacts/combined-test-results
+          zip -r ../r2p-test-results.zip *
+          cd ../..
+
+      - name: Upload documentation and test results to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{ needs.release-please.outputs.tag_name }} artifacts/r2p-documentation.zip
+          gh release upload ${{ needs.release-please.outputs.tag_name }} artifacts/r2p-test-results.zip
+
+
