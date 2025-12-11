@@ -297,7 +297,13 @@
 
 	<profiles>
 		<profile>
-			<id>release</id>
+			<id>app-image</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<buildAppImage>true</buildAppImage>
+			</properties>
 			<build>
 				<plugins>
 					<plugin>
@@ -332,9 +338,12 @@
 			</build>
 		</profile>
 		<profile>
-			<id>release-windows</id>
+			<id>app-image-windows</id>
 			<activation>
-				<activeByDefault>false</activeByDefault>
+				<property>
+					<name>buildAppImage</name>
+					<value>true</value>
+				</property>
 				<os>
 					<family>Windows</family>
 				</os>
@@ -368,7 +377,7 @@
 						<version>${exec-maven-plugin.version}</version>
 						<executions>
 							<execution>
-								<id>jpackage-app-image-release</id>
+								<id>jpackage-app-image</id>
 								<phase>package</phase>
 								<goals><goal>exec</goal></goals>
 								<configuration>
@@ -389,9 +398,12 @@
 			</build>
 		</profile>
 		<profile>
-			<id>release-unix</id>
+			<id>app-image-unix</id>
 			<activation>
-				<activeByDefault>false</activeByDefault>
+				<property>
+					<name>buildAppImage</name>
+					<value>true</value>
+				</property>
 				<os>
 					<family>unix</family>
 				</os>
@@ -404,7 +416,7 @@
 						<version>${exec-maven-plugin.version}</version>
 						<executions>
 							<execution>
-								<id>jpackage-app-image-release</id>
+								<id>jpackage-app-image</id>
 								<phase>package</phase>
 								<goals><goal>exec</goal></goals>
 								<configuration>
@@ -424,9 +436,12 @@
 			</build>
 		</profile>
 		<profile>
-			<id>release-mac</id>
+			<id>app-image-mac</id>
 			<activation>
-				<activeByDefault>false</activeByDefault>
+				<property>
+					<name>buildAppImage</name>
+					<value>true</value>
+				</property>
 				<os>
 					<family>mac</family>
 				</os>
@@ -439,7 +454,7 @@
 						<version>${exec-maven-plugin.version}</version>
 						<executions>
 							<execution>
-								<id>jpackage-app-image-release</id>
+								<id>jpackage-app-image</id>
 								<phase>package</phase>
 								<goals><goal>exec</goal></goals>
 								<configuration>
