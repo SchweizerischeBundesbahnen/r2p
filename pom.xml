@@ -328,6 +328,40 @@
 							</execution>
 						</executions>
 					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>release-windows</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+				<os>
+					<family>Windows</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>${maven-antrun-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>unset-readonly-before-clean</id>
+								<phase>pre-clean</phase>
+								<configuration>
+									<target>
+										<!-- Entfernt rekursiv das ReadOnly-Attribut in target/dist -->
+										<exec executable="cmd">
+											<arg value="/c"/>
+											<arg value="if exist &quot;${project.build.directory}\dist&quot; attrib -R /S /D &quot;${project.build.directory}\dist\*&quot;"/>
+										</exec>
+									</target>
+								</configuration>
+								<goals><goal>run</goal></goals>
+							</execution>
+						</executions>
+					</plugin>
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
@@ -354,38 +388,75 @@
 				</plugins>
 			</build>
 		</profile>
-        <profile>
-            <id>windows-unset-readonly</id>
-            <activation>
-                <os>
-                    <family>Windows</family>
-                </os>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <version>${maven-antrun-plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>unset-readonly-before-clean</id>
-                                <phase>pre-clean</phase>
-                                <configuration>
-                                    <target>
-                                        <!-- Entfernt rekursiv das ReadOnly-Attribut in target/dist -->
-                                        <exec executable="cmd">
-                                            <arg value="/c"/>
-                                            <arg value="if exist &quot;${project.build.directory}\dist&quot; attrib -R /S /D &quot;${project.build.directory}\dist\*&quot;"/>
-                                        </exec>
-                                    </target>
-                                </configuration>
-                                <goals><goal>run</goal></goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
+		<profile>
+			<id>release-unix</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+				<os>
+					<family>unix</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>${exec-maven-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>jpackage-app-image-release</id>
+								<phase>package</phase>
+								<goals><goal>exec</goal></goals>
+								<configuration>
+									<executable>${java.home}/bin/jpackage</executable>
+									<arguments>
+										<argument>--type</argument><argument>app-image</argument>
+										<argument>--name</argument><argument>${project.artifactId}</argument>
+										<argument>--input</argument><argument>${project.build.directory}/jpackage</argument>
+										<argument>--main-jar</argument><argument>${project.build.finalName}.jar</argument>
+										<argument>--dest</argument><argument>${project.build.directory}/dist</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>release-mac</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+				<os>
+					<family>mac</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>${exec-maven-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>jpackage-app-image-release</id>
+								<phase>package</phase>
+								<goals><goal>exec</goal></goals>
+								<configuration>
+									<executable>${java.home}/bin/jpackage</executable>
+									<arguments>
+										<argument>--type</argument><argument>app-image</argument>
+										<argument>--name</argument><argument>${project.artifactId}</argument>
+										<argument>--input</argument><argument>${project.build.directory}/jpackage</argument>
+										<argument>--main-jar</argument><argument>${project.build.finalName}.jar</argument>
+										<argument>--dest</argument><argument>${project.build.directory}/dist</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 </project>

@@ -27,9 +27,6 @@ This will generate
 * A manual and API documentation under `target/docs/`
 * A native application image under `target/dist/r2p/`
 
-Note: under Windows, it is possible that windows defender blocks the cleanup of the native image build (as it contains an exe file). 
-In this case, remove the folder `target/dist/r2p/` manually.
-
 ## Structure
 
 * docs:documentation (Asciidoctor)
