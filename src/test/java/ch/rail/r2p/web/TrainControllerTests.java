@@ -1,9 +1,8 @@
 package ch.rail.r2p.web;
 
-import static ch.rail.r2p.api.dto.PartnerType.SBB;
+import static ch.rail.r2p.api.dto.PartnerToken.SBB;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,37 +16,37 @@ class TrainControllerTests {
 
     @Test
     void testListTrain() {
-        var result = trainController.listTrains(SBB);
+        var result = trainController.listTrains(SBB, null ,null);
         assertNotNull(result);
     }
 
     @Test
     void testGetTrainById() {
-        var result = trainController.getTrainById(UUID.randomUUID(), SBB);
+        var result = trainController.getTrainById(SBB, UUID.randomUUID());
         assertNotNull(result);
     }
 
     @Test
     void testCreateTrain() {
-        var result = trainController.createTrain(List.of(SBB), "new train", trainController.loadSampleTrain());
+        var result = trainController.createTrain(SBB, "new train", trainController.loadSampleTrain());
         assertNotNull(result);
     }
 
     @Test
     void testShareTrain() {
-        var result = trainController.shareTrain(UUID.randomUUID(), List.of(SBB));
+        var result = trainController.shareTrain(SBB, UUID.randomUUID(), "SOB");
         assertNotNull(result);
     }
 
     @Test
-    void testDeleteTrafficVariant() {
-        var result = trainController.deleteTrainVariant(UUID.randomUUID(), "variant", List.of(SBB), "delete variant");
+    void testDeleteTrafficBranch() {
+        var result = trainController.deleteTrainBranch(SBB, UUID.randomUUID(), "branch", "delete variant");
         assertNotNull(result);
     }
 
     @Test
     void testUpdateTrafficById() {
-        var result = trainController.updateTrain(UUID.randomUUID(), List.of(SBB), "test", trainController.loadSampleTrain());
+        var result = trainController.updateTrainBranch(SBB, UUID.randomUUID(), "main", "test", trainController.loadSampleTrain());
         assertNotNull(result);
     }
 }

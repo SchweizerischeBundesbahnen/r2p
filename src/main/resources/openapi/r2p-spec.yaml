@@ -24,7 +24,21 @@ paths:
           in: header
           required: true
           schema:
-            $ref: '#/components/schemas/PartnerType'
+            $ref: '#/components/schemas/PartnerToken'
+        - name: operationalDayFrom
+          in: query
+          required: false
+          description: 'optional filter: only trains at or after this operational day (inclusive)'
+          schema:
+            type: string
+            format: date
+        - name: operationalDayTo
+          in: query
+          required: false
+          description: 'optional filter: only trains up to this operational day (inclusive)'
+          schema:
+            type: string
+            format: date
       responses:
         '200':
           description: Successful operation
@@ -33,7 +47,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TrainList'
+                  $ref: '#/components/schemas/TrainListElement'
     post:
       tags:
         - R2P
@@ -44,9 +58,7 @@ paths:
           in: header
           required: true
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/PartnerType'
+            $ref: '#/components/schemas/PartnerToken'
         - name: comment
           in: query
           required: true
@@ -72,19 +84,23 @@ paths:
       summary: Share train
       operationId: shareTrain
       parameters:
+        - name: partner
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
         - name: trainId
           in: path
           required: true
           schema:
             type: string
             format: UUID
-        - name: partner
-          in: header
+        - name: shareWith
+          in: query
           required: true
+          description: Partner name to share the train with
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/PartnerType'
+            type: string
       responses:
         '200':
           description: Successful operation
@@ -99,84 +115,47 @@ paths:
       summary: Get train by ID
       operationId: getTrainById
       parameters:
+        - name: partner
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
         - name: trainId
           in: path
           required: true
           schema:
             type: string
             format: UUID
-        - name: partner
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/PartnerType'
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrainList'
-    put:
-      tags:
-        - R2P
-      summary: Update train by ID
-      operationId: updateTrain
-      parameters:
-        - name: trainId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: UUID
-        - name: partner
-          in: header
-          required: true
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/PartnerType'
-        - name: comment
-          in: query
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Train'
-      responses:
-        '200':
-          description: Updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-  /v1/trains/{trainId}/{variant}:
+                $ref: '#/components/schemas/TrainListElement'
+  /v1/trains/{trainId}/{branchName}:
     get:
       tags:
         - R2P
-      summary: Get train variant
-      operationId: getTrainVariant
+      summary: Get train branch
+      operationId: getTrainBranch
       parameters:
+        - name: partner
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
         - name: trainId
           in: path
           required: true
           schema:
             type: string
             format: UUID
-        - name: variant
+        - name: branchName
           in: path
           required: true
           schema:
             type: string
-        - name: partner
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/PartnerType'
       responses:
         '200':
           description: Successful operation
@@ -187,27 +166,25 @@ paths:
     put:
       tags:
         - R2P
-      summary: Update train variant
-      operationId: updateTrainVariant
+      summary: Update train branch
+      operationId: updateTrainBranch
       parameters:
+        - name: partner
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
         - name: trainId
           in: path
           required: true
           schema:
             type: string
             format: UUID
-        - name: variant
+        - name: branchName
           in: path
           required: true
           schema:
             type: string
-        - name: partner
-          in: header
-          required: true
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/PartnerType'
         - name: comment
           in: query
           required: true
@@ -229,27 +206,25 @@ paths:
     delete:
       tags:
         - R2P
-      summary: Delete train variant
-      operationId: deleteTrainVariant
+      summary: Delete train branch
+      operationId: deleteTrainBranch
       parameters:
+        - name: partner
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
         - name: trainId
           in: path
           required: true
           schema:
             type: string
             format: UUID
-        - name: variant
+        - name: branchName
           in: path
           required: true
           schema:
             type: string
-        - name: partner
-          in: header
-          required: true
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/PartnerType'
         - name: comment
           in: query
           required: true
@@ -262,30 +237,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
-  /v1/trains/{trainId}/{version}:
+  /v1/trains/versions/{version}:
     get:
       tags:
         - R2P
       summary: Get specific train version
       operationId: getTrainVersion
       parameters:
-        - name: trainId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: UUID
-        - name: version
-          in: path
-          required: true
-          schema:
-            type: string
-            format: UUID
         - name: partner
           in: header
           required: true
           schema:
-            $ref: '#/components/schemas/PartnerType'
+            $ref: '#/components/schemas/PartnerToken'
+        - name: version
+          in: path
+          required: true
+          description: the train version to get; note that the trainId is implied by the version and doesn't need to be provided explicitly
+          schema:
+            type: string
+            format: UUID
       responses:
         '200':
           content:
@@ -300,6 +270,11 @@ paths:
       summary: Get train changes by Id
       operationId: getTrainChangesById
       parameters:
+        - name: partner
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
         - name: trainId
           in: path
           required: true
@@ -318,11 +293,6 @@ paths:
           schema:
             type: string
             format: date-time
-        - name: partner
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/PartnerType'
       responses:
         '200':
           description: Successful operation
@@ -339,6 +309,11 @@ paths:
       summary: List all train changes
       operationId: listTrainChanges
       parameters:
+        - name: partner
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
         - name: from
           in: query
           required: true
@@ -351,11 +326,6 @@ paths:
           schema:
             type: string
             format: date-time
-        - name: partner
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/PartnerType'
       responses:
         '200':
           description: Successful operation
@@ -368,78 +338,126 @@ paths:
 
 components:
   schemas:
-    TrainList:
-      description: 'The traffic object'
+    TrainListElement:
+      description: 'Summary information about a train when searching for or listing trains'
       type: object
       required:
         - trainId
-        - trainNumber
-        - variants
+        - mainTimestamp
+        - branches
       properties:
         trainId:
           type: string
           example: 123456789012
-        trainNumber:
-            type: string
-            example: IC 1234
-        operationalDay:
-            type: string
-            format: date
+        mainTimestamp:
+          type: string
+          format: date-time
         partners:
             type: array
             items:
-                $ref: '#/components/schemas/PartnerType'
-        variants:
+              type: string
+        branches:
           type: array
           items:
-            $ref: '#/components/schemas/Variant'
-    ChangeType:
+            $ref: '#/components/schemas/Branch'
+    BranchState:
       type: string
       enum:
-        - created
-        - updated
+        - open
+        - merged
         - deleted
     Change:
       description: 'Change information'
       type: object
       required:
-        - variant
+        - branchName
         - version
-        - changeType
-        - timeStamp
+        - branchState
+        - timestamp
       properties:
-        variant:
+        branchName:
           type: string
           example: main
         version:
           type: string
           format: UUID
-        changeType:
-          $ref: '#/components/schemas/ChangeType'
-        timeStamp:
+        branchState:
+          $ref: '#/components/schemas/BranchState'
+        timestamp:
           type: string
           format: date-time
         comment:
           type: string
           example: a useful comment
-    Variant:
-        description: 'The variant object'
-        allOf:
-          - $ref: '#/components/schemas/Change'
-          - type: object
-            properties:
-              arrivalStation:
-                type: string
-                example: 85123456
-              departureStation:
-                type: string
-                example: 85000123
-              departureTime:
-                type: string
-                pattern: \d{2}:\d{2}:\d{2}
-              arrivalTime:
-                type: string
-                pattern: \d{2}:\d{2}:\d{2}
+    Branch:
+        description: 'The branch object'
+        type: object
+        required:
+          - branchName
+          - business
+          - technical
+        properties:
+          branchName:
+            type: string
+            example: main
+          business:
+            $ref: '#/components/schemas/BranchBusinessData'
+          technical:
+            $ref: '#/components/schemas/BranchTechnicalData'
+    BranchBusinessData:
+      description: 'Branch business data'
+      type: object
+      required:
+        - trainNumber
+        - operationalDay
+      properties:
+        trainNumber:
+          type: string
+          example: IC 1234
+        operationalDay:
+          type: string
+          format: date
+        destinationStation:
+          type: string
+          example: 85123456
+        originStation:
+          type: string
+          example: 85000123
+        destinationTime:
+          type: string
+          format: date-time
+        originTime:
+          type: string
+          format: date-time
+    BranchTechnicalData:
+      description: 'Branch technical data'
+      type: object
+      required:
+        - version
+        - branchState
+        - timestamp
+      properties:
+        owner:
+          type: string
+          example: SOB
+        version:
+          type: string
+          format: UUID
+        branchState:
+          $ref: '#/components/schemas/BranchState'
+        timestamp:
+          type: string
+          format: date-time
+        comment:
+          type: string
+          example: a useful comment
+    PartnerToken:
+      description: Represents an authentication token of a partner in the context of the PoC (to be replaced by a real authentication token later)
+      type: string
+      enum:
+        - SBB
+        - BLS
+        - SOB
     # ---------------------------------------------- PATH -------------------------------------------------------------------------------------
     Train:
       description: 'The train object'
@@ -1051,13 +1069,6 @@ components:
         - ra  # responsible applicant
         - rru
         - rp # resource provider
-    # ---------------------------------------------- ENUM PartnerType -------------------------------------------------------------------------------------
-    PartnerType:
-      type: string
-      enum:
-        - SBB
-        - BLS
-        - SOB
   # ---------------------------------------------- --------------- -------------------------------------------------------------------------------------
   requestBodies:
     Train:

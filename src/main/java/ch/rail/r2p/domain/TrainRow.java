@@ -1,7 +1,6 @@
 package ch.rail.r2p.domain;
 
-import ch.rail.r2p.api.dto.ChangeType;
-import ch.rail.r2p.api.dto.PartnerType;
+import ch.rail.r2p.api.dto.BranchState;
 import ch.rail.r2p.api.dto.Train;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -14,11 +13,11 @@ public class TrainRow {
     UUID trainId;
     String trainNumber;
     LocalDate operationalDay;
-    String variant;
+    String branchName;
     String comment;
     OffsetDateTime timestamp;
     UUID version;
     Train payload;
-    List<PartnerType> partners;
-    ChangeType changeType;
+    List<String> partners;
+    BranchState branchState;
 }
