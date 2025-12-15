@@ -20,7 +20,7 @@ paths:
       summary: List trains
       operationId: listTrains
       parameters:
-        - name: partner
+        - name: token
           in: header
           required: true
           schema:
@@ -54,7 +54,7 @@ paths:
       summary: Create train
       operationId: createTrain
       parameters:
-        - name: partner
+        - name: token
           in: header
           required: true
           schema:
@@ -84,7 +84,7 @@ paths:
       summary: Share train
       operationId: shareTrain
       parameters:
-        - name: partner
+        - name: token
           in: header
           required: true
           schema:
@@ -115,7 +115,7 @@ paths:
       summary: Get train by ID
       operationId: getTrainById
       parameters:
-        - name: partner
+        - name: token
           in: header
           required: true
           schema:
@@ -140,7 +140,7 @@ paths:
       summary: Get train branch
       operationId: getTrainBranch
       parameters:
-        - name: partner
+        - name: token
           in: header
           required: true
           schema:
@@ -169,7 +169,7 @@ paths:
       summary: Update train branch
       operationId: updateTrainBranch
       parameters:
-        - name: partner
+        - name: token
           in: header
           required: true
           schema:
@@ -209,7 +209,7 @@ paths:
       summary: Delete train branch
       operationId: deleteTrainBranch
       parameters:
-        - name: partner
+        - name: token
           in: header
           required: true
           schema:
@@ -244,7 +244,7 @@ paths:
       summary: Get specific train version
       operationId: getTrainVersion
       parameters:
-        - name: partner
+        - name: token
           in: header
           required: true
           schema:
@@ -270,7 +270,7 @@ paths:
       summary: Get train changes by Id
       operationId: getTrainChangesById
       parameters:
-        - name: partner
+        - name: token
           in: header
           required: true
           schema:
@@ -309,7 +309,7 @@ paths:
       summary: List all train changes
       operationId: listTrainChanges
       parameters:
-        - name: partner
+        - name: token
           in: header
           required: true
           schema:

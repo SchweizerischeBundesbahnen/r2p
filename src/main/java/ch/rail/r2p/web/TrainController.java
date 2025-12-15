@@ -56,52 +56,52 @@ public class TrainController implements V1Api {
     private final ObjectMapper objectMapper;
 
     @Override
-    public ResponseEntity<ModelApiResponse> createTrain(PartnerToken partner, String comment, Train train) {
+    public ResponseEntity<ModelApiResponse> createTrain(PartnerToken token, String comment, Train train) {
         return ResponseEntity.ok(DEFAULT_RESPONSE);
     }
 
     @Override
-    public ResponseEntity<ModelApiResponse> deleteTrainBranch(PartnerToken partner, UUID trainId, String branchName, String comment) {
+    public ResponseEntity<ModelApiResponse> deleteTrainBranch(PartnerToken token, UUID trainId, String branchName, String comment) {
         return ResponseEntity.ok(DEFAULT_RESPONSE);
     }
 
     @Override
-    public ResponseEntity<TrainListElement> getTrainById(PartnerToken partner, UUID trainId) {
+    public ResponseEntity<TrainListElement> getTrainById(PartnerToken token, UUID trainId) {
         return ResponseEntity.ok(DEFAULT_TRAIN);
     }
 
     @Override
-    public ResponseEntity<List<Change>> getTrainChangesById(PartnerToken partner, UUID trainId, OffsetDateTime from, OffsetDateTime to) {
+    public ResponseEntity<List<Change>> getTrainChangesById(PartnerToken token, UUID trainId, OffsetDateTime from, OffsetDateTime to) {
         return ResponseEntity.ok(List.of(DEFAULT_CHANGE));
     }
 
     @Override
-    public ResponseEntity<Train> getTrainBranch(PartnerToken partner, UUID trainId, String branchName) {
+    public ResponseEntity<Train> getTrainBranch(PartnerToken token, UUID trainId, String branchName) {
         return ResponseEntity.ok(loadSampleTrain());
     }
 
     @Override
-    public ResponseEntity<Train> getTrainVersion(PartnerToken partner, UUID version) {
+    public ResponseEntity<Train> getTrainVersion(PartnerToken token, UUID version) {
         return ResponseEntity.ok(loadSampleTrain());
     }
 
     @Override
-    public ResponseEntity<List<Change>> listTrainChanges(PartnerToken partner, OffsetDateTime from, OffsetDateTime to) {
+    public ResponseEntity<List<Change>> listTrainChanges(PartnerToken token, OffsetDateTime from, OffsetDateTime to) {
         return ResponseEntity.ok(List.of(DEFAULT_CHANGE));
     }
 
     @Override
-    public ResponseEntity<List<TrainListElement>> listTrains(PartnerToken partner, LocalDate from, LocalDate to) {
+    public ResponseEntity<List<TrainListElement>> listTrains(PartnerToken token, LocalDate from, LocalDate to) {
         return ResponseEntity.ok(List.of(DEFAULT_TRAIN));
     }
 
     @Override
-    public ResponseEntity<ModelApiResponse> shareTrain(PartnerToken partner, UUID trainId, String shareWith) {
+    public ResponseEntity<ModelApiResponse> shareTrain(PartnerToken token, UUID trainId, String shareWith) {
         return ResponseEntity.ok(DEFAULT_RESPONSE);
     }
 
     @Override
-    public ResponseEntity<ModelApiResponse> updateTrainBranch(PartnerToken partner, UUID trainId, String branchName, String comment, Train train) {
+    public ResponseEntity<ModelApiResponse> updateTrainBranch(PartnerToken token, UUID trainId, String branchName, String comment, Train train) {
         return ResponseEntity.ok(DEFAULT_RESPONSE);
     }
 }
