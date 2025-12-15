@@ -26,8 +26,8 @@ Note: in order to access secured endpoints, you need to be a member of the AD-gr
 
 == Domain Model
 
-Each train, variant and version is represented by following model. A train is releated to partners. It has a main variant which is the current state. A change can be submitted by creating a new variant.
-Every change of the variant creates a new version. The changes of the variant can be applied to the main variant. Changes can be commented. The payload contains all data. Identifiers are 'trainId' and 'version'.
+Each train, branch and version is represented by following model. A train is related to partners. It has a main branch which is the current state. A change can be submitted by creating a new branch.
+Every change of the branch creates a new version. The changes of the branch can be applied to the main branch. Changes can be commented. The payload contains all data. Identifiers are 'trainId' and 'version'.
 
 [plantuml, uml-diagramm, png]
 ----
@@ -37,16 +37,25 @@ class TrainRow {
   ~ trainId: UUID
   ~ trainNumber: String
   ~ operationalDay: LocalDate
-  ~ variant: String
+  ~ branchName: String
   ~ comment: String
   ~ payload: Train
-  ~ partners: List<PartnerType>
+  ~ partners: List<String>
   ~ timestamp: OffsetDateTime
   ~ version: UUID
+  ~ branchState: BranchState
 }
 
 @enduml
 ----
+
+The actual payload (`TrainRow.payload`) corresponds to the schema defined in `src/main/resources/openapi/schemas/train.yaml`, which is the same schema used by in the REST endpoints.
+
+It was created based on the initially provided OpenAPI yaml file according to the following steps, which may have to repeated for new versions of that file:
+
+* Cut `Train` schema definition and all its dependencies
+* Paste them at the root of the new file (i.e. no longer inside `components/schemas/`); formatting is done automatically by IntelliJ
+* Adapt references inside the file: replace `#/components/schemas/` by `#/`
 
 == REST Endpoints
 
@@ -54,18 +63,17 @@ See also: link:../src/main/resources/openapi/r2p-spec.yaml[r2p-spec.yaml]
 
 === Train
 
-* GET /trains - list all trains which are availble for the partner, the response shows all variants with their latest version
+* GET /trains - list all trains which are available for the partner, the response shows all branches with their latest version
 * POST /trains - creates a new train with the given payload
 * POST /trains/{trainId}/share - shares the train with another partner
-* GET /trains/{trainId} - gets the the train by the passed trainId, the response shows all variants with their latest version
-* PUT /trains/{trainId} - creates a new version of train with the given payload
+* GET /trains/{trainId} - gets the the train by the passed trainId, the response shows all branches with their latest version
 
-=== Variant
+=== Branch
 
-* GET /trains/{trainId}/variants/{variant} - gets the variant by the passed variant name
-* GET /trains/{trainId}/{version} - gets the specific version of the train
-* PUT /trains/{trainId}/variants/{variant} - creates a new version of the variant with the given payload
-* DELETE /trains/{trainId}/variants/{variant} - deletes the variant
+* GET /trains/{trainId}/branches/{branchName} - gets the branch by the passed branch name
+* GET /trains/versions/{version} - gets the specific version of the train
+* PUT /trains/{trainId}/branches/{branchName} - creates a new version of the branch with the given payload (can also be the main branch)
+* DELETE /trains/{trainId}/branches/{branchName} - deletes the branch
 
 === Changes
 * GET /trains/{trainId}/changes - gets all changes for the train with the passed trainId
@@ -76,6 +84,6 @@ See also: link:../src/main/resources/openapi/r2p-spec.yaml[r2p-spec.yaml]
 [cols="3,3,1,1,1", options="header"]
 |===
 |Question |Notes |Responsible | Date |Done
-| | | | | []
-| | | | | []
+|How should deletions/cancellations of trains be modelled? On the level of the REST API, or within the Train domain model? Should it be possible to request cancellation of a train in a branch?| | | | []
+|How should branches be merged? PUT on main branch and new POST endpoint to mark branch as merged? | | | | []
 |===

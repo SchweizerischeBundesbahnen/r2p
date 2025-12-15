@@ -20,11 +20,25 @@ paths:
       summary: List trains
       operationId: listTrains
       parameters:
-        - name: partner
+        - name: token
           in: header
           required: true
           schema:
-            $ref: '#/components/schemas/PartnerType'
+            $ref: '#/components/schemas/PartnerToken'
+        - name: operationalDayFrom
+          in: query
+          required: false
+          description: 'optional filter: only trains at or after this operational day (inclusive)'
+          schema:
+            type: string
+            format: date
+        - name: operationalDayTo
+          in: query
+          required: false
+          description: 'optional filter: only trains up to this operational day (inclusive)'
+          schema:
+            type: string
+            format: date
       responses:
         '200':
           description: Successful operation
@@ -33,20 +47,18 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TrainList'
+                  $ref: '#/components/schemas/TrainListElement'
     post:
       tags:
         - R2P
       summary: Create train
       operationId: createTrain
       parameters:
-        - name: partner
+        - name: token
           in: header
           required: true
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/PartnerType'
+            $ref: '#/components/schemas/PartnerToken'
         - name: comment
           in: query
           required: true
@@ -57,7 +69,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Train'
+              $ref: './schemas/train.yaml#/Train'
       responses:
         '200':
           description: Successful operation
@@ -72,19 +84,23 @@ paths:
       summary: Share train
       operationId: shareTrain
       parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
         - name: trainId
           in: path
           required: true
           schema:
             type: string
             format: UUID
-        - name: partner
-          in: header
+        - name: shareWith
+          in: query
           required: true
+          description: Partner name to share the train with
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/PartnerType'
+            type: string
       responses:
         '200':
           description: Successful operation
@@ -99,115 +115,76 @@ paths:
       summary: Get train by ID
       operationId: getTrainById
       parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
         - name: trainId
           in: path
           required: true
           schema:
             type: string
             format: UUID
-        - name: partner
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/PartnerType'
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrainList'
-    put:
-      tags:
-        - R2P
-      summary: Update train by ID
-      operationId: updateTrain
-      parameters:
-        - name: trainId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: UUID
-        - name: partner
-          in: header
-          required: true
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/PartnerType'
-        - name: comment
-          in: query
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Train'
-      responses:
-        '200':
-          description: Updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-  /v1/trains/{trainId}/{variant}:
+                $ref: '#/components/schemas/TrainListElement'
+  /v1/trains/{trainId}/{branchName}:
     get:
       tags:
         - R2P
-      summary: Get train variant
-      operationId: getTrainVariant
+      summary: Get train branch
+      operationId: getTrainBranch
       parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
         - name: trainId
           in: path
           required: true
           schema:
             type: string
             format: UUID
-        - name: variant
+        - name: branchName
           in: path
           required: true
           schema:
             type: string
-        - name: partner
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/PartnerType'
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Train'
+                $ref: './schemas/train.yaml#/Train'
     put:
       tags:
         - R2P
-      summary: Update train variant
-      operationId: updateTrainVariant
+      summary: Update train branch
+      operationId: updateTrainBranch
       parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
         - name: trainId
           in: path
           required: true
           schema:
             type: string
             format: UUID
-        - name: variant
+        - name: branchName
           in: path
           required: true
           schema:
             type: string
-        - name: partner
-          in: header
-          required: true
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/PartnerType'
         - name: comment
           in: query
           required: true
@@ -218,7 +195,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Train'
+              $ref: './schemas/train.yaml#/Train'
       responses:
         '200':
           description: Updated
@@ -229,27 +206,25 @@ paths:
     delete:
       tags:
         - R2P
-      summary: Delete train variant
-      operationId: deleteTrainVariant
+      summary: Delete train branch
+      operationId: deleteTrainBranch
       parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
         - name: trainId
           in: path
           required: true
           schema:
             type: string
             format: UUID
-        - name: variant
+        - name: branchName
           in: path
           required: true
           schema:
             type: string
-        - name: partner
-          in: header
-          required: true
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/PartnerType'
         - name: comment
           in: query
           required: true
@@ -262,36 +237,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
-  /v1/trains/{trainId}/{version}:
+  /v1/trains/versions/{version}:
     get:
       tags:
         - R2P
       summary: Get specific train version
       operationId: getTrainVersion
       parameters:
-        - name: trainId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: UUID
-        - name: version
-          in: path
-          required: true
-          schema:
-            type: string
-            format: UUID
-        - name: partner
+        - name: token
           in: header
           required: true
           schema:
-            $ref: '#/components/schemas/PartnerType'
+            $ref: '#/components/schemas/PartnerToken'
+        - name: version
+          in: path
+          required: true
+          description: the train version to get; note that the trainId is implied by the version and doesn't need to be provided explicitly
+          schema:
+            type: string
+            format: UUID
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Train'
+                $ref: './schemas/train.yaml#/Train'
           description: Successful operation
   /v1/trains/{trainId}/changes:
     get:
@@ -300,6 +270,11 @@ paths:
       summary: Get train changes by Id
       operationId: getTrainChangesById
       parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
         - name: trainId
           in: path
           required: true
@@ -318,11 +293,6 @@ paths:
           schema:
             type: string
             format: date-time
-        - name: partner
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/PartnerType'
       responses:
         '200':
           description: Successful operation
@@ -339,6 +309,11 @@ paths:
       summary: List all train changes
       operationId: listTrainChanges
       parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
         - name: from
           in: query
           required: true
@@ -351,11 +326,6 @@ paths:
           schema:
             type: string
             format: date-time
-        - name: partner
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/PartnerType'
       responses:
         '200':
           description: Successful operation
@@ -368,529 +338,126 @@ paths:
 
 components:
   schemas:
-    TrainList:
-      description: 'The traffic object'
+    TrainListElement:
+      description: 'Summary information about a train when searching for or listing trains'
       type: object
       required:
         - trainId
-        - trainNumber
-        - variants
+        - mainTimestamp
+        - branches
       properties:
         trainId:
           type: string
           example: 123456789012
-        trainNumber:
-            type: string
-            example: IC 1234
-        operationalDay:
-            type: string
-            format: date
+        mainTimestamp:
+          type: string
+          format: date-time
         partners:
             type: array
             items:
-                $ref: '#/components/schemas/PartnerType'
-        variants:
+              type: string
+        branches:
           type: array
           items:
-            $ref: '#/components/schemas/Variant'
-    ChangeType:
+            $ref: '#/components/schemas/Branch'
+    BranchState:
       type: string
       enum:
-        - created
-        - updated
+        - open
+        - merged
         - deleted
     Change:
       description: 'Change information'
       type: object
       required:
-        - variant
+        - branchName
         - version
-        - changeType
-        - timeStamp
+        - branchState
+        - timestamp
       properties:
-        variant:
+        branchName:
           type: string
           example: main
         version:
           type: string
           format: UUID
-        changeType:
-          $ref: '#/components/schemas/ChangeType'
-        timeStamp:
+        branchState:
+          $ref: '#/components/schemas/BranchState'
+        timestamp:
           type: string
           format: date-time
         comment:
           type: string
           example: a useful comment
-    Variant:
-        description: 'The variant object'
-        allOf:
-          - $ref: '#/components/schemas/Change'
-          - type: object
-            properties:
-              arrivalStation:
-                type: string
-                example: 85123456
-              departureStation:
-                type: string
-                example: 85000123
-              departureTime:
-                type: string
-                pattern: \d{2}:\d{2}:\d{2}
-              arrivalTime:
-                type: string
-                pattern: \d{2}:\d{2}:\d{2}
-    # ---------------------------------------------- PATH -------------------------------------------------------------------------------------
-    Train:
-      description: 'The train object'
+    Branch:
+        description: 'The branch object'
+        type: object
+        required:
+          - branchName
+          - business
+          - technical
+        properties:
+          branchName:
+            type: string
+            example: main
+          business:
+            $ref: '#/components/schemas/BranchBusinessData'
+          technical:
+            $ref: '#/components/schemas/BranchTechnicalData'
+    BranchBusinessData:
+      description: 'Branch business data'
+      type: object
       required:
-        - id
-        - references
-        - name
-        - startdate
+        - trainNumber
+        - operationalDay
+      properties:
+        trainNumber:
+          type: string
+          example: IC 1234
+        operationalDay:
+          type: string
+          format: date
+        destinationStation:
+          type: string
+          example: 85123456
+        originStation:
+          type: string
+          example: 85000123
+        destinationTime:
+          type: string
+          format: date-time
+        originTime:
+          type: string
+          format: date-time
+    BranchTechnicalData:
+      description: 'Branch technical data'
+      type: object
+      required:
+        - version
+        - branchState
         - timestamp
-        - journey
-      type: object
       properties:
-        id:
+        owner:
           type: string
-        references:
-          type: array
-          items:
-            $ref: '#/components/schemas/Reference'
-        links:
-          description: Links to other objects e.g. URL, documents in the same GitHub-Repository
-          type: array
-          items:
-            $ref: '#/components/schemas/Link'
-        name:
-          description: The name of the train.
+          example: SOB
+        version:
           type: string
-          example: Train for oil traffic
-        startdate:
-          description: The startdate of the train.
-          type: string
-          format: date
+          format: UUID
+        branchState:
+          $ref: '#/components/schemas/BranchState'
         timestamp:
-          description: The update time of the train.
           type: string
           format: date-time
-        journey:
-          description: The journey of the train.
-          $ref: '#/components/schemas/Journey'
-      xml:
-        name: train
-    # ---------------------------------------------- REFERENCES -------------------------------------------------------------------------------------
-    Reference:
-      description: 'The references of the object'
-      required:
-        - type
-        - name
-      type: object
-      properties:
-        type:
-          description: type of the identifier
-          $ref: '#/components/schemas/ReferenceType'
-        startdate:
-          description: startdate for the identifier
+        comment:
           type: string
-          format: date
-        name:
-          description: name of the identifier
-          type: string
-          example: TR2185900000127853012025
-      xml:
-        name: reference
-    # ---------------------------------------------- LINKS -------------------------------------------------------------------------------------
-    Link:
-      description: 'The links to the object'
-      required:
-        - type
-        - name
-      type: object
-      properties:
-        type:
-          description: type of the link
-          example: doc
-          $ref: '#/components/schemas/LinkType'
-        name:
-          description: name of the identifier
-          type: string
-          example: path_to/other-file.json#/Attachment/MyDocument1.docx
-      xml:
-        name: link
-    # ---------------------------------------------- JOURNEY -------------------------------------------------------------------------------------
-    Journey:
-      description: 'The journey of the object: a list of Journeylocation'
-      required:
-        - journeylocations
-      type: object
-      properties:
-        journeylocations:
-          type: array
-          minItems: 2
-          items:
-            $ref: '#/components/schemas/Journeylocation'
-      xml:
-        name: journey
-    # ---------------------------------------------- JOURNEYLOCATION -------------------------------------------------------------------------------------
-    Journeylocation:
-      description: 'A journeylocation of the journey'
-      required:
-        - locations
-        - activities
-      type: object
-      properties:
-        locations:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/Location'
-        activities:
-          type: array
-          items:
-            $ref: '#/components/schemas/Activity'
-      xml:
-        name: journeylocation
-    # ---------------------------------------------- ACTIVITY -------------------------------------------------------------------------------------
-    Activity:
-      description: 'An activity either at the location or from this location to the next specified location'
-      required:
-        - type
-        - responsibility
-      type: object
-      properties:
-        type:
-          $ref: "#/components/schemas/ActivityType"
-        timing:
-          type: array
-          items:
-            $ref: '#/components/schemas/Timing'
-        responsibility:
-          $ref: '#/components/schemas/Responsability'
-        alignment:
-          $ref: '#/components/schemas/Alignment'
-        capabilities:
-          type: array
-          items:
-            $ref: '#/components/schemas/Capability'
-        requirements:
-          type: array
-          items:
-            $ref: '#/components/schemas/Requirement'
-      xml:
-        name: activity
-    # ---------------------------------------------- CAPABILITY -------------------------------------------------------------------------------------
-    Capability:
-      description: 'A capability either at the location or from this location to the next specified location'
-      required:
-        - features
-      type: object
-      properties:
-        features:
-          type: array
-          items:
-            $ref: '#/components/schemas/Feature'
-      xml:
-        name: capability
-    # ---------------------------------------------- REQUIREMENT -------------------------------------------------------------------------------------
-    Requirement:
-      description: 'A requirement either at the location or from this location to the next specified location'
-      required:
-        - features
-      type: object
-      properties:
-        features:
-          type: array
-          items:
-            $ref: '#/components/schemas/Feature'
-        condition:
-          type: array
-          items:
-            $ref: '#/components/schemas/Condition'
-      xml:
-        name: requirement
-    # ---------------------------------------------- RESTRICTION -------------------------------------------------------------------------------------
-    Restriction:
-      description: 'A restriction either at the location or from this location to the next specified location'
-      required:
-        - type
-        - creator
-        - creationtime
-      type: object
-      properties:
-        type:
-          type: string
-          example: example
-        creator:
-          type: string
-          example: example
-        creationtime:
-          type: string
-          format: date-time
-        starttime:
-          type: string
-          format: date-time
-        endtime:
-          type: string
-          format: date-time
-        freetext:
-          type: string
-          example: example
-        resolution:
-          type: string
-          example: example
-        resolutiontime:
-          type: string
-          format: date-time
-      xml:
-        name: restriction
-    # ---------------------------------------------- CONDITION -------------------------------------------------------------------------------------
-    Condition:
-      description: 'A condition specifies the check to be applied between two featuresets'
-      required:
-        - conditiontype
-        - comparetype
-        - reference
-      type: object
-      properties:
-        conditiontype:
-          type: array
-          items:
-            $ref: '#/components/schemas/ConditionType'
-        comparetype:
-          type: array
-          items:
-            $ref: '#/components/schemas/CompareType'
-        reference:
-          type: string
-          example: 250
-      xml:
-        name: condition
-    # ---------------------------------------------- WAGONGROUP -------------------------------------------------------------------------------------
-    Wagongroup:
-      description: 'A wagongroup either at the location or from this location on'
-      required:
-        - length
-        - weight
-      type: object
-      properties:
-        id:
-          type: string
-          example: 123456789012
-        position:
-          type: integer
-          format: int32
-          example: 1
-        length:
-          type: integer
-          format: int32
-          example: 27
-        weight:
-          type: integer
-          format: int32
-          example: 60000
-        profile:
-          type: string
-          example: PN-5
-        wagoncount:
-          type: integer
-          format: int32
-          example: example
-        features:
-          type: array
-          items:
-            $ref: '#/components/schemas/Feature'
-      xml:
-        name: wagongroup
-    # ---------------------------------------------- UNIT -------------------------------------------------------------------------------------
-    Unit:
-      description: 'A unit of a wagon group'
-      required:
-        - carbodies
-      type: object
-      properties:
-        position:
-          type: integer
-          format: int32
-          example: 4
-        carbodies:
-          type: array
-          items:
-            $ref: '#/components/schemas/Carbody'
-        type:
-          type: string
-          example: Re420-CE
-        features:
-          type: array
-          items:
-            $ref: '#/components/schemas/Feature'
-      xml:
-        name: unit
-    # ---------------------------------------------- CARBODY -------------------------------------------------------------------------------------
-    Carbody:
-      description: 'A carbody from this location on'
-      required:
-        - type
-      type: object
-      properties:
-        position:
-          type: integer
-          format: int32
-          example: 1
-        type:
-          type: string
-          example: RaBe
-        traction:
-          $ref: '#/components/schemas/TractionType'
-        vehiclenumber:
-          type: string
-          example: 999999999962
-        frontcoupling:
-          $ref: '#/components/schemas/CouplingType'
-        backcoupling:
-          $ref: '#/components/schemas/CouplingType'
-        profile:
-          type: string
-          example: example
-        features:
-          type: array
-          items:
-            $ref: '#/components/schemas/Feature'
-      xml:
-        name: carbody
-    # ---------------------------------------------- FEATURE -------------------------------------------------------------------------------------
-    Feature:
-      description: 'A feature of a capability or requirement'
-      required:
-        - type
-      type: object
-      properties:
-        type:
-          type: string
-          example: WIFI on board
-        offeredservice:
-          type: string
-          example: example
-        capacity:
-          type: string
-          example: 200
-        wagongroups:
-          type: array
-          items:
-            $ref: '#/components/schemas/Wagongroup'
-        units:
-          type: array
-          items:
-            $ref: "#/components/schemas/Unit"
-        staff:
-          type: array
-          items:
-            $ref: '#/components/schemas/Staff'
-        restrictions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Restriction'
-      oneOf:
-        - required: ["wagongroups"]
-        - required: ["units"]
-        - required: ["staff"]
-      xml:
-        name: feature
-    # ---------------------------------------------- STAFF -------------------------------------------------------------------------------------
-    Staff:
-      description: 'A duty for a staff'
-      required:
-        - type
-        - action
-      type: object
-      properties:
-        type:
-          type: string
-          example: decouple
-        action:
-          type: string
-          example: example
-      xml:
-        name: staff
-    # ---------------------------------------------- TIMING -------------------------------------------------------------------------------------
-    Timing:
-      description: 'The timing for a location'
-      required:
-        - type
-        - time
-        - offset
-        - focus
-      type: object
-      properties:
-        type:
-          $ref: '#/components/schemas/TimingType'
-        time:
-          type: string
-          pattern: \d{2}:\d{2}:\d{2}
-        offset:
-          description: |
-            The offset represents a duration in days from the starting point, start date. 
-            To determine the actual absolute timestamp, add this duration to the start date converted to date-time.
-          type: integer
-          format: int32
-        focus:
-          $ref: '#/components/schemas/Focus'
-        source:
-          type: string
-          example: 2187 oder R2P CompanyIdent
-      xml:
-        name: timing
-    # ---------------------------------------------- RESPONSABILITY -------------------------------------------------------------------------------------
-    Responsability:
-      description: 'The responsability for a task'
-      required:
-        - type
-        - id
-        - status
-      type: object
-      properties:
-        type:
-          $ref: "#/components/schemas/ResponsabilityType"
-        id:
-          type: string
-          example: ID-12-234-34-1
-        status:
-          $ref: '#/components/schemas/PlanStatus'
-      xml:
-        name: responsability
-    # ---------------------------------------------- ALIGNMENT -------------------------------------------------------------------------------------
-    Alignment:
-      description: 'The alignment for a task'
-      required:
-        - status
-      type: object
-      properties:
-        status:
-          $ref: '#/components/schemas/PlanStatus'
-      xml:
-        name: alignment
-    # ---------------------------------------------- LOCATION -------------------------------------------------------------------------------------
-    Location:
-      description: 'The location in the journey'
-      required:
-        - type
-        - code
-        - name
-      type: object
-      properties:
-        type:
-          type: string
-          example: enum PLC, SLC, DIUM, UIC
-        code:
-          type: string
-          example: 12345
-        name:
-          type: string
-          example: Riom
-      xml:
-        name: alignment
-    # ---------------------------------------------- API RESPONSE -------------------------------------------------------------------------------------
+          example: a useful comment
+    PartnerToken:
+      description: Represents an authentication token of a partner in the context of the PoC (to be replaced by a real authentication token later)
+      type: string
+      enum:
+        - SBB
+        - BLS
+        - SOB
     ApiResponse:
       type: object
       properties:
@@ -906,166 +473,6 @@ components:
           format: UUID
       xml:
         name: apiresponse
-    # ---------------------------------------------- ENUM ReferenceType -------------------------------------------------------------------------------------
-    ReferenceType:
-      type: string
-      enum:
-        - tttreftrain
-        - tttroute
-        - ttttrain
-        - tttpathrequest
-        - tttpath
-        - tttcasereference
-        - fpspath
-        - fpsdebic
-    # ---------------------------------------------- ENUM ConditionType -------------------------------------------------------------------------------------
-    ConditionType:
-      type: string
-      enum:
-        - eq
-        - gt
-        - lt
-        - not
-        - neq
-        - lte
-        - gte
-        - regex
-        - in
-        - notIn
-    # ---------------------------------------------- ENUM CompareType -------------------------------------------------------------------------------------
-    CompareType:
-      type: string
-      enum:
-        - string
-        - number
-    # ---------------------------------------------- ENUM LinkType -------------------------------------------------------------------------------------
-    LinkType:
-      type: string
-      enum:
-        - link
-        - doc
-    # ---------------------------------------------- ENUM PLANSTATUS -------------------------------------------------------------------------------------
-    PlanStatus:
-      type: string
-      enum:
-        - requested
-        - confirmed
-        - refused
-        - dropped
-        - proposed
-    # ---------------------------------------------- ENUM FOCUS -------------------------------------------------------------------------------------
-    Focus:
-      type: string
-      enum:
-        - planning
-        - forecast
-        - realtime
-    # ---------------------------------------------- ENUM TimingType -------------------------------------------------------------------------------------
-    TimingType:
-      type: string
-      enum:
-        - earliestarrival
-        - latestarrival
-        - earliestdeparture
-        - runthrough
-        - dwelltime
-        - precise
-        - departure
-        - arrival
-    # ---------------------------------------------- ENUM CouplingType -------------------------------------------------------------------------------------
-    CouplingType:
-      type: string
-      enum:
-        - fix
-        - automaticTypeX
-        - automaticTypeY
-        - manual
-        - none
-    # ---------------------------------------------- ENUM TractionType -------------------------------------------------------------------------------------
-    TractionType:
-      type: string
-      enum:
-        - electric
-        - thermic
-        - battery
-        - hybrid
-        - none
-    # ---------------------------------------------- ENUM TractionType -------------------------------------------------------------------------------------
-    ActivityType:
-      type: string
-      enum:
-        - journey
-        - planning
-        - node
-        - commercial
-        - train
-        - path.halt.1
-        - path.halt.11
-        - path.halt.14
-        - path.halt.15
-        - path.halt.16
-        - path.halt.18
-        - path.halt.19
-        - path.halt.22
-        - path.halt.28
-        - path.halt.32
-        - path.halt.33
-        - path.halt.41
-        - path.halt.44
-        - path.halt.45
-        - path.halt.46
-        - path.halt.51
-        - path.halt.54
-        - path.halt.55
-        - path.halt.56
-        - path.halt.70
-        - path.halt.73
-        - path.halt.74
-        - path.halt.75
-        - path.halt.76
-        - path.halt.77
-        - path.halt.78
-        - path.halt.79
-        - path.halt.80
-        - path.halt.81
-        - path.halt.82
-        - path.halt.83
-        - path.halt.84
-        - path.halt.88
-        - path.halt.90
-        - path.halt.91
-        - path.halt.92
-        - path.halt.93
-        - path.halt.94
-        - path.halt.95
-        - path.runthrough
-        - traction
-        - wagons
-        - formation
-    # ---------------------------------------------- ENUM TractionType -------------------------------------------------------------------------------------
-    ResponsabilityType:
-      type: string
-      enum:
-        - rim # responsible infrastructure manager
-        - pim # planning infrastructure manager
-        - ra  # responsible applicant
-        - rru
-        - rp # resource provider
-    # ---------------------------------------------- ENUM PartnerType -------------------------------------------------------------------------------------
-    PartnerType:
-      type: string
-      enum:
-        - SBB
-        - BLS
-        - SOB
-  # ---------------------------------------------- --------------- -------------------------------------------------------------------------------------
-  requestBodies:
-    Train:
-      description: Train object that needs to be added to the local store
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Train'
   securitySchemes:
     path_auth:
       type: oauth2
