@@ -16,7 +16,7 @@ class TrainControllerTests {
 
     @Test
     void testListTrain() {
-        var result = trainController.listTrains(SBB, null ,null);
+        var result = trainController.listTrains(SBB, null, null);
         assertNotNull(result);
     }
 

@@ -26,7 +26,7 @@ Note: in order to access secured endpoints, you need to be a member of the AD-gr
 
 == Domain Model
 
-Each train, branch and version is represented by following model. A train is releated to partners. It has a main branch which is the current state. A change can be submitted by creating a new branch.
+Each train, branch and version is represented by following model. A train is related to partners. It has a main branch which is the current state. A change can be submitted by creating a new branch.
 Every change of the branch creates a new version. The changes of the branch can be applied to the main branch. Changes can be commented. The payload contains all data. Identifiers are 'trainId' and 'version'.
 
 [plantuml, uml-diagramm, png]
@@ -55,7 +55,7 @@ See also: link:../src/main/resources/openapi/r2p-spec.yaml[r2p-spec.yaml]
 
 === Train
 
-* GET /trains - list all trains which are availble for the partner, the response shows all branches with their latest version
+* GET /trains - list all trains which are available for the partner, the response shows all branches with their latest version
 * POST /trains - creates a new train with the given payload
 * POST /trains/{trainId}/share - shares the train with another partner
 * GET /trains/{trainId} - gets the the train by the passed trainId, the response shows all branches with their latest version
