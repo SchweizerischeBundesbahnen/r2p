@@ -49,6 +49,14 @@ class TrainRow {
 @enduml
 ----
 
+The actual payload (`TrainRow.payload`) corresponds to the schema defined in `src/main/resources/openapi/schemas/train.yaml`, which is the same schema used by in the REST endpoints.
+
+It was created based on the initially provided OpenAPI yaml file according to the following steps, which may have to repeated for new versions of that file:
+
+* Cut `Train` schema definition and all its dependencies
+* Paste them at the root of the new file (i.e. no longer inside `components/schemas/`); formatting is done automatically by IntelliJ
+* Adapt references inside the file: replace `#/components/schemas/` by `#/`
+
 == REST Endpoints
 
 See also: link:../src/main/resources/openapi/r2p-spec.yaml[r2p-spec.yaml]
