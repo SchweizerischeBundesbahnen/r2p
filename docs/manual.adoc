@@ -77,6 +77,8 @@ Uses the https://github.com/googleapis/release-please-action[release-please GitH
 
 Follow the https://www.conventionalcommits.org/en/v1.0.0/[Conventional Commits specification].
 
+Uses Husky to manage git hooks and prevent bad commit messages.
+
 Supported types (commit message):
 
 - build
