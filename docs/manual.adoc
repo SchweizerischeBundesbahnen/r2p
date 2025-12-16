@@ -22,7 +22,7 @@ mvnw spring-boot:run
 
 Visit: http://localhost:8080/
 
-Note: in order to access secured endpoints, you need to be a member of the AD-group xy.
+Note: in order to access secured endpoints, you need to be a member of the AD-group DG_SEC_DEV_R2P_Admin.
 
 == Domain Model
 
@@ -70,6 +70,27 @@ See also: link:../src/main/resources/openapi/r2p-spec.yaml[r2p-spec.yaml]
 === Changes
 * GET /trains/{trainId}/changes - gets all changes for the train with the passed trainId
 * GET /trains/changes - gets all changes for all trains available for the partner
+
+== Development
+
+Uses the https://github.com/googleapis/release-please-action[release-please GitHub Actions]
+
+Follow the https://www.conventionalcommits.org/en/v1.0.0/[Conventional Commits specification].
+
+Supported types (commit message):
+
+- build
+- chore
+- ci
+- docs
+- feat
+- fix
+- perf
+- refactor
+- revert
+- style
+- test
+
 
 == Open Issues
 
