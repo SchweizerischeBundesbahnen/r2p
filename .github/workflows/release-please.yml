@@ -39,8 +39,8 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build with Maven (Release Profile)
-        run: mvn clean package -Papp-image
+      - name: Build with Maven including native image
+        run: mvn clean package -Papp-image-unix
 
       - name: Create Linux archive
         run: |
@@ -82,8 +82,8 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build with Maven (Release Profile)
-        run: mvn clean package -Papp-image
+      - name: Build with Maven including native image
+        run: mvn clean package -Papp-image-windows
 
       - name: Create Windows archive
         shell: pwsh
@@ -118,8 +118,8 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build with Maven (Release Profile)
-        run: mvn clean package -Papp-image
+      - name: Build with Maven including native image
+        run: mvn clean package -Papp-image-mac
 
       - name: Create macOS archive
         run: |
