@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.7](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.6...r2p-v0.0.7) (2025-12-17)
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.7-SNAPSHOT ([#27](https://github.com/SchweizerischeBundesbahnen/r2p/issues/27)) ([4b9c649](https://github.com/SchweizerischeBundesbahnen/r2p/commit/4b9c6490a09dc3ab6b4089a82a94b45472115018))
+
+
+### Continuous Integration
+
+* checkout the repo for the upload docs step ([6ef38ff](https://github.com/SchweizerischeBundesbahnen/r2p/commit/6ef38ff63a4a0a18e95512b1a0208e1316f95a89))
+* use pat to allow triggering automerge ([934271c](https://github.com/SchweizerischeBundesbahnen/r2p/commit/934271c05b1e2d322d14a105c12dc9e2f5ea77ff))
+
 ## [0.0.6](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.5...r2p-v0.0.6) (2025-12-17)
 
 
