@@ -5,6 +5,7 @@ COPY .mvn .mvn
 COPY mvnw .
 COPY pom.xml .
 ENV TZ=Europe/Zurich
+RUN chmod +x ./mvnw
 RUN ./mvnw clean package -DskipTests
 RUN mv target/*.jar application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
