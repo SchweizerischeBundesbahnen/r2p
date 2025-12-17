@@ -145,10 +145,29 @@ jobs:
     if: ${{ needs.release-please.outputs.release_created }}
     runs-on: ubuntu-latest
     steps:
-      - name: Download all artifacts
+      - name: Download documentation artifact
         uses: actions/download-artifact@v7
         with:
-          path: artifacts/
+          name: documentation
+          path: artifacts/documentation
+
+      - name: Download test results (Linux)
+        uses: actions/download-artifact@v7
+        with:
+          name: test-results-linux
+          path: artifacts/test-results-linux
+
+      - name: Download test results (Windows)
+        uses: actions/download-artifact@v7
+        with:
+          name: test-results-windows
+          path: artifacts/test-results-windows
+
+      - name: Download test results (macOS)
+        uses: actions/download-artifact@v7
+        with:
+          name: test-results-macos
+          path: artifacts/test-results-macos
 
       - name: Create documentation archive
         run: |
