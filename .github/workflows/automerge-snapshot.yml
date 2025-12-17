@@ -3,6 +3,7 @@ name: Automerge Snapshot PRs
 on:
   pull_request:
     types:
+      - opened
       - labeled
       - synchronize
   check_suite:
