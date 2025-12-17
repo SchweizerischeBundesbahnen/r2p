@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.6](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.5...r2p-v0.0.6) (2025-12-17)
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.6-SNAPSHOT ([#25](https://github.com/SchweizerischeBundesbahnen/r2p/issues/25)) ([941db19](https://github.com/SchweizerischeBundesbahnen/r2p/commit/941db197b62c815a2285347d6d7695db0eb8c36e))
+
+
+### Continuous Integration
+
+* fix docker image build ([ee6be16](https://github.com/SchweizerischeBundesbahnen/r2p/commit/ee6be168eb93348915265a80fcbc0ba56432901a))
+* limit the artifacts to upload to the release ([5d5f22e](https://github.com/SchweizerischeBundesbahnen/r2p/commit/5d5f22e291cd7adfbe2cdc3b1a58595282c5250d))
+
 ## [0.0.5](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.4...r2p-v0.0.5) (2025-12-17)
 
 
