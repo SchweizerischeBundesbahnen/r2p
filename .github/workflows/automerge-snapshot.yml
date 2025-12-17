@@ -3,6 +3,7 @@ name: Automerge Snapshot PRs
 on:
   pull_request:
     types:
+      - opened
       - labeled
       - synchronize
   check_suite:
@@ -22,3 +23,5 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           MERGE_LABELS: "autorelease: snapshot"
+          MERGE_METHOD: "squash"
+          MERGE_DELETE_BRANCH: "true"

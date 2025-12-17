@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>ch.rail</groupId>
 	<artifactId>r2p</artifactId>
-	<version>0.0.4</version>
+	<version>0.0.5-SNAPSHOT</version>
 	<name>r2p</name>
 	<description>Prototype for RU - RU - Partner communication</description>
 	<url/>
@@ -297,13 +297,7 @@
 
 	<profiles>
 		<profile>
-			<id>app-image</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<properties>
-				<buildAppImage>true</buildAppImage>
-			</properties>
+			<id>app-image-windows</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -332,29 +326,6 @@
 									</target>
 								</configuration>
 							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>app-image-windows</id>
-			<activation>
-				<property>
-					<name>buildAppImage</name>
-					<value>true</value>
-				</property>
-				<os>
-					<family>Windows</family>
-				</os>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<version>${maven-antrun-plugin.version}</version>
-						<executions>
 							<execution>
 								<id>unset-readonly-before-clean</id>
 								<phase>pre-clean</phase>
@@ -399,17 +370,36 @@
 		</profile>
 		<profile>
 			<id>app-image-unix</id>
-			<activation>
-				<property>
-					<name>buildAppImage</name>
-					<value>true</value>
-				</property>
-				<os>
-					<family>unix</family>
-				</os>
-			</activation>
 			<build>
 				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>${maven-antrun-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>prepare-jpackage-input</id>
+								<phase>package</phase>
+								<goals><goal>run</goal></goals>
+								<configuration>
+									<target>
+										<mkdir dir="${project.build.directory}/jpackage"/>
+										<copy file="${project.build.directory}/${project.build.finalName}.jar" tofile="${project.build.directory}/jpackage/${project.build.finalName}.jar"/>
+									</target>
+								</configuration>
+							</execution>
+							<execution>
+								<id>cleanup-doc-artifacts</id>
+								<phase>package</phase>
+								<goals><goal>run</goal></goals>
+								<configuration>
+									<target>
+										<delete dir="${project.build.directory}/docs/.openapi-generator" failonerror="false"/>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
@@ -437,17 +427,36 @@
 		</profile>
 		<profile>
 			<id>app-image-mac</id>
-			<activation>
-				<property>
-					<name>buildAppImage</name>
-					<value>true</value>
-				</property>
-				<os>
-					<family>mac</family>
-				</os>
-			</activation>
 			<build>
 				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>${maven-antrun-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>prepare-jpackage-input</id>
+								<phase>package</phase>
+								<goals><goal>run</goal></goals>
+								<configuration>
+									<target>
+										<mkdir dir="${project.build.directory}/jpackage"/>
+										<copy file="${project.build.directory}/${project.build.finalName}.jar" tofile="${project.build.directory}/jpackage/${project.build.finalName}.jar"/>
+									</target>
+								</configuration>
+							</execution>
+							<execution>
+								<id>cleanup-doc-artifacts</id>
+								<phase>package</phase>
+								<goals><goal>run</goal></goals>
+								<configuration>
+									<target>
+										<delete dir="${project.build.directory}/docs/.openapi-generator" failonerror="false"/>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
