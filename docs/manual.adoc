@@ -65,18 +65,18 @@ See also: link:../src/main/resources/openapi/r2p-spec.yaml[r2p-spec.yaml]
 
 * GET /trains - list all trains which are available for the partner, the response shows all branches with their latest version
 * POST /trains - creates a new train with the given payload
-* POST /trains/{trainId}/share - shares the train with another partner
-* GET /trains/{trainId} - gets the the train by the passed trainId, the response shows all branches with their latest version
+* POST /trains/+{trainId}+/share - shares the train with another partner
+* GET /trains/+{trainId}+ - gets the the train by the passed trainId, the response shows all branches with their latest version
 
 === Branch
 
-* GET /trains/{trainId}/branches/{branchName} - gets the branch by the passed branch name
-* GET /trains/versions/{version} - gets the specific version of the train
-* PUT /trains/{trainId}/branches/{branchName} - creates a new version of the branch with the given payload (can also be the main branch)
-* DELETE /trains/{trainId}/branches/{branchName} - deletes the branch
+* GET /trains/+{trainId}+/branches/+{branchName}+ - gets the branch by the passed branch name
+* GET /trains/versions/+{version}+ - gets the specific version of the train
+* PUT /trains/+{trainId}+/branches/+{branchName}+ - creates a new version of the branch with the given payload (can also be the main branch)
+* DELETE /trains/+{trainId}+/branches/+{branchName}+ - deletes the branch
 
 === Changes
-* GET /trains/{trainId}/changes - gets all changes for the train with the passed trainId
+* GET /trains/+{trainId}+/changes - gets all changes for the train with the passed trainId
 * GET /trains/changes - gets all changes for all trains available for the partner
 
 == Development
@@ -89,18 +89,14 @@ Uses Husky to manage git hooks and prevent bad commit messages.
 
 Supported types (commit message):
 
-- build
-- chore
-- ci
-- docs
 - feat
 - fix
-- perf
+- docs
+- chore
 - refactor
-- revert
-- style
 - test
-
+- build
+- ci
 
 == Open Issues
 
