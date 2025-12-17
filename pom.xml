@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>ch.rail</groupId>
 	<artifactId>r2p</artifactId>
-	<version>0.0.5</version>
+	<version>0.0.6-SNAPSHOT</version>
 	<name>r2p</name>
 	<description>Prototype for RU - RU - Partner communication</description>
 	<url/>
