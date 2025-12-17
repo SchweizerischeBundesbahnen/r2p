@@ -14,9 +14,10 @@ the prototype uses Java and H2 (no need for a dedicated database server).
 
 == Quick Start
 
-=== Execute the prototype
+=== Test and execute the prototype
 [source,bash]
 ----
+mvnw clean verify
 mvnw spring-boot:run
 ----
 
@@ -81,13 +82,21 @@ See also: link:../src/main/resources/openapi/r2p-spec.yaml[r2p-spec.yaml]
 
 == Development
 
-Uses the https://github.com/googleapis/release-please-action[release-please GitHub Actions]
+The https://github.com/googleapis/release-please-action[release-please GitHub Action] is used to create releases. A release includes a docker image
+as well as native app-images for linux, mac and windows. As well as the api documentation and manual as PDF.
 
-Follow the https://www.conventionalcommits.org/en/v1.0.0/[Conventional Commits specification].
+All commits must follow the  https://www.conventionalcommits.org/en/v1.0.0/[Conventional Commits specification]. This is checked by a github action
+and by Husky pre-commit hooks.
 
-Uses Husky to manage git hooks and prevent bad commit messages.
+To enable the pre-commit hook, run:
+[source,bash]
+----
+npm install
+----
 
-Supported types (commit message):
+In short every commit message must start with a type, followed by an optional scope and a short description, e.g. `feat(train): add new endpoint to share train with partner`.
+
+Supported types are:
 
 - feat
 - fix
