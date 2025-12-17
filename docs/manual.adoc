@@ -82,8 +82,10 @@ See also: link:../src/main/resources/openapi/r2p-spec.yaml[r2p-spec.yaml]
 
 == Development
 
-The https://github.com/googleapis/release-please-action[release-please GitHub Action] is used to create releases. A release includes a docker image
-as well as native app-images for linux, mac and windows. As well as the api documentation and manual as PDF.
+The https://github.com/googleapis/release-please-action[release-please GitHub Action] is used to create releases.
+A release includes a docker image as well as portable application (jpackage app-image) for linux, mac and windows.
+These portable applications are directly executable without docker or java installed (e. g. exe on Windows).
+Furthermore the api documentation and manual are added as PDF.
 
 All commits must follow the  https://www.conventionalcommits.org/en/v1.0.0/[Conventional Commits specification]. This is checked by a github action
 and by Husky pre-commit hooks.
