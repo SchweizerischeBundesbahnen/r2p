@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.5](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.4...r2p-v0.0.5) (2025-12-17)
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.5-SNAPSHOT ([#19](https://github.com/SchweizerischeBundesbahnen/r2p/issues/19)) ([3332daf](https://github.com/SchweizerischeBundesbahnen/r2p/commit/3332daf6cf084b3d13b7022d965da7f988c86f5f))
+
+
+### Continuous Integration
+
+* add a docker image ([#20](https://github.com/SchweizerischeBundesbahnen/r2p/issues/20)) ([14d5241](https://github.com/SchweizerischeBundesbahnen/r2p/commit/14d524125113251035fc9fa45df27078f66a8865))
+* automerge snapshot prs ([#21](https://github.com/SchweizerischeBundesbahnen/r2p/issues/21)) ([8d7f975](https://github.com/SchweizerischeBundesbahnen/r2p/commit/8d7f975bfce98969fef7c0e5461b44da4f3c585f))
+* fix native image generation ([#22](https://github.com/SchweizerischeBundesbahnen/r2p/issues/22)) ([4c355d8](https://github.com/SchweizerischeBundesbahnen/r2p/commit/4c355d806a45dfccd66eb94ad5897207d58def03))
+* squash automerged prs ([#23](https://github.com/SchweizerischeBundesbahnen/r2p/issues/23)) ([6175082](https://github.com/SchweizerischeBundesbahnen/r2p/commit/617508202ed28a3eec0dd9da35cb7bd9b0b37cce))
+
 ## [0.0.4](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.3...r2p-v0.0.4) (2025-12-17)
 
 
