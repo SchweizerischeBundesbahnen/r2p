@@ -76,7 +76,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/TrainListElement'
   /v1/trains/{trainId}/share:
     post:
       tags:
@@ -107,7 +107,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/TrainListElement'
   /v1/trains/{trainId}:
     get:
       tags:
@@ -162,7 +162,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './schemas/train.yaml#/Train'
+                $ref: '#/components/schemas/Branch'
     put:
       tags:
         - R2P
@@ -202,7 +202,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/Branch'
     delete:
       tags:
         - R2P
@@ -236,7 +236,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/Branch'
   /v1/trains/versions/{version}:
     get:
       tags:
@@ -348,7 +348,7 @@ components:
       properties:
         trainId:
           type: string
-          example: 123456789012
+          format: UUID
         mainTimestamp:
           type: string
           format: date-time
@@ -417,18 +417,6 @@ components:
         operationalDay:
           type: string
           format: date
-        destinationStation:
-          type: string
-          example: 85123456
-        originStation:
-          type: string
-          example: 85000123
-        destinationTime:
-          type: string
-          format: date-time
-        originTime:
-          type: string
-          format: date-time
     BranchTechnicalData:
       description: 'Branch technical data'
       type: object
@@ -458,21 +446,6 @@ components:
         - SBB
         - BLS
         - SOB
-    ApiResponse:
-      type: object
-      properties:
-        code:
-          type: integer
-          format: int32
-        type:
-          type: string
-        message:
-          type: string
-        version:
-          type: string
-          format: UUID
-      xml:
-        name: apiresponse
   securitySchemes:
     path_auth:
       type: oauth2
