@@ -16,6 +16,7 @@ import ch.rail.r2p.persistence.TrainPersistence;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -124,7 +125,7 @@ class TrainControllerTests {
 
     @Test
     void should_not_get_nonexistent_train_by_id() {
-        assertThrows(AuthorizationDeniedException.class, () -> trainController.getTrainById(SOB, UUID.randomUUID()));
+        assertThrows(NoSuchElementException.class, () -> trainController.getTrainById(SOB, UUID.randomUUID()));
     }
 
     @Test
