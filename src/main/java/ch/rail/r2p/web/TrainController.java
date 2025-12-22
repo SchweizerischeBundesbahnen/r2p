@@ -8,6 +8,7 @@ import ch.rail.r2p.api.dto.Train;
 import ch.rail.r2p.api.dto.TrainListElement;
 import ch.rail.r2p.domain.TrainVersion;
 import ch.rail.r2p.web.TrainService.TrainWithPartners;
+import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
+@Valid
 public class TrainController implements V1Api {
 
     private static final Change DEFAULT_CHANGE = new Change()

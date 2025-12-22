@@ -124,7 +124,7 @@ Supported types are:
 |Question |Notes |Responsible | Date |Done
 |How should deletions/cancellations of trains be modelled? On the level of the REST API, or within the Train domain model? Should it be possible to request cancellation of a train in a branch?| | | | []
 |How should branches be merged? PUT on main branch and new POST endpoint to mark branch as merged? | | | | []
-|Train domain model: What attribute contains the train number to be used in the API (e.g. when listing trains)? Train.id? | | | | []
+|Train domain model: What attribute contains the train number to be used in the API (e.g. when listing trains)? Train.id? What is its format (in particular max length)? | | | | []
 |Train domain model: The current model allows for example WagonGroup/Feature or WagonGroup/Unit to be nested recursively arbitrarily. Is this intended? | | | | []
 |What should happen when putting a new train version for a branch that has previously been deleted? Reopen the branch, or return an error? | | | | []
 |Is it important to address quality requirements like performance or concurrency already in the PoC? | | | | []

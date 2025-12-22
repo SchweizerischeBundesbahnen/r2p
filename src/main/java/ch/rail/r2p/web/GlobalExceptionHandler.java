@@ -1,5 +1,6 @@
 package ch.rail.r2p.web;
 
+import jakarta.validation.ConstraintViolationException;
 import java.util.NoSuchElementException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -14,5 +15,11 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public ProblemDetail handleNoSuchElementException(NoSuchElementException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseBody
+    public ProblemDetail handleConstraintViolationException(ConstraintViolationException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 }
