@@ -13,7 +13,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,10 +23,8 @@ public class TrainController implements V1Api {
     private static final Change DEFAULT_CHANGE = new Change()
         .timestamp(OffsetDateTime.now());
 
-    @Autowired
-    private TrainService trainService;
-    @Autowired
-    private TrainMapper trainMapper;
+    private final TrainService trainService;
+    private final TrainMapper trainMapper;
 
     @Override
     public ResponseEntity<TrainListElement> createTrain(PartnerToken token, String comment, Train train) {

@@ -56,7 +56,8 @@ public class TrainService {
         TrainVersion trainVersion = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, branchName).orElseThrow();
         checkSharing(partner, trainVersion);
         checkBranchOrInstanceOwner(partner, trainVersion);
-        // Comment is currently ignored - to be stored when implementing a complete change history
+        // Comment is currently ignored
+        // TODO store deletion and comment in globoal changelog of train
         trainVersion.setBranchState(BranchState.DELETED);
         trainPersistence.updateVersion(trainVersion); // Update the train keeping the current version
         return trainVersion;
@@ -82,12 +83,13 @@ public class TrainService {
     }
 
     public List<TrainWithPartners> listTrains(String partner, LocalDate from, LocalDate to) {
+        // PERF: Paging needed when dealing with hundreds or thousands of trains per day
         List<TrainVersion> trainVersions = trainPersistence.findHeadVersionsByCriteria(partner, from, to);
         Map<UUID, List<TrainVersion>> trainVersionsByTrainId = trainVersions.stream().collect(groupingBy(TrainVersion::getTrainId));
         return trainVersionsByTrainId.entrySet().stream()
             .map(entry -> new TrainWithPartners(
                 entry.getValue(),
-                trainPersistence.getPartners(entry.getKey()) // Could be optimized if necessary (getting all partners of all trains in one query)
+                trainPersistence.getPartners(entry.getKey()) // PERF: Could be optimized if necessary (getting all partners of all trains in one query)
             ))
             .toList();
     }

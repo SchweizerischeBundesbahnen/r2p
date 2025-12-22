@@ -94,7 +94,7 @@ paths:
           required: true
           schema:
             type: string
-            format: UUID
+            format: uuid
         - name: shareWith
           in: query
           required: true
@@ -125,7 +125,7 @@ paths:
           required: true
           schema:
             type: string
-            format: UUID
+            format: uuid
       responses:
         '200':
           description: Successful operation
@@ -150,7 +150,7 @@ paths:
           required: true
           schema:
             type: string
-            format: UUID
+            format: uuid
         - name: branchName
           in: path
           required: true
@@ -179,7 +179,7 @@ paths:
           required: true
           schema:
             type: string
-            format: UUID
+            format: uuid
         - name: branchName
           in: path
           required: true
@@ -219,7 +219,7 @@ paths:
           required: true
           schema:
             type: string
-            format: UUID
+            format: uuid
         - name: branchName
           in: path
           required: true
@@ -255,7 +255,7 @@ paths:
           description: the train version to get; note that the trainId is implied by the version and doesn't need to be provided explicitly
           schema:
             type: string
-            format: UUID
+            format: uuid
       responses:
         '200':
           content:
@@ -280,7 +280,7 @@ paths:
           required: true
           schema:
             type: string
-            format: UUID
+            format: uuid
         - name: from
           in: query
           required: false
@@ -348,7 +348,7 @@ components:
       properties:
         trainId:
           type: string
-          format: UUID
+          format: uuid
         mainTimestamp:
           type: string
           format: date-time
@@ -380,7 +380,7 @@ components:
           example: main
         version:
           type: string
-          format: UUID
+          format: uuid
         branchState:
           $ref: '#/components/schemas/BranchState'
         timestamp:
@@ -430,7 +430,7 @@ components:
           example: SOB
         version:
           type: string
-          format: UUID
+          format: uuid
         branchState:
           $ref: '#/components/schemas/BranchState'
         timestamp:

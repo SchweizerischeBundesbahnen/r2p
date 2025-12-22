@@ -1,5 +1,6 @@
 package ch.rail.r2p.web;
 
+import static ch.rail.r2p.Constants.MAIN_BRANCH_NAME;
 import static ch.rail.r2p.api.dto.PartnerToken.BLS;
 import static ch.rail.r2p.api.dto.PartnerToken.SBB;
 import static ch.rail.r2p.api.dto.PartnerToken.SOB;
@@ -71,8 +72,8 @@ class TrainControllerTests {
 
     @Test
     void should_create_train_for_instance_owner() {
-
-        var result = trainController.createTrain(SBB, "new train", loadSampleTrain());
+        var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
+        var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
         assertThat(result).isNotNull();
     }
 
@@ -98,7 +99,7 @@ class TrainControllerTests {
     }
 
     @Test
-    void should_list_trains_according_to_operationg_day() {
+    void should_list_trains_according_to_operating_day() {
         trainController.createTrain(SBB, "new train", loadSampleTrain());
         assertThat(trainController.listTrains(SBB, LocalDate.parse("2024-01-01"), LocalDate.parse("2027-01-01")).getBody()).hasSize(1);
         assertThat(trainController.listTrains(SBB, LocalDate.parse("2024-01-01"), null).getBody()).hasSize(1);
@@ -107,17 +108,22 @@ class TrainControllerTests {
         assertThat(trainController.listTrains(SBB, LocalDate.parse("2100-01-01"), LocalDate.parse("2101-01-01")).getBody()).isEmpty();
         assertThat(trainController.listTrains(SBB, null, LocalDate.parse("2000-01-01")).getBody()).isEmpty();
         assertThat(trainController.listTrains(SBB, LocalDate.parse("2100-01-01"), null).getBody()).isEmpty();
+        assertThat(trainController.listTrains(SBB, null, null).getBody()).isNotEmpty();
     }
 
     @Test
     void should_get_train_by_id() {
-        var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
+        String comment = "Train creation comment";
+        var train = trainController.createTrain(SBB, comment, loadSampleTrain());
         var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
         assertThat(result).isNotNull();
+        assertThat(result.getBody().getBranches()).hasSize(1);
+        assertThat(result.getBody().getBranches().getFirst().getBranchName()).isEqualTo(MAIN_BRANCH_NAME);
+        assertThat(result.getBody().getBranches().getFirst().getTechnical().getComment()).isEqualTo(comment);
     }
 
     @Test
-    void should_not_get_inexisting_train_by_id() {
+    void should_not_get_nonexistent_train_by_id() {
         assertThrows(AuthorizationDeniedException.class, () -> trainController.getTrainById(SOB, UUID.randomUUID()));
     }
 

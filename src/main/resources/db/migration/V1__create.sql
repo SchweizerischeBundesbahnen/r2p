@@ -6,7 +6,7 @@ create table train_version
     operational_day date                     not null,
     branch_name     varchar(255)             not null,
     owner           varchar(255)             not null,
-    comment         varchar(255)             not null,
+    comment         text                     not null,
     timestamp       timestamp with time zone not null,
     payload         jsonb                    not null,
     branch_state    varchar(255)             not null,
