@@ -25,6 +25,14 @@ Visit: http://localhost:8080/
 
 Note: in order to access secured endpoints, you need to be a member of the AD-group DG_SEC_DEV_R2P_Admin.
 
+==== Database
+
+By default, the prototype uses a H2 in-memory database., so its content is lost when the application is stopped.
+In order to persist the data in a file, configure a corresponding datasource via a environment varialbes, for example:
+----
+DATABASE_STORAGE=file:C:/devsbb/h2/r2p
+----
+
 == Domain Model
 
 Each train, branch and version is represented by following model. A train is related to partners. It has a main branch which is the current state. A change can be submitted by creating a new branch.
@@ -116,4 +124,17 @@ Supported types are:
 |Question |Notes |Responsible | Date |Done
 |How should deletions/cancellations of trains be modelled? On the level of the REST API, or within the Train domain model? Should it be possible to request cancellation of a train in a branch?| | | | []
 |How should branches be merged? PUT on main branch and new POST endpoint to mark branch as merged? | | | | []
+|Train domain model: What attribute contains the train number to be used in the API (e.g. when listing trains)? Train.id? | | | | []
+|Train domain model: The current model allows for example WagonGroup/Feature or WagonGroup/Unit to be nested recursively arbitrarily. Is this intended? | | | | []
+|What should happen when putting a new train version for a branch that has previously been deleted? Reopen the branch, or return an error? | | | | []
+|Is it important to address quality requirements like performance or concurrency already in the PoC? | | | | []
+|The business data returned by train list endpoints currently just contains train number and operating day. Is there additoinal data that needs to be included (e.g. origin/destination station/time), and if yes, what are the exact rules to retrieve the information from the domain model? | | | | []
+|Should it be possible for a non-Lead-RU to request a new train (i.e. create a branch for a train not having a main branch yet)? | | | | []
 |===
+
+== Limitations of current implementation
+* Endpoints to list changes are not implemented yet
+* Comment passed along with branch deletion is not stored (a new table for storing the general train history may be needed, maybe also for sharing of trains)
+* Performance of train list endpoint is not optimized (n+1 pattern to get partners, no paging)
+* Concurrent modifications/merging/deleting of a train may lead to problems (no optimistic or pessimistic locking implemented yet)
+* There is currently no endpoint to merge branches (desired behavior has be defined first - see open issues)
