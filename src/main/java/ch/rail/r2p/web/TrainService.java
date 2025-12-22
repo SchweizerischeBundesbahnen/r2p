@@ -64,8 +64,9 @@ public class TrainService {
     }
 
     public TrainWithPartners getTrainById(String partner, UUID trainId) {
-        checkSharing(partner, trainId);
         List<TrainVersion> trains = trainPersistence.findHeadVersionsByTrainId(trainId);
+        trains.getFirst(); // Check if the train exists, throws a NoSuchElementException if it doesn't
+        checkSharing(partner, trainId);
         List<String> partners = trainPersistence.getPartners(trainId);
         return new TrainWithPartners(trains, partners);
     }

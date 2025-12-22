@@ -12,6 +12,9 @@ spring:
         jwt:
           audiences: "${r2p.azure.client-id}"
           issuer-uri: "${r2p.azure.issuer-uri}/v2.0"
+  mvc:
+    problemdetails:
+      enabled: true
   datasource:
     url: jdbc:h2:${DATABASE_STORAGE:mem:r2p};MODE=PostgreSQL;DB_CLOSE_DELAY=-1
     username: sa
