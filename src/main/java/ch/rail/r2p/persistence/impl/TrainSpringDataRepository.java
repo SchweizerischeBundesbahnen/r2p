@@ -1,0 +1,48 @@
+package ch.rail.r2p.persistence.impl;
+
+import ch.rail.r2p.domain.TrainVersion;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.data.jdbc.repository.query.Modifying;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, UUID>, CustomInsertRepository<TrainVersion> {
+
+    @Query("""
+        SELECT * FROM train_version
+        WHERE train_id=:trainId AND head=true
+        """)
+    List<TrainVersion> findHeadVersionsByTrainId(UUID trainId);
+
+    @Query("""
+        SELECT * FROM train_version
+        WHERE train_id=:trainId AND branch_name=:branchName AND head=true
+        """)
+    Optional<TrainVersion> findHeadVersionByTrainIdAndBranchName(UUID trainId, String branchName);
+
+    @Query("""
+        SELECT * FROM train_version
+        WHERE (:operationalDayFrom IS NULL OR operational_day>=:operationalDayFrom)
+          AND (:operationalDayTo IS NULL OR operational_day<=:operationalDayTo)
+          AND EXISTS (SELECT 1 FROM train_partner WHERE train_partner.train_id=train_version.train_id AND train_partner.partner=:partner)
+        """)
+    List<TrainVersion> findHeadVersionsByCriteria(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo);
+
+    @Query("""
+        INSERT INTO train_partner(train_id, partner) VALUES(:trainId, :partner);
+        """)
+    @Modifying
+    void addPartner(UUID trainId, String partner);
+
+    @Query("""
+        SELECT partner FROM train_partner WHERE train_id=:trainId
+        """)
+    List<String> getPartners(UUID trainId);
+
+    void deleteByTrainId(UUID trainId);
+}

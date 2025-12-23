@@ -61,9 +61,7 @@
                         "weight": 60000,
                         "profile": "PN-5",
                         "wagoncount": 1,
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "units": [
@@ -78,15 +76,11 @@
                             "frontcoupling": "fix",
                             "backcoupling": "fix",
                             "profile": "example",
-                            "features": [
-                              "string"
-                            ]
+                            "features": []
                           }
                         ],
                         "type": "Re420-CE",
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "staff": [
@@ -120,9 +114,7 @@
                         "weight": 60000,
                         "profile": "PN-5",
                         "wagoncount": 1,
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "units": [
@@ -137,15 +129,11 @@
                             "frontcoupling": "fix",
                             "backcoupling": "fix",
                             "profile": "example",
-                            "features": [
-                              "string"
-                            ]
+                            "features": []
                           }
                         ],
                         "type": "Re420-CE",
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "staff": [
@@ -179,9 +167,7 @@
                         "weight": 60000,
                         "profile": "PN-5",
                         "wagoncount": 1,
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "units": [
@@ -196,15 +182,11 @@
                             "frontcoupling": "fix",
                             "backcoupling": "fix",
                             "profile": "example",
-                            "features": [
-                              "string"
-                            ]
+                            "features": []
                           }
                         ],
                         "type": "Re420-CE",
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "staff": [
@@ -244,9 +226,7 @@
                         "weight": 60000,
                         "profile": "PN-5",
                         "wagoncount": 1,
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "units": [
@@ -261,15 +241,11 @@
                             "frontcoupling": "fix",
                             "backcoupling": "fix",
                             "profile": "example",
-                            "features": [
-                              "string"
-                            ]
+                            "features": []
                           }
                         ],
                         "type": "Re420-CE",
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "staff": [
@@ -303,9 +279,7 @@
                         "weight": 60000,
                         "profile": "PN-5",
                         "wagoncount": 1,
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "units": [
@@ -320,15 +294,11 @@
                             "frontcoupling": "fix",
                             "backcoupling": "fix",
                             "profile": "example",
-                            "features": [
-                              "string"
-                            ]
+                            "features": []
                           }
                         ],
                         "type": "Re420-CE",
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "staff": [
@@ -362,9 +332,7 @@
                         "weight": 60000,
                         "profile": "PN-5",
                         "wagoncount": 1,
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "units": [
@@ -379,15 +347,11 @@
                             "frontcoupling": "fix",
                             "backcoupling": "fix",
                             "profile": "example",
-                            "features": [
-                              "string"
-                            ]
+                            "features": []
                           }
                         ],
                         "type": "Re420-CE",
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "staff": [
@@ -415,9 +379,7 @@
                     "conditiontype": [
                       "eq"
                     ],
-                    "comparetype": [
-                      "string"
-                    ],
+                    "comparetype": [],
                     "reference": "250"
                   }
                 ]
@@ -469,9 +431,7 @@
                         "weight": 60000,
                         "profile": "PN-5",
                         "wagoncount": 1,
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "units": [
@@ -486,15 +446,11 @@
                             "frontcoupling": "fix",
                             "backcoupling": "fix",
                             "profile": "example",
-                            "features": [
-                              "string"
-                            ]
+                            "features": []
                           }
                         ],
                         "type": "Re420-CE",
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "staff": [
@@ -528,9 +484,7 @@
                         "weight": 60000,
                         "profile": "PN-5",
                         "wagoncount": 1,
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "units": [
@@ -545,15 +499,11 @@
                             "frontcoupling": "fix",
                             "backcoupling": "fix",
                             "profile": "example",
-                            "features": [
-                              "string"
-                            ]
+                            "features": []
                           }
                         ],
                         "type": "Re420-CE",
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "staff": [
@@ -587,9 +537,7 @@
                         "weight": 60000,
                         "profile": "PN-5",
                         "wagoncount": 1,
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "units": [
@@ -604,15 +552,11 @@
                             "frontcoupling": "fix",
                             "backcoupling": "fix",
                             "profile": "example",
-                            "features": [
-                              "string"
-                            ]
+                            "features": []
                           }
                         ],
                         "type": "Re420-CE",
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "staff": [
@@ -652,9 +596,7 @@
                         "weight": 60000,
                         "profile": "PN-5",
                         "wagoncount": 1,
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "units": [
@@ -669,15 +611,11 @@
                             "frontcoupling": "fix",
                             "backcoupling": "fix",
                             "profile": "example",
-                            "features": [
-                              "string"
-                            ]
+                            "features": []
                           }
                         ],
                         "type": "Re420-CE",
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "staff": [
@@ -711,9 +649,7 @@
                         "weight": 60000,
                         "profile": "PN-5",
                         "wagoncount": 1,
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "units": [
@@ -728,15 +664,11 @@
                             "frontcoupling": "fix",
                             "backcoupling": "fix",
                             "profile": "example",
-                            "features": [
-                              "string"
-                            ]
+                            "features": []
                           }
                         ],
                         "type": "Re420-CE",
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "staff": [
@@ -770,9 +702,7 @@
                         "weight": 60000,
                         "profile": "PN-5",
                         "wagoncount": 1,
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "units": [
@@ -787,15 +717,11 @@
                             "frontcoupling": "fix",
                             "backcoupling": "fix",
                             "profile": "example",
-                            "features": [
-                              "string"
-                            ]
+                            "features": []
                           }
                         ],
                         "type": "Re420-CE",
-                        "features": [
-                          "string"
-                        ]
+                        "features": []
                       }
                     ],
                     "staff": [
@@ -823,9 +749,7 @@
                     "conditiontype": [
                       "eq"
                     ],
-                    "comparetype": [
-                      "string"
-                    ],
+                    "comparetype": [],
                     "reference": "250"
                   }
                 ]

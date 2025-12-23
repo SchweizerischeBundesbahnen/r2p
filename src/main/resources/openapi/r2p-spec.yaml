@@ -76,7 +76,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/TrainListElement'
+        '403':
+          description: Not authorized to create train
   /v1/trains/{trainId}/share:
     post:
       tags:
@@ -94,7 +96,7 @@ paths:
           required: true
           schema:
             type: string
-            format: UUID
+            format: uuid
         - name: shareWith
           in: query
           required: true
@@ -107,7 +109,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/TrainListElement'
+        '403':
+          description: Not authorized to share train
+        '404':
+          description: Train not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
   /v1/trains/{trainId}:
     get:
       tags:
@@ -125,7 +135,7 @@ paths:
           required: true
           schema:
             type: string
-            format: UUID
+            format: uuid
       responses:
         '200':
           description: Successful operation
@@ -133,6 +143,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainListElement'
+        '403':
+          description: Not authorized to access train
+        '404':
+          description: Train not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
   /v1/trains/{trainId}/{branchName}:
     get:
       tags:
@@ -150,19 +168,28 @@ paths:
           required: true
           schema:
             type: string
-            format: UUID
+            format: uuid
         - name: branchName
           in: path
           required: true
           schema:
             type: string
+            maxLength: 255
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: './schemas/train.yaml#/Train'
+                $ref: '#/components/schemas/Branch'
+        '403':
+          description: Not authorized to access train
+        '404':
+          description: Train or branch not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
     put:
       tags:
         - R2P
@@ -179,12 +206,13 @@ paths:
           required: true
           schema:
             type: string
-            format: UUID
+            format: uuid
         - name: branchName
           in: path
           required: true
           schema:
             type: string
+            maxLength: 255
         - name: comment
           in: query
           required: true
@@ -202,7 +230,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/Branch'
+        '403':
+          description: Not authorized to update train branch
+        '404':
+          description: Train or branch not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
     delete:
       tags:
         - R2P
@@ -219,24 +255,33 @@ paths:
           required: true
           schema:
             type: string
-            format: UUID
+            format: uuid
         - name: branchName
           in: path
           required: true
           schema:
             type: string
+            maxLength: 255
         - name: comment
           in: query
           required: true
           schema:
             type: string
       responses:
-        '204':
+        '200':
           description: Deleted
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/Branch'
+        '403':
+          description: Not authorized to delete branch
+        '404':
+          description: Train or branch not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
   /v1/trains/versions/{version}:
     get:
       tags:
@@ -255,7 +300,7 @@ paths:
           description: the train version to get; note that the trainId is implied by the version and doesn't need to be provided explicitly
           schema:
             type: string
-            format: UUID
+            format: uuid
       responses:
         '200':
           content:
@@ -263,6 +308,14 @@ paths:
               schema:
                 $ref: './schemas/train.yaml#/Train'
           description: Successful operation
+        '403':
+          description: Not authorized to access train
+        '404':
+          description: Train version not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
   /v1/trains/{trainId}/changes:
     get:
       tags:
@@ -280,7 +333,7 @@ paths:
           required: true
           schema:
             type: string
-            format: UUID
+            format: uuid
         - name: from
           in: query
           required: false
@@ -302,6 +355,14 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Change'
+        '403':
+          description: Not authorized to access train
+        '404':
+          description: Train not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
   /v1/trains/changes:
     get:
       tags:
@@ -348,7 +409,7 @@ components:
       properties:
         trainId:
           type: string
-          example: 123456789012
+          format: uuid
         mainTimestamp:
           type: string
           format: date-time
@@ -378,9 +439,10 @@ components:
         branchName:
           type: string
           example: main
+          maxLength: 255
         version:
           type: string
-          format: UUID
+          format: uuid
         branchState:
           $ref: '#/components/schemas/BranchState'
         timestamp:
@@ -400,6 +462,7 @@ components:
           branchName:
             type: string
             example: main
+            maxLength: 255
           business:
             $ref: '#/components/schemas/BranchBusinessData'
           technical:
@@ -417,18 +480,6 @@ components:
         operationalDay:
           type: string
           format: date
-        destinationStation:
-          type: string
-          example: 85123456
-        originStation:
-          type: string
-          example: 85000123
-        destinationTime:
-          type: string
-          format: date-time
-        originTime:
-          type: string
-          format: date-time
     BranchTechnicalData:
       description: 'Branch technical data'
       type: object
@@ -442,7 +493,7 @@ components:
           example: SOB
         version:
           type: string
-          format: UUID
+          format: uuid
         branchState:
           $ref: '#/components/schemas/BranchState'
         timestamp:
@@ -458,21 +509,32 @@ components:
         - SBB
         - BLS
         - SOB
-    ApiResponse:
+    ProblemDetail:
       type: object
+      description: RFC 7807 Problem Details
       properties:
-        code:
-          type: integer
-          format: int32
         type:
           type: string
-        message:
+          description: A URI reference that identifies the problem type.
+          format: uri
+        title:
           type: string
-        version:
+          description: Short, human-readable summary of the problem type.
+        status:
+          type: integer
+          description: The HTTP status code generated by the origin server for this occurrence of the problem.
+          format: int32
+          minimum: 100
+          maximum: 599
+        detail:
           type: string
-          format: UUID
-      xml:
-        name: apiresponse
+          description: Human-readable explanation specific to this occurrence of the problem.
+        instance:
+          type: string
+          description: A URI reference that identifies the specific occurrence of the problem.
+      required:
+        - title
+        - status
   securitySchemes:
     path_auth:
       type: oauth2
