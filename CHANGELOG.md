@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.0.8](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.7...r2p-v0.0.8) (2025-12-23)
+
+
+### Features
+
+* implementation of train and branch write/query endpoints including persistence ([914bb88](https://github.com/SchweizerischeBundesbahnen/r2p/commit/914bb88a14c70746a06e2bb8eaec25a89567fa55))
+
+
+### Documentation
+
+* document docker image ([cfb75fc](https://github.com/SchweizerischeBundesbahnen/r2p/commit/cfb75fc28b01be834be889466efb2e2c13883cfa))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.8-SNAPSHOT ([#29](https://github.com/SchweizerischeBundesbahnen/r2p/issues/29)) ([57e8b59](https://github.com/SchweizerischeBundesbahnen/r2p/commit/57e8b59e0916d4f91aee6fe56a44f9bb1c8bbfd0))
+
 ## [0.0.7](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.6...r2p-v0.0.7) (2025-12-17)
 
 

@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>ch.rail</groupId>
 	<artifactId>r2p</artifactId>
-	<version>0.0.8-SNAPSHOT</version>
+	<version>0.0.9-SNAPSHOT</version>
 	<name>r2p</name>
 	<description>Prototype for RU - RU - Partner communication</description>
 	<url/>
@@ -28,14 +28,14 @@
 	<properties>
 		<java.version>25</java.version>
 		<springdoc-openapi.version>3.0.0</springdoc-openapi.version>
-		<openapi-generator-maven-plugin.version>7.17.0</openapi-generator-maven-plugin.version>
+		<openapi-generator-maven-plugin.version>7.18.0</openapi-generator-maven-plugin.version>
 		<jackson-databind-nullable.version>0.2.8</jackson-databind-nullable.version>
 		<build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
 		<asciidoctorj.version>3.0.1</asciidoctorj.version>
 		<asciidoctor-maven-plugin.version>3.2.0</asciidoctor-maven-plugin.version>
 		<asciidoctorj.pdf.version>2.3.23</asciidoctorj.pdf.version>
         <maven-antrun-plugin.version>3.2.0</maven-antrun-plugin.version>
-        <exec-maven-plugin.version>3.6.2</exec-maven-plugin.version>
+        <exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -62,6 +62,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jackson</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jdbc</artifactId>
+        </dependency>
 
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -143,6 +147,9 @@
 						</goals>
 						<configuration>
 							<inputSpec>src/main/resources/openapi/r2p-spec.yaml</inputSpec>
+                            <schemaMappings>
+                                ProblemDetail=org.springframework.http.ProblemDetail
+                            </schemaMappings>
 							<generatorName>spring</generatorName>
 							<apiPackage>ch.rail.r2p.api</apiPackage>
 							<modelPackage>ch.rail.r2p.api.dto</modelPackage>
