@@ -28,7 +28,7 @@
 	<properties>
 		<java.version>25</java.version>
 		<springdoc-openapi.version>3.0.0</springdoc-openapi.version>
-		<openapi-generator-maven-plugin.version>7.17.0</openapi-generator-maven-plugin.version>
+		<openapi-generator-maven-plugin.version>7.18.0</openapi-generator-maven-plugin.version>
 		<jackson-databind-nullable.version>0.2.8</jackson-databind-nullable.version>
 		<build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
 		<asciidoctorj.version>3.0.1</asciidoctorj.version>
