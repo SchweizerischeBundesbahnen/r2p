@@ -122,14 +122,17 @@ Supported types are:
 [cols="3,3,1,1,1", options="header"]
 |===
 |Question |Notes |Responsible | Date |Done
+|How should branches be merged? PUT on main branch and new POST endpoint to mark branch as merged? Generic PUT endpoint with branch metadata? | | | | []
+|What should happen when putting a new train version for a branch that has previously been deleted? Reopen the branch, or return an error? | | | | []
+|What should happen when putting a new train version for a branch that has previously been merged? Reopen the branch, or return an error? | | | | []
+|Should it be possible for a non-Lead-RU to request a new train (i.e. create a branch for a train not having a main branch yet)? | | | | []
+|Should additional data be included in the changelog (train number, operational day, other business data, branch owner, ...)? | | | | []
 |How should deletions/cancellations of trains be modelled? On the level of the REST API, or within the Train domain model? Should it be possible to request cancellation of a train in a branch?| | | | []
-|How should branches be merged? PUT on main branch and new POST endpoint to mark branch as merged? | | | | []
 |Train domain model: What attribute contains the train number to be used in the API (e.g. when listing trains)? Train.id? What is its format (in particular max length)? | | | | []
 |Train domain model: The current model allows for example WagonGroup/Feature or WagonGroup/Unit to be nested recursively arbitrarily. Is this intended? | | | | []
-|What should happen when putting a new train version for a branch that has previously been deleted? Reopen the branch, or return an error? | | | | []
+|Train domain model: Inconsistent spelling of `Responsiblity`: `Responsability` should be replaced by `Responsibility` | | | | []
+|The business data returned by train list endpoints currently just contains train number and operating day. Is there additional data that needs to be included (e.g. origin/destination station/time), and if yes, what are the exact rules to retrieve the information from the domain model? | | | | []
 |Is it important to address quality requirements like performance or concurrency already in the PoC? | | | | []
-|The business data returned by train list endpoints currently just contains train number and operating day. Is there additoinal data that needs to be included (e.g. origin/destination station/time), and if yes, what are the exact rules to retrieve the information from the domain model? | | | | []
-|Should it be possible for a non-Lead-RU to request a new train (i.e. create a branch for a train not having a main branch yet)? | | | | []
 |===
 
 == Limitations of current implementation
