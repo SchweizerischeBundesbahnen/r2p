@@ -133,6 +133,8 @@ Supported types are:
 |Train domain model: Inconsistent spelling of `Responsiblity`: `Responsability` should be replaced by `Responsibility` | | | | []
 |The business data returned by train list endpoints currently just contains train number and operating day. Is there additional data that needs to be included (e.g. origin/destination station/time), and if yes, what are the exact rules to retrieve the information from the domain model? | | | | []
 |Is it important to address quality requirements like performance or concurrency already in the PoC? | | | | []
+|Unclear if the current date/time handling is the best or if it would be better to e. g. use Time and Timezone | | | | []
+|Unclear if the current versioning strategy (version in path) is the best or if other possibilities would be beneficial, e. g. header/parameter instead of path, datetime instead of number, ...| | | | []
 |===
 
 == Limitations of current implementation
