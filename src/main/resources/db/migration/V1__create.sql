@@ -23,3 +23,18 @@ create table train_partner
     primary key (train_id, partner)
 );
 create index idx_train_partner_train_id on train_partner (train_id);
+
+create table changelog
+(
+    id          uuid                     not null,
+    action      varchar(255)             not null,
+    partner     varchar(255)             not null,
+    train_id    uuid                     not null,
+    branch_name varchar(255)             not null,
+    version     uuid                     not null,
+    timestamp   timestamp with time zone not null,
+    comment     text                     not null,
+    primary key (id)
+);
+create index idx_changelog_timestamp on changelog (timestamp);
+create index idx_changelog_train_id on changelog (train_id);

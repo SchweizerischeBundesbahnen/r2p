@@ -5,7 +5,9 @@ import static ch.rail.r2p.Constants.MAIN_BRANCH_NAME;
 import ch.rail.r2p.api.dto.Branch;
 import ch.rail.r2p.api.dto.BranchBusinessData;
 import ch.rail.r2p.api.dto.BranchTechnicalData;
+import ch.rail.r2p.api.dto.Change;
 import ch.rail.r2p.api.dto.TrainListElement;
+import ch.rail.r2p.domain.Changelog;
 import ch.rail.r2p.domain.TrainVersion;
 import java.util.Collection;
 import java.util.List;
@@ -35,5 +37,16 @@ public class TrainMapper {
                 .version(train.getVersion())
                 .timestamp(train.getTimestamp())
                 .comment(train.getComment()));
+    }
+
+    public Change toChange(Changelog changelog) {
+        return new Change()
+            .action(changelog.getAction())
+            .partner(changelog.getPartner())
+            .trainId(changelog.getTrainId())
+            .branchName(changelog.getBranchName())
+            .version(changelog.getVersion())
+            .timestamp(changelog.getTimestamp())
+            .comment(changelog.getComment());
     }
 }

@@ -6,6 +6,7 @@ import ch.rail.r2p.api.dto.Change;
 import ch.rail.r2p.api.dto.PartnerToken;
 import ch.rail.r2p.api.dto.Train;
 import ch.rail.r2p.api.dto.TrainListElement;
+import ch.rail.r2p.domain.Changelog;
 import ch.rail.r2p.domain.TrainVersion;
 import ch.rail.r2p.web.TrainService.TrainWithPartners;
 import jakarta.validation.Valid;
@@ -21,9 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Valid
 public class TrainController implements V1Api {
-
-    private static final Change DEFAULT_CHANGE = new Change()
-        .timestamp(OffsetDateTime.now());
 
     private final TrainService trainService;
     private final TrainMapper trainMapper;
@@ -80,12 +78,14 @@ public class TrainController implements V1Api {
 
     @Override
     public ResponseEntity<List<Change>> getTrainChangesById(PartnerToken token, UUID trainId, OffsetDateTime from, OffsetDateTime to) {
-        return ResponseEntity.ok(List.of(DEFAULT_CHANGE));
+        List<Changelog> changelogs = trainService.getChangelogs(token.name(), from, to, trainId);
+        return ResponseEntity.ok(changelogs.stream().map(trainMapper::toChange).toList());
     }
 
     @Override
     public ResponseEntity<List<Change>> listTrainChanges(PartnerToken token, OffsetDateTime from, OffsetDateTime to) {
-        return ResponseEntity.ok(List.of(DEFAULT_CHANGE));
+        List<Changelog> changelogs = trainService.getChangelogs(token.name(), from, to, null);
+        return ResponseEntity.ok(changelogs.stream().map(trainMapper::toChange).toList());
     }
 
     private TrainListElement toTrainListElement(TrainWithPartners train) {
