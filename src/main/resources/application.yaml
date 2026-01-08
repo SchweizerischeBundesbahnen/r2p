@@ -29,3 +29,8 @@ springdoc:
       client-id: "${r2p.azure.client-id}"
       use-pkce-with-authorization-code-grant: true
       scopes: api://${r2p.azure.client-id}/r2p
+
+# uncomment to see more details about the requests
+#logging:
+  #level:
+    # org.springframework.web: DEBUG
