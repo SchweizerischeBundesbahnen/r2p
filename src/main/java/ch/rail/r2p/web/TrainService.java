@@ -5,7 +5,9 @@ import static java.util.stream.Collectors.groupingBy;
 
 import ch.rail.r2p.api.dto.BranchState;
 import ch.rail.r2p.api.dto.Train;
+import ch.rail.r2p.domain.Changelog;
 import ch.rail.r2p.domain.TrainVersion;
+import ch.rail.r2p.persistence.ChangelogPersistence;
 import ch.rail.r2p.persistence.TrainPersistence;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -23,6 +25,8 @@ public class TrainService {
 
     @Autowired
     private TrainPersistence trainPersistence;
+    @Autowired
+    private ChangelogPersistence changelogPersistence;
     @Value("${r2p.instance-owner}")
     private String instanceOwner;
 
@@ -49,6 +53,8 @@ public class TrainService {
         // Train is created implicitly with the new version
         trainPersistence.insertVersion(createdTrain);
         trainPersistence.addPartner(trainId, owner);
+        Changelog changelog = Changelog.forCreation(owner, createdTrain, comment);
+        changelogPersistence.insert(changelog);
         return new TrainWithPartners(List.of(createdTrain), List.of(owner));
     }
 
@@ -56,10 +62,10 @@ public class TrainService {
         TrainVersion trainVersion = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, branchName).orElseThrow();
         checkSharing(partner, trainVersion);
         checkBranchOrInstanceOwner(partner, trainVersion);
-        // Comment is currently ignored
-        // TODO store deletion and comment in globoal changelog of train
         trainVersion.setBranchState(BranchState.DELETED);
         trainPersistence.updateVersion(trainVersion); // Update the train keeping the current version
+        Changelog changelog = Changelog.forDeletion(partner, trainVersion, comment);
+        changelogPersistence.insert(changelog);
         return trainVersion;
     }
 
@@ -95,11 +101,10 @@ public class TrainService {
             .toList();
     }
 
-    public TrainVersion shareTrain(String partner, UUID trainId, String shareWith) {
+    public void shareTrain(String partner, UUID trainId, String shareWith) {
         TrainVersion trainVersion = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME).orElseThrow();
         checkSharing(partner, trainVersion);
         trainPersistence.addPartner(trainId, shareWith);
-        return trainVersion;
     }
 
     public TrainVersion updateTrainBranch(String partner, UUID trainId, String branchName, String comment, Train train) {
@@ -122,7 +127,15 @@ public class TrainService {
         newVersion.setTrainNumber(train.getId());
         newVersion.setOperationalDay(train.getStartdate());
         trainPersistence.insertVersion(newVersion);
+        Changelog changelog = branchTrainVersion.isPresent()
+            ? Changelog.forUpdate(partner, newVersion, comment)
+            : Changelog.forCreation(partner, newVersion, comment);
+        changelogPersistence.insert(changelog);
         return newVersion;
+    }
+
+    public List<Changelog> getChangelogs(String partner, OffsetDateTime from, OffsetDateTime to, UUID trainId) {
+        return changelogPersistence.find(partner, from, to, trainId);
     }
 
     private void checkSharing(String partner, UUID trainId) {

@@ -136,8 +136,6 @@ Supported types are:
 |===
 
 == Limitations of current implementation
-* Endpoints to list changes are not implemented yet
-* Comment passed along with branch deletion is not stored (a new table for storing the general train history may be needed, maybe also for sharing of trains)
 * Performance of train list endpoint is not optimized (n+1 pattern to get partners, no paging)
 * Concurrent modifications/merging/deleting of a train may lead to problems (no optimistic or pessimistic locking implemented yet)
 * There is currently no endpoint to merge branches (desired behavior has be defined first - see open issues)
