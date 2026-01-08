@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.0.9](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.8...r2p-v0.0.9) (2026-01-08)
+
+
+### Features
+
+* display validation messages ([#43](https://github.com/SchweizerischeBundesbahnen/r2p/issues/43)) ([eb7c6fb](https://github.com/SchweizerischeBundesbahnen/r2p/commit/eb7c6fbd0d73598ff15be41763ccdaa94daf33dc))
+* prepare api for changelog implementation ([3c073fe](https://github.com/SchweizerischeBundesbahnen/r2p/commit/3c073fe288d9da846586ab1c6449b9d39fe9d1a3))
+* store changelog and implement /changes endpoints ([#44](https://github.com/SchweizerischeBundesbahnen/r2p/issues/44)) ([7769a9a](https://github.com/SchweizerischeBundesbahnen/r2p/commit/7769a9a00b8dfd5a5105eaf0bc70e6cc430dcfa8))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.9-SNAPSHOT ([#32](https://github.com/SchweizerischeBundesbahnen/r2p/issues/32)) ([94a16fe](https://github.com/SchweizerischeBundesbahnen/r2p/commit/94a16fe8ecf3f36dc2c11ea696a806318c9d80fa))
+
+
+### Build System
+
+* **deps-dev:** bump @commitlint/cli from 20.2.0 to 20.3.0 ([#38](https://github.com/SchweizerischeBundesbahnen/r2p/issues/38)) ([1083a64](https://github.com/SchweizerischeBundesbahnen/r2p/commit/1083a64076268fabd0f86e635cf6197b247b8104))
+* **deps-dev:** bump @commitlint/config-conventional from 20.2.0 to 20.3.0 ([#37](https://github.com/SchweizerischeBundesbahnen/r2p/issues/37)) ([87cb6a1](https://github.com/SchweizerischeBundesbahnen/r2p/commit/87cb6a112604d10fa4fee3da438d2ad3e2fb822c))
+* **deps:** bump org.codehaus.mojo:exec-maven-plugin ([#34](https://github.com/SchweizerischeBundesbahnen/r2p/issues/34)) ([cefd67e](https://github.com/SchweizerischeBundesbahnen/r2p/commit/cefd67e7622fdcaa80592e5345d7fd79b659c118))
+* **deps:** bump org.openapitools:openapi-generator-maven-plugin ([#35](https://github.com/SchweizerischeBundesbahnen/r2p/issues/35)) ([8c92772](https://github.com/SchweizerischeBundesbahnen/r2p/commit/8c92772cb36f4cb1ea023eb7e5a81541f99aef04))
+* **deps:** bump org.springdoc:springdoc-openapi-starter-webmvc-ui ([#41](https://github.com/SchweizerischeBundesbahnen/r2p/issues/41)) ([f99dc8d](https://github.com/SchweizerischeBundesbahnen/r2p/commit/f99dc8d7f1498a5b163c89cce96459aea62c55f3))
+* **deps:** bump org.springframework.boot:spring-boot-starter-parent ([#36](https://github.com/SchweizerischeBundesbahnen/r2p/issues/36)) ([3575dad](https://github.com/SchweizerischeBundesbahnen/r2p/commit/3575dad7ab0990fbf9a3427c512b15abba751b87))
+* **deps:** bump org.springframework.boot:spring-boot-starter-parent ([#42](https://github.com/SchweizerischeBundesbahnen/r2p/issues/42)) ([7f611cb](https://github.com/SchweizerischeBundesbahnen/r2p/commit/7f611cb871fd4ecd844c6aba40719e067d11e0de))
+
+
+### Continuous Integration
+
+* group commitlint dependencies ([#40](https://github.com/SchweizerischeBundesbahnen/r2p/issues/40)) ([dbd9cc2](https://github.com/SchweizerischeBundesbahnen/r2p/commit/dbd9cc2c9dc1bedd424c668a3e8b99cf8be51246))
+
 ## [0.0.8](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.7...r2p-v0.0.8) (2025-12-23)
 
 
