@@ -50,10 +50,7 @@ spec:
     matchLabels:
       app: r2p
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 0
-      maxSurge: 1
+    type: Recreate
   template:
     metadata:
       labels:
