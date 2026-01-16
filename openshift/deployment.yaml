@@ -1,0 +1,173 @@
+# OpenShift Deployment Example using Deployment (Kubernetes standard)
+# Note: Update the ConfigMap values according to your environment before applying
+
+---
+# ConfigMap for application configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: r2p-config
+data:
+  DATABASE_STORAGE: "file:/h2data/r2p"
+  R2P_INSTANCE_OWNER: "REPLACE_ME"
+  TZ: "Europe/Zurich"
+  R2P_AZURE_ISSUER_URI: "REPLACE_ME"
+  R2P_AZURE_CLIENT_ID: "REPLACE_ME"
+
+---
+# PersistentVolumeClaim for H2 Database
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: r2p-h2-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: r2p-sa
+
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: r2p
+  labels:
+    app: r2p
+    app.kubernetes.io/name: r2p
+    app.kubernetes.io/component: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: r2p
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: r2p
+    spec:
+      serviceAccountName: r2p-sa
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: r2p
+          image: ghcr-private.docker.bin.sbb.ch/schweizerischebundesbahnen/r2p:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: http
+          env:
+            - name: DATABASE_STORAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: r2p-config
+                  key: DATABASE_STORAGE
+            - name: R2P_INSTANCE_OWNER
+              valueFrom:
+                configMapKeyRef:
+                  name: r2p-config
+                  key: R2P_INSTANCE_OWNER
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: r2p-config
+                  key: TZ
+            - name: R2P_AZURE_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: r2p-config
+                  key: R2P_AZURE_CLIENT_ID
+            - name: R2P_AZURE_ISSUER_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: r2p-config
+                  key: R2P_AZURE_ISSUER_URI
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 15
+            timeoutSeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 15
+            timeoutSeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: h2-data
+              mountPath: /h2data
+      volumes:
+        - name: h2-data
+          persistentVolumeClaim:
+            claimName: r2p-h2-pvc
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: r2p
+  labels:
+    app: r2p
+spec:
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: r2p
+  type: ClusterIP
+
+---
+# Route
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: r2p
+  labels:
+    app: r2p
+spec:
+  to:
+    kind: Service
+    name: r2p
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+

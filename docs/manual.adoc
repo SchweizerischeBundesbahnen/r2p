@@ -33,6 +33,19 @@ In order to persist the data in a file, configure a corresponding datasource via
 DATABASE_STORAGE=file:C:/devsbb/h2/r2p
 ----
 
+=== Deploy on OpenShift
+
+The Docker image is available at `ghcr-private.docker.bin.sbb.ch/schweizerischebundesbahnen/r2p:latest`.
+
+Check the deployment.yaml file and adjust the values in the ConfigMap.
+
+[source,bash]
+----
+cd openshift
+oc project r2p
+oc apply -f deployment.yaml
+----
+
 == Domain Model
 
 Each train, branch and version is represented by following model. A train is related to partners. It has a main branch which is the current state. A change can be submitted by creating a new branch.
