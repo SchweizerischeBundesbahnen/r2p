@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.0.10](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.9...r2p-v0.0.10) (2026-01-16)
+
+
+### Features
+
+* enable actuator endpoints ([#48](https://github.com/SchweizerischeBundesbahnen/r2p/issues/48)) ([ecebbf6](https://github.com/SchweizerischeBundesbahnen/r2p/commit/ecebbf63c3f27c29bc560dddc4e8313fbdaf78ee))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.10-SNAPSHOT ([#45](https://github.com/SchweizerischeBundesbahnen/r2p/issues/45)) ([4115709](https://github.com/SchweizerischeBundesbahnen/r2p/commit/4115709669d8b37aa3a9a5d0abc4b193a28143ce))
+
+
+### Build System
+
+* **deps-dev:** bump the commitlint group with 2 updates ([#46](https://github.com/SchweizerischeBundesbahnen/r2p/issues/46)) ([2072654](https://github.com/SchweizerischeBundesbahnen/r2p/commit/207265454de866061ccdac4904933680d76cae79))
+
 ## [0.0.9](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.8...r2p-v0.0.9) (2026-01-08)
 
 
