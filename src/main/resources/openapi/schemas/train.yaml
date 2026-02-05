@@ -310,7 +310,7 @@ Condition:
       $ref: '#/CompareType'
     reference:
       type: string
-      example: 250
+      example: "250"
     mandatory:
       type: boolean
       example: true
@@ -344,7 +344,7 @@ WagonGroup:
     wagoncount:
       type: integer
       format: int32
-      example: example
+      example: 5
     features:
       type: array
       xml:
