@@ -1,25 +1,39 @@
-# ---------------------------------------------- PATH -------------------------------------------------------------------------------------
+# ---------------------------------------------- TRAIN -------------------------------------------------------------------------------------
 Train:
-  description: 'The train object'
+  description: >
+    A train train (network slot) is SBB Infrastructure’s capacity object that grants the right to operate on the network
+    for a particular route and time. It is maintained by the infrastructure manager and can change during planning.
+    The train train is kept separate from the Train (the RU's operational plan); combining both makes transport operationally feasible.
+  type: object
   required:
     - id
     - references
+    - links
     - name
     - startdate
     - timestamp
     - journey
-  type: object
   properties:
     id:
       type: string
     references:
       type: array
+      xml:
+        name: references
+        wrapped: true
       items:
+        xml:
+          name: reference
         $ref: '#/Reference'
     links:
       description: Links to other objects e.g. URL, documents in the same GitHub-Repository
       type: array
+      xml:
+        name: links
+        wrapped: true
       items:
+        xml:
+          name: link
         $ref: '#/Link'
     name:
       description: The name of the train.
@@ -41,10 +55,10 @@ Train:
 # ---------------------------------------------- REFERENCES -------------------------------------------------------------------------------------
 Reference:
   description: 'The references of the object'
+  type: object
   required:
     - type
     - name
-  type: object
   properties:
     type:
       description: type of the identifier
@@ -62,10 +76,10 @@ Reference:
 # ---------------------------------------------- LINKS -------------------------------------------------------------------------------------
 Link:
   description: 'The links to the object'
+  type: object
   required:
     - type
     - name
-  type: object
   properties:
     type:
       description: type of the link
@@ -74,112 +88,194 @@ Link:
     name:
       description: name of the identifier
       type: string
-      example: path_to/other-file.json#/Attachment/MyDocument1.docx
+      example: train/to/other-file.json#/Attachment/MyDocument1.docx
   xml:
     name: link
 # ---------------------------------------------- JOURNEY -------------------------------------------------------------------------------------
 Journey:
   description: 'The journey of the object: a list of Journeylocation'
+  type: object
   required:
     - journeylocations
-  type: object
   properties:
     journeylocations:
       type: array
+      xml:
+        name: journeylocations
+        wrapped: false
       minItems: 2
       items:
+        xml:
+          name: journeylocation
         $ref: '#/Journeylocation'
   xml:
     name: journey
 # ---------------------------------------------- JOURNEYLOCATION -------------------------------------------------------------------------------------
 Journeylocation:
   description: 'A journeylocation of the journey'
+  type: object
   required:
     - locations
     - activities
-  type: object
+    - requirements
   properties:
     locations:
       type: array
+      xml:
+        name: locations
+        wrapped: true
       minItems: 1
       items:
+        xml:
+          name: location
         $ref: '#/Location'
     activities:
       type: array
+      xml:
+        name: activities
+        wrapped: true
       items:
+        xml:
+          name: activity
         $ref: '#/Activity'
+    requirements:
+      type: array
+      xml:
+        name: requirements
+        wrapped: true
+      items:
+        xml:
+          name: requirement
+        $ref: "#/Requirement"
   xml:
     name: journeylocation
 # ---------------------------------------------- ACTIVITY -------------------------------------------------------------------------------------
 Activity:
-  description: 'An activity either at the location or from this location to the next specified location'
+  description: 'An activity either at the location or from this location to the next location'
+  type: object
   required:
     - type
+    - timings
     - responsibility
-  type: object
   properties:
     type:
       $ref: "#/ActivityType"
-    timing:
+    timings:
       type: array
+      xml:
+        name: timings
+        wrapped: true
       items:
+        xml:
+          name: timing
         $ref: '#/Timing'
     responsibility:
       $ref: '#/Responsability'
     alignment:
       $ref: '#/Alignment'
-    capabilities:
-      type: array
-      items:
-        $ref: '#/Capability'
-    requirements:
-      type: array
-      items:
-        $ref: '#/Requirement'
+    capability:
+      $ref: '#/Capability'
+    requirement:
+      $ref: '#/Requirement'
   xml:
     name: activity
 # ---------------------------------------------- CAPABILITY -------------------------------------------------------------------------------------
 Capability:
-  description: 'A capability either at the location or from this location to the next specified location'
+  description: A capability either at the location or from this location to the next specified location
+  type: object
+  oneOf:
+    - required: [staff]
+    - required: [rollingStock]
   required:
     - features
-  type: object
   properties:
+    featuresets:
+      type: array
+      xml:
+        name: featuresets
+        wrapped: false
+      items:
+        xml:
+          name: featurset
+          $ref: '#/Featureset'
     features:
       type: array
+      description: List of features assigned to this capability.
+      xml:
+        name: features
+        wrapped: true
       items:
-        $ref: '#/Feature'
+        $ref: '#/CapabilityFeature'
+        xml:
+          name: feature
+    staff:
+      type: array
+      description: List of staff members associated with this capability.
+      xml:
+        name: staff
+        wrapped: true
+      items:
+        $ref: '#/Staff'
+        xml:
+          name: person
+    rollingStock:
+      $ref: '#/RollingStock'
   xml:
     name: capability
+
 # ---------------------------------------------- REQUIREMENT -------------------------------------------------------------------------------------
 Requirement:
   description: 'A requirement either at the location or from this location to the next specified location'
+  type: object
   required:
     - features
+  properties:
+    featuresets:
+      type: array
+      xml:
+        name: featuresets
+        wrapped: false
+      items:
+        xml:
+          name: featurset
+        $ref: '#/Featureset'
+    features:
+      type: array
+      xml:
+        name: features
+        wrapped: false
+      items:
+        $ref: '#/RequirementFeature'
+  xml:
+    name: requirement
+# ---------------------------------------------- FEATURESET -------------------------------------------------------------------------------------
+Featureset:
+  description: 'A featureset groups a bunch of features together'
   type: object
+  required:
+    - features
   properties:
     features:
       type: array
       items:
         $ref: '#/Feature'
-    condition:
-      type: array
-      items:
-        $ref: '#/Condition'
   xml:
-    name: requirement
+    name: featureset
 # ---------------------------------------------- RESTRICTION -------------------------------------------------------------------------------------
 Restriction:
-  description: 'A restriction either at the location or from this location to the next specified location'
+  description: A restriction either at the location or from this location to the next location.
+  type: object
   required:
     - type
     - creator
     - creationtime
-  type: object
   properties:
     type:
       type: string
       example: example
+    restrictedvalue:
+      type: integer
+      format: int64
     creator:
       type: string
       example: example
@@ -205,46 +301,40 @@ Restriction:
     name: restriction
 # ---------------------------------------------- CONDITION -------------------------------------------------------------------------------------
 Condition:
-  description: 'A condition specifies the check to be applied between two featuresets'
-  required:
-    - conditiontype
-    - comparetype
-    - reference
+  description: A condition specifies the check to be applied between two featuresets.
   type: object
   properties:
     conditiontype:
-      type: array
-      items:
-        $ref: '#/ConditionType'
+      $ref: '#/ConditionType'
     comparetype:
-      type: array
-      items:
-        $ref: '#/CompareType'
+      $ref: '#/CompareType'
     reference:
       type: string
       example: 250
+    mandatory:
+      type: boolean
+      example: true
   xml:
     name: condition
 # ---------------------------------------------- WAGONGROUP -------------------------------------------------------------------------------------
-Wagongroup:
-  description: 'A wagongroup either at the location or from this location on'
-  required:
-    - length
-    - weight
+WagonGroup:
+  description: 'A wagon group either at the location or from this location on'
   type: object
   properties:
     id:
       type: string
-      example: 123456789012
+      example: "123456789012"
     position:
       type: integer
       format: int32
       example: 1
     length:
+      description: The length of the wagon group in millimetres.
       type: integer
-      format: int32
-      example: 27
+      format: int64
+      example: 27000
     weight:
+      description: The weight of the wagon group in kilograms.
       type: integer
       format: int32
       example: 60000
@@ -257,40 +347,51 @@ Wagongroup:
       example: example
     features:
       type: array
+      xml:
+        name: features
+        wrapped: false
       items:
-        $ref: '#/Feature'
+        $ref: '#/CapabilityFeature'
   xml:
-    name: wagongroup
+    name: wagonGroup
 # ---------------------------------------------- UNIT -------------------------------------------------------------------------------------
 Unit:
   description: 'A unit of a wagon group'
+  type: object
   required:
     - carbodies
-  type: object
   properties:
     position:
       type: integer
       format: int32
-      example: 4
+      example: 1
     carbodies:
       type: array
+      xml:
+        name: carbodies
+        wrapped: true
       items:
         $ref: '#/Carbody'
+        xml:
+          name: carbody
     type:
       type: string
       example: Re420-CE
     features:
       type: array
+      xml:
+        name: features
+        wrapped: false
       items:
-        $ref: '#/Feature'
+        $ref: '#/CapabilityFeature'
   xml:
     name: unit
 # ---------------------------------------------- CARBODY -------------------------------------------------------------------------------------
 Carbody:
   description: 'A carbody from this location on'
+  type: object
   required:
     - type
-  type: object
   properties:
     position:
       type: integer
@@ -303,7 +404,7 @@ Carbody:
       $ref: '#/TractionType'
     vehiclenumber:
       type: string
-      example: 999999999962
+      example: "999999999962"
     frontcoupling:
       $ref: '#/CouplingType'
     backcoupling:
@@ -313,15 +414,84 @@ Carbody:
       example: example
     features:
       type: array
+      xml:
+        name: features
+        wrapped: false
       items:
-        $ref: '#/Feature'
+        $ref: '#/CapabilityFeature'
   xml:
     name: carbody
+# ---------------------------------------------- ROLLINGSTOCK ----------------------------------------------------------------------------
+RollingStock:
+  description: |
+    TODO add descripiton
+  type: object
+  oneOf:
+    - required: [wagonGroup]
+    - required: [unit]
+  properties:
+    weight:
+      description: |
+        The sum of all weights of wagons and traction units in kilograms.
+      type: integer
+      format: int64
+      example: 1284000
+    length:
+      description: |
+        The calculated length of a train (sum of all length over buffer of the wagons and traction units) in millimetres.
+      type: integer
+      format: int64
+      example: 415400
+    maxSpeed:
+      description: The max. possible speed of a train in km/h.
+      type: integer
+      format: int32
+      example: 100
+    brakingRatio:
+      description: Minimum percentage of braking. Expressed as an integer value (no percent sign should be added).
+      type: number
+      format: float
+      example: 115.0
+    features:
+      type: array
+      xml:
+        name: featuresets
+        wrapped: false
+      items:
+        $ref: '#/CapabilityFeature'
+    routeClass:
+      description: >
+        Indication of the route class (based on CEN EN 15528: line categories for managing the interface between 
+        load limits of vehicles on infrastructure). All the codes in this code list refer to CEN EN 15528: line 
+        categories for managing the interface between load limits of vehicles on infrastructure.
+        CM2, CM3 and CM 4 equal M2, M3 and M4 which might be used in some legacy systems which only support two character codes.
+      type: string
+      example: 'B2'
+    wagonGroups:
+      type: array
+      description: List of wagon groups associated with this capability.
+      xml:
+        name: wagonGroups
+        wrapped: true
+      items:
+        $ref: '#/WagonGroup'
+        xml:
+          name: wagonGroup
+    units:
+      type: array
+      description: List of units associated with this capability.
+      xml:
+        name: units
+        wrapped: true
+      items:
+        $ref: '#/Unit'
+        xml:
+          name: unit
+  xml:
+    name: rollingStock
 # ---------------------------------------------- FEATURE -------------------------------------------------------------------------------------
 Feature:
-  description: 'A feature of a capability or requirement'
-  required:
-    - type
+  description: 'An abstract feature'
   type: object
   properties:
     type:
@@ -332,54 +502,58 @@ Feature:
       example: example
     capacity:
       type: string
-      example: 200
-    wagongroups:
-      type: array
-      items:
-        $ref: '#/Wagongroup'
-    units:
-      type: array
-      items:
-        $ref: "#/Unit"
-    staff:
-      type: array
-      items:
-        $ref: '#/Staff'
-    restrictions:
-      type: array
-      items:
-        $ref: '#/Restriction'
-  oneOf:
-    - required: ["wagongroups"]
-    - required: ["units"]
-    - required: ["staff"]
+      example: "200"
   xml:
     name: feature
+# ---------------------------------------------- CAPABILITYFEATURE -------------------------------------------------------------------------------------
+CapabilityFeature:
+  description: 'A feature of a capability'
+  type: object
+  properties:
+    feature:
+      $ref: '#/Feature'
+    restriction:
+      $ref: '#/Restriction'
+  xml:
+    name: capabilityfeature
+# ---------------------------------------------- REQUIREMENTFEATURE -------------------------------------------------------------------------------------
+RequirementFeature:
+  description: 'A feature of a requirement'
+  type: object
+  properties:
+    feature:
+      $ref: '#/Feature'
+    condition:
+      $ref: '#/Condition'
+  xml:
+    name: requirementfeature
 # ---------------------------------------------- STAFF -------------------------------------------------------------------------------------
 Staff:
   description: 'A duty for a staff'
+  type: object
   required:
     - type
     - action
-  type: object
   properties:
     type:
       type: string
       example: decouple
     action:
       type: string
-      example: example
+      example: loco from wagongroup
+    feature:
+      $ref: '#/CapabilityFeature'
   xml:
     name: staff
 # ---------------------------------------------- TIMING -------------------------------------------------------------------------------------
 Timing:
   description: 'The timing for a location'
+  type: object
   required:
     - type
     - time
     - offset
     - focus
-  type: object
   properties:
     type:
       $ref: '#/TimingType'
@@ -402,11 +576,11 @@ Timing:
 # ---------------------------------------------- RESPONSABILITY -------------------------------------------------------------------------------------
 Responsability:
   description: 'The responsability for a task'
+  type: object
   required:
     - type
     - id
     - status
-  type: object
   properties:
     type:
       $ref: "#/ResponsabilityType"
@@ -420,9 +594,9 @@ Responsability:
 # ---------------------------------------------- ALIGNMENT -------------------------------------------------------------------------------------
 Alignment:
   description: 'The alignment for a task'
+  type: object
   required:
     - status
-  type: object
   properties:
     status:
       $ref: '#/PlanStatus'
@@ -431,23 +605,41 @@ Alignment:
 # ---------------------------------------------- LOCATION -------------------------------------------------------------------------------------
 Location:
   description: 'The location in the journey'
+  type: object
   required:
     - type
     - code
     - name
-  type: object
   properties:
     type:
+      $ref: "#/LocationType"
+    typeCode:
+      description: Used to specify the subtype of the location identifyer, e.g. type=SLC, typeCode='37' for a loading point.
       type: string
-      example: enum PLC, SLC, DIUM, UIC
+      example: '37'
     code:
+      description: The id or code identifying of the location.
       type: string
-      example: 12345
+      example: '1966700002'
     name:
+      description: The name of the location.
       type: string
-      example: Riom
+      example: 'FVL BielMett'
   xml:
-    name: alignment
+    name: location
+# ---------------------------------------------- API RESPONSE -------------------------------------------------------------------------------------
+ApiResponse:
+  type: object
+  properties:
+    code:
+      type: integer
+      format: int32
+    type:
+      type: string
+    message:
+      type: string
+  xml:
+    name: apiresponse
 # ---------------------------------------------- ENUM ReferenceType -------------------------------------------------------------------------------------
 ReferenceType:
   type: string
@@ -458,7 +650,7 @@ ReferenceType:
     - tttpathrequest
     - tttpath
     - tttcasereference
-    - fpspath
+    - fpstrain
     - fpsdebic
 # ---------------------------------------------- ENUM ConditionType -------------------------------------------------------------------------------------
 ConditionType:
@@ -532,7 +724,7 @@ TractionType:
     - battery
     - hybrid
     - none
-# ---------------------------------------------- ENUM ActivityType -------------------------------------------------------------------------------------
+# ---------------------------------------------- ENUM TractionType -------------------------------------------------------------------------------------
 ActivityType:
   type: string
   enum:
@@ -541,50 +733,51 @@ ActivityType:
     - node
     - commercial
     - train
-    - path.halt.1
-    - path.halt.11
-    - path.halt.14
-    - path.halt.15
-    - path.halt.16
-    - path.halt.18
-    - path.halt.19
-    - path.halt.22
-    - path.halt.28
-    - path.halt.32
-    - path.halt.33
-    - path.halt.41
-    - path.halt.44
-    - path.halt.45
-    - path.halt.46
-    - path.halt.51
-    - path.halt.54
-    - path.halt.55
-    - path.halt.56
-    - path.halt.70
-    - path.halt.73
-    - path.halt.74
-    - path.halt.75
-    - path.halt.76
-    - path.halt.77
-    - path.halt.78
-    - path.halt.79
-    - path.halt.80
-    - path.halt.81
-    - path.halt.82
-    - path.halt.83
-    - path.halt.84
-    - path.halt.88
-    - path.halt.90
-    - path.halt.91
-    - path.halt.92
-    - path.halt.93
-    - path.halt.94
-    - path.halt.95
-    - path.runthrough
+    - train.halt.1
+    - train.halt.11
+    - train.halt.14
+    - train.halt.15
+    - train.halt.16
+    - train.halt.18
+    - train.halt.19
+    - train.halt.22
+    - train.halt.28
+    - train.halt.32
+    - train.halt.33
+    - train.halt.41
+    - train.halt.44
+    - train.halt.45
+    - train.halt.46
+    - train.halt.51
+    - train.halt.54
+    - train.halt.55
+    - train.halt.56
+    - train.halt.70
+    - train.halt.73
+    - train.halt.74
+    - train.halt.75
+    - train.halt.76
+    - train.halt.77
+    - train.halt.78
+    - train.halt.79
+    - train.halt.80
+    - train.halt.81
+    - train.halt.82
+    - train.halt.83
+    - train.halt.84
+    - train.halt.88
+    - train.halt.90
+    - train.halt.91
+    - train.halt.92
+    - train.halt.93
+    - train.halt.94
+    - train.halt.95
+    - train.runthrough
     - traction
     - wagons
     - formation
-# ---------------------------------------------- ENUM ResponsabilityType -------------------------------------------------------------------------------------
+    - rollingStock
+# ---------------------------------------------- ENUM TractionType -------------------------------------------------------------------------------------
 ResponsabilityType:
   type: string
   enum:
@@ -593,4 +786,23 @@ ResponsabilityType:
     - ra  # responsible applicant
     - rru
     - rp # resource provider
-# ---------------------------------------------- --------------- -------------------------------------------------------------------------------------
+# ---------------------------------------------- ENUM LocationType -------------------------------------------------------------------------------------
+LocationType:
+  description: |
+    Determines the type of the location identifyer:
+    * PLC - Primary Location Code (PLC): The single, pan‑European, unique identifier for an Operational Point (OP) in the TAF/TAP TSI ecosystem. 
+            It is the canonical code used in TAF/TAP messages and in the Common Location Database (CLD).
+    * SLC - Subsidiary Location Code (SLC): Any additional/alternate code for a PLC, coming from another coding scheme (national, sectoral, 
+            commercial, legacy). Multiple SLCs can be attached to one PLC and each SLC is tagged with its coding scheme.
+    * DIUM - DIUM is a UIC freight directory listing commercial freight handling points (freight stations, collection/delivery points).
+             It focuses on freight stations and designated collection/delivery points of participating railway undertakings; may also include some 
+             non-trackside customer points tied to rail freight services.
+    * UIC - Operational identifier used for planning, timetables, ticketing, and interoperable messaging between railway actors (both passenger and freight). 
+            It covers virtually all operational points on the rail network (passenger stops, technical points, freight yards, border points, etc.).
+  type: string
+  enum:
+    - PLC
+    - SLC
+    - DIUM
+    - UIC
+  example: 'SLC'

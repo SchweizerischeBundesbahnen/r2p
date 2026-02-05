@@ -1,5 +1,5 @@
 {
-  "id": "string",
+  "id": "sample-train-001",
   "references": [
     {
       "type": "tttreftrain",
@@ -9,8 +9,8 @@
   ],
   "links": [
     {
-      "type": "link",
-      "name": "path_to/other-file.json#/Attachment/MyDocument1.docx"
+      "type": "doc",
+      "name": "train/to/other-file.json#/Attachment/MyDocument1.docx"
     }
   ],
   "name": "Train for oil traffic",
@@ -21,368 +21,185 @@
       {
         "locations": [
           {
-            "type": "enum PLC, SLC, DIUM, UIC",
-            "code": "12345",
-            "name": "Riom"
+            "type": "SLC",
+            "typeCode": "37",
+            "code": "1966700002",
+            "name": "FVL BielMett"
           }
         ],
         "activities": [
           {
-            "type": "journey",
-            "timing": [
+            "type": "train.halt.1",
+            "timings": [
               {
-                "type": "earliestarrival",
-                "time": "47:21:21",
+                "type": "arrival",
+                "time": "08:30:00",
                 "offset": 0,
                 "focus": "planning",
-                "source": "2187 oder R2P CompanyIdent"
+                "source": "2187"
+              },
+              {
+                "type": "departure",
+                "time": "08:45:00",
+                "offset": 0,
+                "focus": "planning",
+                "source": "2187"
               }
             ],
             "responsibility": {
               "type": "rim",
               "id": "ID-12-234-34-1",
-              "status": "requested"
+              "status": "confirmed"
             },
             "alignment": {
-              "status": "requested"
+              "status": "confirmed"
             },
-            "capabilities": [
-              {
+            "capability": {
+              "features": [
+                {
+                  "feature": {
+                    "type": "WIFI on board",
+                    "offeredservice": "Passenger WiFi",
+                    "capacity": "200"
+                  },
+                  "restriction": {
+                    "type": "temporary restriction",
+                    "restrictedvalue": 80,
+                    "creator": "SBB",
+                    "creationtime": "2025-11-15T10:00:00.000Z",
+                    "starttime": "2025-12-01T06:00:00.000Z",
+                    "endtime": "2025-12-01T18:00:00.000Z",
+                    "freetext": "Limited capacity during construction",
+                    "resolution": "Restriction lifted",
+                    "resolutiontime": "2025-12-01T18:00:00.000Z"
+                  }
+                }
+              ],
+              "staff": [
+                {
+                  "type": "conductor",
+                  "action": "passenger service"
+                }
+              ],
+              "rollingStock": {
+                "weight": 450000,
+                "length": 185000,
+                "maxSpeed": 160,
+                "brakingRatio": 115.0,
+                "routeClass": "B2",
                 "features": [
                   {
-                    "type": "WIFI on board",
-                    "offeredservice": "example",
-                    "capacity": "200",
-                    "wagongroups": [
+                    "feature": {
+                      "type": "electric traction",
+                      "offeredservice": "15kV AC",
+                      "capacity": "6400"
+                    }
+                  }
+                ],
+                "units": [
+                  {
+                    "position": 1,
+                    "type": "Re420",
+                    "carbodies": [
                       {
-                        "id": "123456789012",
                         "position": 1,
-                        "length": 27,
-                        "weight": 60000,
-                        "profile": "PN-5",
-                        "wagoncount": 1,
-                        "features": []
-                      }
-                    ],
-                    "units": [
-                      {
-                        "position": 4,
-                        "carbodies": [
+                        "type": "Re 420",
+                        "traction": "electric",
+                        "vehiclenumber": "420294",
+                        "frontcoupling": "automaticTypeX",
+                        "backcoupling": "automaticTypeX",
+                        "profile": "EBO",
+                        "features": [
                           {
-                            "position": 1,
-                            "type": "RaBe",
-                            "traction": "electric",
-                            "vehiclenumber": "999999999962",
-                            "frontcoupling": "fix",
-                            "backcoupling": "fix",
-                            "profile": "example",
-                            "features": []
+                            "feature": {
+                              "type": "traction power",
+                              "offeredservice": "6400 kW",
+                              "capacity": "6400"
+                            }
                           }
-                        ],
-                        "type": "Re420-CE",
-                        "features": []
+                        ]
                       }
                     ],
-                    "staff": [
+                    "features": [
                       {
-                        "type": "decouple",
-                        "action": "example"
-                      }
-                    ],
-                    "restrictions": [
-                      {
-                        "type": "example",
-                        "creator": "example",
-                        "creationtime": "2025-12-01T12:51:26.632Z",
-                        "starttime": "2025-12-01T12:51:26.632Z",
-                        "endtime": "2025-12-01T12:51:26.632Z",
-                        "freetext": "example",
-                        "resolution": "example",
-                        "resolutiontime": "2025-12-01T12:51:26.632Z"
+                        "feature": {
+                          "type": "locomotive",
+                          "offeredservice": "electric traction",
+                          "capacity": "1"
+                        }
                       }
                     ]
                   },
                   {
-                    "type": "WIFI on board",
-                    "offeredservice": "example",
-                    "capacity": "200",
-                    "wagongroups": [
+                    "position": 2,
+                    "type": "passenger coach",
+                    "carbodies": [
                       {
-                        "id": "123456789012",
                         "position": 1,
-                        "length": 27,
-                        "weight": 60000,
-                        "profile": "PN-5",
-                        "wagoncount": 1,
-                        "features": []
-                      }
-                    ],
-                    "units": [
-                      {
-                        "position": 4,
-                        "carbodies": [
+                        "type": "EW IV",
+                        "traction": "none",
+                        "vehiclenumber": "999999999962",
+                        "frontcoupling": "automaticTypeX",
+                        "backcoupling": "automaticTypeX",
+                        "profile": "UIC-C",
+                        "features": [
                           {
-                            "position": 1,
-                            "type": "RaBe",
-                            "traction": "electric",
-                            "vehiclenumber": "999999999962",
-                            "frontcoupling": "fix",
-                            "backcoupling": "fix",
-                            "profile": "example",
-                            "features": []
+                            "feature": {
+                              "type": "passenger seats",
+                              "offeredservice": "2nd class",
+                              "capacity": "72"
+                            }
                           }
-                        ],
-                        "type": "Re420-CE",
-                        "features": []
+                        ]
                       }
                     ],
-                    "staff": [
+                    "features": [
                       {
-                        "type": "decouple",
-                        "action": "example"
-                      }
-                    ],
-                    "restrictions": [
-                      {
-                        "type": "example",
-                        "creator": "example",
-                        "creationtime": "2025-12-01T12:51:26.632Z",
-                        "starttime": "2025-12-01T12:51:26.632Z",
-                        "endtime": "2025-12-01T12:51:26.632Z",
-                        "freetext": "example",
-                        "resolution": "example",
-                        "resolutiontime": "2025-12-01T12:51:26.632Z"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "WIFI on board",
-                    "offeredservice": "example",
-                    "capacity": "200",
-                    "wagongroups": [
-                      {
-                        "id": "123456789012",
-                        "position": 1,
-                        "length": 27,
-                        "weight": 60000,
-                        "profile": "PN-5",
-                        "wagoncount": 1,
-                        "features": []
-                      }
-                    ],
-                    "units": [
-                      {
-                        "position": 4,
-                        "carbodies": [
-                          {
-                            "position": 1,
-                            "type": "RaBe",
-                            "traction": "electric",
-                            "vehiclenumber": "999999999962",
-                            "frontcoupling": "fix",
-                            "backcoupling": "fix",
-                            "profile": "example",
-                            "features": []
-                          }
-                        ],
-                        "type": "Re420-CE",
-                        "features": []
-                      }
-                    ],
-                    "staff": [
-                      {
-                        "type": "decouple",
-                        "action": "example"
-                      }
-                    ],
-                    "restrictions": [
-                      {
-                        "type": "example",
-                        "creator": "example",
-                        "creationtime": "2025-12-01T12:51:26.632Z",
-                        "starttime": "2025-12-01T12:51:26.632Z",
-                        "endtime": "2025-12-01T12:51:26.632Z",
-                        "freetext": "example",
-                        "resolution": "example",
-                        "resolutiontime": "2025-12-01T12:51:26.632Z"
+                        "feature": {
+                          "type": "passenger coach",
+                          "offeredservice": "seating",
+                          "capacity": "72"
+                        }
                       }
                     ]
                   }
                 ]
               }
-            ],
-            "requirements": [
+            },
+            "requirement": {
+              "features": [
+                {
+                  "feature": {
+                    "type": "platform length",
+                    "offeredservice": "minimum platform",
+                    "capacity": "185"
+                  },
+                  "condition": {
+                    "conditiontype": "gte",
+                    "comparetype": "number",
+                    "reference": "185",
+                    "mandatory": true
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "requirements": [
+          {
+            "features": [
               {
-                "features": [
-                  {
-                    "type": "WIFI on board",
-                    "offeredservice": "example",
-                    "capacity": "200",
-                    "wagongroups": [
-                      {
-                        "id": "123456789012",
-                        "position": 1,
-                        "length": 27,
-                        "weight": 60000,
-                        "profile": "PN-5",
-                        "wagoncount": 1,
-                        "features": []
-                      }
-                    ],
-                    "units": [
-                      {
-                        "position": 4,
-                        "carbodies": [
-                          {
-                            "position": 1,
-                            "type": "RaBe",
-                            "traction": "electric",
-                            "vehiclenumber": "999999999962",
-                            "frontcoupling": "fix",
-                            "backcoupling": "fix",
-                            "profile": "example",
-                            "features": []
-                          }
-                        ],
-                        "type": "Re420-CE",
-                        "features": []
-                      }
-                    ],
-                    "staff": [
-                      {
-                        "type": "decouple",
-                        "action": "example"
-                      }
-                    ],
-                    "restrictions": [
-                      {
-                        "type": "example",
-                        "creator": "example",
-                        "creationtime": "2025-12-01T12:51:26.632Z",
-                        "starttime": "2025-12-01T12:51:26.632Z",
-                        "endtime": "2025-12-01T12:51:26.632Z",
-                        "freetext": "example",
-                        "resolution": "example",
-                        "resolutiontime": "2025-12-01T12:51:26.632Z"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "WIFI on board",
-                    "offeredservice": "example",
-                    "capacity": "200",
-                    "wagongroups": [
-                      {
-                        "id": "123456789012",
-                        "position": 1,
-                        "length": 27,
-                        "weight": 60000,
-                        "profile": "PN-5",
-                        "wagoncount": 1,
-                        "features": []
-                      }
-                    ],
-                    "units": [
-                      {
-                        "position": 4,
-                        "carbodies": [
-                          {
-                            "position": 1,
-                            "type": "RaBe",
-                            "traction": "electric",
-                            "vehiclenumber": "999999999962",
-                            "frontcoupling": "fix",
-                            "backcoupling": "fix",
-                            "profile": "example",
-                            "features": []
-                          }
-                        ],
-                        "type": "Re420-CE",
-                        "features": []
-                      }
-                    ],
-                    "staff": [
-                      {
-                        "type": "decouple",
-                        "action": "example"
-                      }
-                    ],
-                    "restrictions": [
-                      {
-                        "type": "example",
-                        "creator": "example",
-                        "creationtime": "2025-12-01T12:51:26.632Z",
-                        "starttime": "2025-12-01T12:51:26.632Z",
-                        "endtime": "2025-12-01T12:51:26.632Z",
-                        "freetext": "example",
-                        "resolution": "example",
-                        "resolutiontime": "2025-12-01T12:51:26.632Z"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "WIFI on board",
-                    "offeredservice": "example",
-                    "capacity": "200",
-                    "wagongroups": [
-                      {
-                        "id": "123456789012",
-                        "position": 1,
-                        "length": 27,
-                        "weight": 60000,
-                        "profile": "PN-5",
-                        "wagoncount": 1,
-                        "features": []
-                      }
-                    ],
-                    "units": [
-                      {
-                        "position": 4,
-                        "carbodies": [
-                          {
-                            "position": 1,
-                            "type": "RaBe",
-                            "traction": "electric",
-                            "vehiclenumber": "999999999962",
-                            "frontcoupling": "fix",
-                            "backcoupling": "fix",
-                            "profile": "example",
-                            "features": []
-                          }
-                        ],
-                        "type": "Re420-CE",
-                        "features": []
-                      }
-                    ],
-                    "staff": [
-                      {
-                        "type": "decouple",
-                        "action": "example"
-                      }
-                    ],
-                    "restrictions": [
-                      {
-                        "type": "example",
-                        "creator": "example",
-                        "creationtime": "2025-12-01T12:51:26.633Z",
-                        "starttime": "2025-12-01T12:51:26.633Z",
-                        "endtime": "2025-12-01T12:51:26.633Z",
-                        "freetext": "example",
-                        "resolution": "example",
-                        "resolutiontime": "2025-12-01T12:51:26.633Z"
-                      }
-                    ]
-                  }
-                ],
-                "condition": [
-                  {
-                    "conditiontype": [
-                      "eq"
-                    ],
-                    "comparetype": [],
-                    "reference": "250"
-                  }
-                ]
+                "feature": {
+                  "type": "electrification",
+                  "offeredservice": "15kV AC",
+                  "capacity": "15000"
+                },
+                "condition": {
+                  "conditiontype": "eq",
+                  "comparetype": "string",
+                  "reference": "15kV AC",
+                  "mandatory": true
+                }
               }
             ]
           }
@@ -391,368 +208,108 @@
       {
         "locations": [
           {
-            "type": "enum PLC, SLC, DIUM, UIC",
-            "code": "12345",
-            "name": "Riom"
+            "type": "PLC",
+            "code": "CH00123",
+            "name": "Basel SBB"
           }
         ],
         "activities": [
           {
-            "type": "journey",
-            "timing": [
+            "type": "train.halt.1",
+            "timings": [
               {
-                "type": "earliestarrival",
-                "time": "47:21:21",
+                "type": "arrival",
+                "time": "10:15:00",
                 "offset": 0,
                 "focus": "planning",
-                "source": "2187 oder R2P CompanyIdent"
+                "source": "R2P"
               }
             ],
             "responsibility": {
-              "type": "rim",
-              "id": "ID-12-234-34-1",
+              "type": "rru",
+              "id": "ID-98-765-43-2",
               "status": "requested"
             },
             "alignment": {
-              "status": "requested"
+              "status": "proposed"
             },
-            "capabilities": [
-              {
-                "features": [
+            "capability": {
+              "features": [
+                {
+                  "feature": {
+                    "type": "passenger service",
+                    "offeredservice": "regional train",
+                    "capacity": "150"
+                  }
+                }
+              ],
+              "staff": [
+                {
+                  "type": "driver",
+                  "action": "train operation"
+                }
+              ],
+              "rollingStock": {
+                "weight": 450000,
+                "length": 185000,
+                "maxSpeed": 160,
+                "brakingRatio": 115.0,
+                "routeClass": "B2",
+                "wagonGroups": [
                   {
-                    "type": "WIFI on board",
-                    "offeredservice": "example",
-                    "capacity": "200",
-                    "wagongroups": [
+                    "id": "WG-001",
+                    "position": 1,
+                    "length": 185000,
+                    "weight": 450000,
+                    "profile": "UIC-C",
+                    "wagoncount": 5,
+                    "features": [
                       {
-                        "id": "123456789012",
-                        "position": 1,
-                        "length": 27,
-                        "weight": 60000,
-                        "profile": "PN-5",
-                        "wagoncount": 1,
-                        "features": []
-                      }
-                    ],
-                    "units": [
-                      {
-                        "position": 4,
-                        "carbodies": [
-                          {
-                            "position": 1,
-                            "type": "RaBe",
-                            "traction": "electric",
-                            "vehiclenumber": "999999999962",
-                            "frontcoupling": "fix",
-                            "backcoupling": "fix",
-                            "profile": "example",
-                            "features": []
-                          }
-                        ],
-                        "type": "Re420-CE",
-                        "features": []
-                      }
-                    ],
-                    "staff": [
-                      {
-                        "type": "decouple",
-                        "action": "example"
-                      }
-                    ],
-                    "restrictions": [
-                      {
-                        "type": "example",
-                        "creator": "example",
-                        "creationtime": "2025-12-01T12:51:26.632Z",
-                        "starttime": "2025-12-01T12:51:26.632Z",
-                        "endtime": "2025-12-01T12:51:26.632Z",
-                        "freetext": "example",
-                        "resolution": "example",
-                        "resolutiontime": "2025-12-01T12:51:26.632Z"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "WIFI on board",
-                    "offeredservice": "example",
-                    "capacity": "200",
-                    "wagongroups": [
-                      {
-                        "id": "123456789012",
-                        "position": 1,
-                        "length": 27,
-                        "weight": 60000,
-                        "profile": "PN-5",
-                        "wagoncount": 1,
-                        "features": []
-                      }
-                    ],
-                    "units": [
-                      {
-                        "position": 4,
-                        "carbodies": [
-                          {
-                            "position": 1,
-                            "type": "RaBe",
-                            "traction": "electric",
-                            "vehiclenumber": "999999999962",
-                            "frontcoupling": "fix",
-                            "backcoupling": "fix",
-                            "profile": "example",
-                            "features": []
-                          }
-                        ],
-                        "type": "Re420-CE",
-                        "features": []
-                      }
-                    ],
-                    "staff": [
-                      {
-                        "type": "decouple",
-                        "action": "example"
-                      }
-                    ],
-                    "restrictions": [
-                      {
-                        "type": "example",
-                        "creator": "example",
-                        "creationtime": "2025-12-01T12:51:26.632Z",
-                        "starttime": "2025-12-01T12:51:26.632Z",
-                        "endtime": "2025-12-01T12:51:26.632Z",
-                        "freetext": "example",
-                        "resolution": "example",
-                        "resolutiontime": "2025-12-01T12:51:26.632Z"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "WIFI on board",
-                    "offeredservice": "example",
-                    "capacity": "200",
-                    "wagongroups": [
-                      {
-                        "id": "123456789012",
-                        "position": 1,
-                        "length": 27,
-                        "weight": 60000,
-                        "profile": "PN-5",
-                        "wagoncount": 1,
-                        "features": []
-                      }
-                    ],
-                    "units": [
-                      {
-                        "position": 4,
-                        "carbodies": [
-                          {
-                            "position": 1,
-                            "type": "RaBe",
-                            "traction": "electric",
-                            "vehiclenumber": "999999999962",
-                            "frontcoupling": "fix",
-                            "backcoupling": "fix",
-                            "profile": "example",
-                            "features": []
-                          }
-                        ],
-                        "type": "Re420-CE",
-                        "features": []
-                      }
-                    ],
-                    "staff": [
-                      {
-                        "type": "decouple",
-                        "action": "example"
-                      }
-                    ],
-                    "restrictions": [
-                      {
-                        "type": "example",
-                        "creator": "example",
-                        "creationtime": "2025-12-01T12:51:26.632Z",
-                        "starttime": "2025-12-01T12:51:26.632Z",
-                        "endtime": "2025-12-01T12:51:26.632Z",
-                        "freetext": "example",
-                        "resolution": "example",
-                        "resolutiontime": "2025-12-01T12:51:26.632Z"
+                        "feature": {
+                          "type": "freight",
+                          "offeredservice": "general cargo",
+                          "capacity": "100"
+                        }
                       }
                     ]
                   }
                 ]
               }
-            ],
-            "requirements": [
+            },
+            "requirement": {
+              "features": [
+                {
+                  "feature": {
+                    "type": "track gauge",
+                    "offeredservice": "standard gauge",
+                    "capacity": "1435"
+                  },
+                  "condition": {
+                    "conditiontype": "eq",
+                    "comparetype": "number",
+                    "reference": "1435",
+                    "mandatory": true
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "requirements": [
+          {
+            "features": [
               {
-                "features": [
-                  {
-                    "type": "WIFI on board",
-                    "offeredservice": "example",
-                    "capacity": "200",
-                    "wagongroups": [
-                      {
-                        "id": "123456789012",
-                        "position": 1,
-                        "length": 27,
-                        "weight": 60000,
-                        "profile": "PN-5",
-                        "wagoncount": 1,
-                        "features": []
-                      }
-                    ],
-                    "units": [
-                      {
-                        "position": 4,
-                        "carbodies": [
-                          {
-                            "position": 1,
-                            "type": "RaBe",
-                            "traction": "electric",
-                            "vehiclenumber": "999999999962",
-                            "frontcoupling": "fix",
-                            "backcoupling": "fix",
-                            "profile": "example",
-                            "features": []
-                          }
-                        ],
-                        "type": "Re420-CE",
-                        "features": []
-                      }
-                    ],
-                    "staff": [
-                      {
-                        "type": "decouple",
-                        "action": "example"
-                      }
-                    ],
-                    "restrictions": [
-                      {
-                        "type": "example",
-                        "creator": "example",
-                        "creationtime": "2025-12-01T12:51:26.632Z",
-                        "starttime": "2025-12-01T12:51:26.632Z",
-                        "endtime": "2025-12-01T12:51:26.632Z",
-                        "freetext": "example",
-                        "resolution": "example",
-                        "resolutiontime": "2025-12-01T12:51:26.632Z"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "WIFI on board",
-                    "offeredservice": "example",
-                    "capacity": "200",
-                    "wagongroups": [
-                      {
-                        "id": "123456789012",
-                        "position": 1,
-                        "length": 27,
-                        "weight": 60000,
-                        "profile": "PN-5",
-                        "wagoncount": 1,
-                        "features": []
-                      }
-                    ],
-                    "units": [
-                      {
-                        "position": 4,
-                        "carbodies": [
-                          {
-                            "position": 1,
-                            "type": "RaBe",
-                            "traction": "electric",
-                            "vehiclenumber": "999999999962",
-                            "frontcoupling": "fix",
-                            "backcoupling": "fix",
-                            "profile": "example",
-                            "features": []
-                          }
-                        ],
-                        "type": "Re420-CE",
-                        "features": []
-                      }
-                    ],
-                    "staff": [
-                      {
-                        "type": "decouple",
-                        "action": "example"
-                      }
-                    ],
-                    "restrictions": [
-                      {
-                        "type": "example",
-                        "creator": "example",
-                        "creationtime": "2025-12-01T12:51:26.632Z",
-                        "starttime": "2025-12-01T12:51:26.632Z",
-                        "endtime": "2025-12-01T12:51:26.632Z",
-                        "freetext": "example",
-                        "resolution": "example",
-                        "resolutiontime": "2025-12-01T12:51:26.632Z"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "WIFI on board",
-                    "offeredservice": "example",
-                    "capacity": "200",
-                    "wagongroups": [
-                      {
-                        "id": "123456789012",
-                        "position": 1,
-                        "length": 27,
-                        "weight": 60000,
-                        "profile": "PN-5",
-                        "wagoncount": 1,
-                        "features": []
-                      }
-                    ],
-                    "units": [
-                      {
-                        "position": 4,
-                        "carbodies": [
-                          {
-                            "position": 1,
-                            "type": "RaBe",
-                            "traction": "electric",
-                            "vehiclenumber": "999999999962",
-                            "frontcoupling": "fix",
-                            "backcoupling": "fix",
-                            "profile": "example",
-                            "features": []
-                          }
-                        ],
-                        "type": "Re420-CE",
-                        "features": []
-                      }
-                    ],
-                    "staff": [
-                      {
-                        "type": "decouple",
-                        "action": "example"
-                      }
-                    ],
-                    "restrictions": [
-                      {
-                        "type": "example",
-                        "creator": "example",
-                        "creationtime": "2025-12-01T12:51:26.633Z",
-                        "starttime": "2025-12-01T12:51:26.633Z",
-                        "endtime": "2025-12-01T12:51:26.633Z",
-                        "freetext": "example",
-                        "resolution": "example",
-                        "resolutiontime": "2025-12-01T12:51:26.633Z"
-                      }
-                    ]
-                  }
-                ],
-                "condition": [
-                  {
-                    "conditiontype": [
-                      "eq"
-                    ],
-                    "comparetype": [],
-                    "reference": "250"
-                  }
-                ]
+                "feature": {
+                  "type": "signaling system",
+                  "offeredservice": "ETCS Level 2",
+                  "capacity": "1"
+                },
+                "condition": {
+                  "conditiontype": "in",
+                  "comparetype": "string",
+                  "reference": "ETCS Level 1,ETCS Level 2",
+                  "mandatory": false
+                }
               }
             ]
           }
