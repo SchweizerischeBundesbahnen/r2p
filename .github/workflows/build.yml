@@ -9,7 +9,20 @@ on:
       - '**'
 
 jobs:
+  validate-openapi:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Run Spectral
+        uses: stoplightio/spectral-action@latest
+        with:
+          file_glob: 'src/main/resources/openapi/r2p-spec.yaml'
+
   build:
+    needs: validate-openapi
     runs-on: ubuntu-latest
 
     steps:

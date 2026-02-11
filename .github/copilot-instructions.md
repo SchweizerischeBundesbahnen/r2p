@@ -67,6 +67,7 @@ r2p/
 │   └── openapi/
 │       ├── r2p-spec.yaml             # OpenAPI specification (SOURCE OF TRUTH)
 │       └── schemas/train.yaml        # Train data schema
+├── .spectral.yaml                    # Spectral linting rules for OpenAPI validation
 ├── src/test/java/ch/rail/r2p/
 │   ├── web/                          # Controller tests
 │   └── WithMockR2PUser.java          # Test annotation for security
@@ -85,6 +86,7 @@ r2p/
 ### 1. OpenAPI Code Generation
 - **NEVER edit files in `target/generated-sources/openapi/`** - they are regenerated on every build
 - **To modify API:** Edit `src/main/resources/openapi/r2p-spec.yaml` or `schemas/train.yaml`, then run `mvn compile`
+- **OpenAPI Validation:** The spec is validated with Spectral (see `.spectral.yaml`) on every CI build
 - Generated interfaces are in `ch.rail.r2p.api.V1Api`
 - Generated DTOs are in `ch.rail.r2p.api.dto.*`
 
@@ -116,8 +118,9 @@ Examples:
 ## CI/CD Pipeline
 
 ### On Every Push/PR
-1. **Build and Test** (`build.yml`): `mvn clean package` on Ubuntu with JDK 25
-2. **Commit Lint** (`lint-commit-messages.yml`): Validates commit messages
+1. **OpenAPI Validation** (`build.yml`): Spectral validates `r2p-spec.yaml` against OpenAPI standards
+2. **Build and Test** (`build.yml`): `mvn clean package` on Ubuntu with JDK 25
+3. **Commit Lint** (`lint-commit-messages.yml`): Validates commit messages
 
 ### On Release (main branch merge)
 - Release-please creates release PRs automatically based on conventional commits

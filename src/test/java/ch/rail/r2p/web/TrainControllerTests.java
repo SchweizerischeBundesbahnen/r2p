@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -55,8 +56,9 @@ class TrainControllerTests {
             try {
                 sampleTrain = objectMapper.readValue(
                     this.getClass().getResourceAsStream("/openapi/sampleTrain.json"), Train.class);
+                Objects.requireNonNull(sampleTrain);
             } catch (Exception e) {
-                return null;
+                throw new RuntimeException("Failed to load sample train", e);
             }
         }
         return sampleTrain;
