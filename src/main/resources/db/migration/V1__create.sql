@@ -4,6 +4,7 @@ create table train_version
     train_id        uuid                     not null,
     train_number    varchar(255)             not null,
     operational_day date                     not null,
+    branch_id       uuid                     not null,
     branch_name     varchar(255)             not null,
     owner           varchar(255)             not null,
     comment         text                     not null,
@@ -26,14 +27,16 @@ create index idx_train_partner_train_id on train_partner (train_id);
 
 create table changelog
 (
-    id          uuid                     not null,
-    action      varchar(255)             not null,
-    partner     varchar(255)             not null,
-    train_id    uuid                     not null,
-    branch_name varchar(255)             not null,
-    version     uuid                     not null,
-    timestamp   timestamp with time zone not null,
-    comment     text                     not null,
+    id                uuid                     not null,
+    action            varchar(255)             not null,
+    partner           varchar(255)             not null,
+    concerned_partner varchar(255),
+    train_id          uuid                     not null,
+    branch_id         uuid                     not null,
+    branch_name       varchar(255)             not null,
+    version           uuid                     not null,
+    timestamp         timestamp with time zone not null,
+    comment           text                     not null,
     primary key (id)
 );
 create index idx_changelog_timestamp on changelog (timestamp);

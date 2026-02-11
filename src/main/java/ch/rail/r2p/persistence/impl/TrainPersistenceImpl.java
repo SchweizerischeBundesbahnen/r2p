@@ -37,6 +37,11 @@ public class TrainPersistenceImpl implements TrainPersistence {
     }
 
     @Override
+    public Optional<TrainVersion> findHeadVersionByTrainIdAndBranchId(UUID trainId, UUID branchId) {
+        return trainSpringDataRepository.findHeadVersionByTrainIdAndBranchId(trainId, branchId);
+    }
+
+    @Override
     public List<TrainVersion> findHeadVersionsByCriteria(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo) {
         return trainSpringDataRepository.findHeadVersionsByCriteria(partner, operationalDayFrom, operationalDayTo);
     }
@@ -54,6 +59,11 @@ public class TrainPersistenceImpl implements TrainPersistence {
     @Override
     public void addPartner(UUID trainId, String partner) {
         trainSpringDataRepository.addPartner(trainId, partner);
+    }
+
+    @Override
+    public void removePartner(UUID trainId, String partner) {
+        trainSpringDataRepository.removePartner(trainId, partner);
     }
 
     @Override

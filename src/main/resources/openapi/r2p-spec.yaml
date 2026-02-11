@@ -79,6 +79,45 @@ paths:
                 $ref: '#/components/schemas/TrainListElement'
         '403':
           description: Not authorized to create train
+  /v1/trains/{trainId}/unshare:
+    post:
+      tags:
+        - R2P
+      summary: Unshare train
+      operationId: unshareTrain
+      parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
+        - name: trainId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: unshareWith
+          in: query
+          required: true
+          description: Partner name to unshare the train with
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainListElement'
+        '403':
+          description: Not authorized to unshare train
+        '404':
+          description: Train not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
   /v1/trains/{trainId}/share:
     post:
       tags:
@@ -151,7 +190,57 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
-  /v1/trains/{trainId}/{branchName}:
+  /v1/trains/{trainId}/branches:
+    post:
+      tags:
+        - R2P
+      summary: Create a train branch
+      operationId: createTrainBranch
+      parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
+        - name: trainId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: branchName
+          in: query
+          schema:
+            type: string
+            example: myBranch
+            maxLength: 255
+        - name: comment
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './schemas/train.yaml#/Train'
+      responses:
+        '200':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+        '403':
+          description: Not authorized to create train branch
+        '404':
+          description: Train not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+  /v1/trains/{trainId}/branches/{branchId}:
     get:
       tags:
         - R2P
@@ -169,12 +258,12 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: branchName
+        - name: branchId
           in: path
           required: true
           schema:
             type: string
-            maxLength: 255
+            format: uuid
       responses:
         '200':
           description: Successful operation
@@ -207,12 +296,12 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: branchName
+        - name: branchId
           in: path
           required: true
           schema:
             type: string
-            maxLength: 255
+            format: uuid
         - name: comment
           in: query
           required: true
@@ -256,12 +345,12 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: branchName
+        - name: branchId
           in: path
           required: true
           schema:
             type: string
-            maxLength: 255
+            format: uuid
         - name: comment
           in: query
           required: true
@@ -438,6 +527,8 @@ components:
         - updated
         - merged
         - deleted
+        - shared
+        - unshared
     Change:
       description: 'Change information'
       type: object
@@ -445,6 +536,7 @@ components:
         - action
         - partner
         - trainId
+        - branchId
         - branchName
         - version
         - timestamp
@@ -454,12 +546,18 @@ components:
         partner:
           type: string
           description: partner that has performed this action
+        concernedPartner:
+          type: string
+          description: partner that is concerned by this action (e.g. sharing or unsharing)
         trainId:
+          type: string
+          format: uuid
+        branchId:
           type: string
           format: uuid
         branchName:
           type: string
-          example: main
+          example: SBB-main
           maxLength: 255
         version:
           type: string
@@ -474,13 +572,17 @@ components:
         description: 'The branch object'
         type: object
         required:
+          - branchId
           - branchName
           - business
           - technical
         properties:
+          branchId:
+            type: string
+            format: uuid
           branchName:
             type: string
-            example: main
+            example: SBB-main
             maxLength: 255
           business:
             $ref: '#/components/schemas/BranchBusinessData'

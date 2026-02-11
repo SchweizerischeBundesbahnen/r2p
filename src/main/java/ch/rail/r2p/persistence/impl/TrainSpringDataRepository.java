@@ -21,6 +21,12 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
 
     @Query("""
         SELECT * FROM train_version
+        WHERE train_id=:trainId AND branch_id=:branchId AND head=true
+        """)
+    Optional<TrainVersion> findHeadVersionByTrainIdAndBranchId(UUID trainId, UUID branchId);
+
+    @Query("""
+        SELECT * FROM train_version
         WHERE train_id=:trainId AND branch_name=:branchName AND head=true
         """)
     Optional<TrainVersion> findHeadVersionByTrainIdAndBranchName(UUID trainId, String branchName);
@@ -38,6 +44,12 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
         """)
     @Modifying
     void addPartner(UUID trainId, String partner);
+
+    @Query("""
+        DELETE FROM train_partner WHERE train_id=:trainId and partner=:partner;
+        """)
+    @Modifying
+    void removePartner(UUID trainId, String partner);
 
     @Query("""
         SELECT partner FROM train_partner WHERE train_id=:trainId

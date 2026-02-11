@@ -34,8 +34,14 @@ public class TrainController implements V1Api {
     }
 
     @Override
-    public ResponseEntity<Branch> deleteTrainBranch(PartnerToken token, UUID trainId, String branchName, String comment) {
-        TrainVersion trainVersion = trainService.deleteTrainBranch(token.name(), trainId, branchName, comment);
+    public ResponseEntity<Branch> createTrainBranch(PartnerToken token, UUID trainId, String comment, Train train, String branchName) {
+        TrainVersion newVersion = trainService.createTrainBranch(token.name(), trainId, branchName, comment, train);
+        return ResponseEntity.ok(trainMapper.toBranch(newVersion));
+    }
+
+    @Override
+    public ResponseEntity<Branch> deleteTrainBranch(PartnerToken token, UUID trainId, UUID branchId, String comment) {
+        TrainVersion trainVersion = trainService.deleteTrainBranch(token.name(), trainId, branchId, comment);
         return ResponseEntity.ok(trainMapper.toBranch(trainVersion));
     }
 
@@ -46,8 +52,8 @@ public class TrainController implements V1Api {
     }
 
     @Override
-    public ResponseEntity<Branch> getTrainBranch(PartnerToken token, UUID trainId, String branchName) {
-        TrainVersion trainVersion = trainService.getTrainBranch(token.name(), trainId, branchName);
+    public ResponseEntity<Branch> getTrainBranch(PartnerToken token, UUID trainId, UUID branchId) {
+        TrainVersion trainVersion = trainService.getTrainBranch(token.name(), trainId, branchId);
         return ResponseEntity.ok(trainMapper.toBranch(trainVersion));
     }
 
@@ -71,8 +77,15 @@ public class TrainController implements V1Api {
     }
 
     @Override
-    public ResponseEntity<Branch> updateTrainBranch(PartnerToken token, UUID trainId, String branchName, String comment, Train train) {
-        TrainVersion newVersion = trainService.updateTrainBranch(token.name(), trainId, branchName, comment, train);
+    public ResponseEntity<TrainListElement> unshareTrain(PartnerToken token, UUID trainId, String unshareWith) {
+        trainService.unshareTrain(token.name(), trainId, unshareWith);
+        TrainWithPartners train = trainService.getTrainById(token.name(), trainId);
+        return ResponseEntity.ok(toTrainListElement(train));
+    }
+
+    @Override
+    public ResponseEntity<Branch> updateTrainBranch(PartnerToken token, UUID trainId, UUID branchId, String comment, Train train) {
+        TrainVersion newVersion = trainService.updateTrainBranch(token.name(), trainId, branchId, comment, train);
         return ResponseEntity.ok(trainMapper.toBranch(newVersion));
     }
 

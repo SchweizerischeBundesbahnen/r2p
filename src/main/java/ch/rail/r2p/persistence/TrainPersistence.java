@@ -13,10 +13,12 @@ public interface TrainPersistence {
     void updateVersion(TrainVersion train);
     List<TrainVersion> findHeadVersionsByTrainId(UUID trainId);
     Optional<TrainVersion> findHeadVersionByTrainIdAndBranchName(UUID trainId, String branchName);
+    Optional<TrainVersion> findHeadVersionByTrainIdAndBranchId(UUID trainId, UUID branchId);
     List<TrainVersion> findHeadVersionsByCriteria(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo);
     TrainVersion getVersion(UUID version);
     void deleteTrains(Collection<UUID> trainIds);
 
     void addPartner(UUID trainId, String partner);
+    void removePartner(UUID trainId, String partner);
     List<String> getPartners(UUID trainId);
 }

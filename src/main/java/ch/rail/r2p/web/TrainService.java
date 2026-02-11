@@ -11,10 +11,12 @@ import ch.rail.r2p.persistence.ChangelogPersistence;
 import ch.rail.r2p.persistence.TrainPersistence;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -42,6 +44,7 @@ public class TrainService {
             .trainNumber(train.getId())
             .operationalDay(train.getStartdate())
             .branchName(MAIN_BRANCH_NAME)
+            .branchId(UUID.randomUUID())
             .comment(comment)
             .timestamp(OffsetDateTime.now())
             .version(UUID.randomUUID())
@@ -58,14 +61,25 @@ public class TrainService {
         return new TrainWithPartners(List.of(createdTrain), List.of(owner));
     }
 
-    public TrainVersion deleteTrainBranch(String partner, UUID trainId, String branchName, String comment) {
-        TrainVersion trainVersion = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, branchName).orElseThrow();
+    public TrainVersion deleteTrainBranch(String partner, UUID trainId, UUID branchId, String comment) {
+        TrainVersion trainVersion = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId).orElseThrow();
         checkSharing(partner, trainVersion);
-        checkBranchOrInstanceOwner(partner, trainVersion);
+        checkBranchOwner(partner, trainVersion);
         trainVersion.setBranchState(BranchState.DELETED);
         trainPersistence.updateVersion(trainVersion); // Update the train keeping the current version
         Changelog changelog = Changelog.forDeletion(partner, trainVersion, comment);
         changelogPersistence.insert(changelog);
+        // If main branch is deleted, delete all other branches as well
+        if (trainVersion.getBranchName().equals(MAIN_BRANCH_NAME)) {
+            List<TrainVersion> branches = trainPersistence.findHeadVersionsByTrainId(trainId);
+            for (TrainVersion branch : branches) {
+                if (branch.getBranchState() != BranchState.DELETED) {
+                    branch.setBranchState(BranchState.DELETED);
+                    trainPersistence.updateVersion(branch);
+                    changelogPersistence.insert(Changelog.forDeletion(partner, branch, comment));
+                }
+            }
+        }
         return trainVersion;
     }
 
@@ -77,8 +91,8 @@ public class TrainService {
         return new TrainWithPartners(trains, partners);
     }
 
-    public TrainVersion getTrainBranch(String partner, UUID trainId, String branchName) {
-        TrainVersion trainVersion = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, branchName).orElseThrow();
+    public TrainVersion getTrainBranch(String partner, UUID trainId, UUID branchId) {
+        TrainVersion trainVersion = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId).orElseThrow();
         checkSharing(partner, trainVersion);
         return trainVersion;
     }
@@ -105,31 +119,57 @@ public class TrainService {
         TrainVersion trainVersion = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME).orElseThrow();
         checkSharing(partner, trainVersion);
         trainPersistence.addPartner(trainId, shareWith);
+        Changelog changelog = Changelog.forSharing(partner, shareWith, trainVersion, "Train shared");
+        changelogPersistence.insert(changelog);
     }
 
-    public TrainVersion updateTrainBranch(String partner, UUID trainId, String branchName, String comment, Train train) {
-        Optional<TrainVersion> branchTrainVersion = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, branchName);
-        TrainVersion newVersion;
-        if (branchTrainVersion.isPresent()) {
-            checkSharing(partner, branchTrainVersion.get());
-            checkBranchOwner(partner, branchTrainVersion.get());
-            branchTrainVersion.get().setHead(false);
-            trainPersistence.updateVersion(branchTrainVersion.get());
-            newVersion = branchTrainVersion.get().createNewVersion(train, comment);
-        } else {
-            TrainVersion mainTrainVersion = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME).orElseThrow();
-            checkSharing(partner, mainTrainVersion);
-            newVersion = mainTrainVersion.createBranch(branchName, partner, train, comment);
+    public void unshareTrain(String partner, UUID trainId, String unshareWith) {
+        TrainVersion trainVersion = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME).orElseThrow();
+        checkBranchOrInstanceOwner(partner, trainVersion);
+        trainPersistence.removePartner(trainId, unshareWith);
+        Changelog changelog = Changelog.forUnsharing(partner, unshareWith, trainVersion, "Train unshared");
+        changelogPersistence.insert(changelog);
+        List<TrainVersion> branches = trainPersistence.findHeadVersionsByTrainId(trainId);
+        for (TrainVersion branch : branches) {
+            if (branch.getOwner().equals(unshareWith) && branch.getBranchState() != BranchState.DELETED) {
+                branch.setBranchState(BranchState.DELETED);
+                trainPersistence.updateVersion(branch);
+                changelogPersistence.insert(Changelog.forDeletion(partner, branch, "Branch deleted due to unsharing of train"));
+            }
         }
+    }
+
+    public TrainVersion createTrainBranch(String partner, UUID trainId, String branchName, String comment, Train train) {
+        TrainVersion mainTrainVersion = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME).orElseThrow();
+        checkSharing(partner, mainTrainVersion);
+        checkBranchState(mainTrainVersion, BranchState.OPEN);
+        TrainVersion newVersion = mainTrainVersion.createBranch(branchName, partner, train, comment);
         newVersion.setPayload(train);
         newVersion.setTimestamp(OffsetDateTime.now());
         newVersion.setComment(comment);
         newVersion.setTrainNumber(train.getId());
         newVersion.setOperationalDay(train.getStartdate());
         trainPersistence.insertVersion(newVersion);
-        Changelog changelog = branchTrainVersion.isPresent()
-            ? Changelog.forUpdate(partner, newVersion, comment)
-            : Changelog.forCreation(partner, newVersion, comment);
+        Changelog changelog = Changelog.forCreation(partner, newVersion, comment);
+        changelogPersistence.insert(changelog);
+        return newVersion;
+    }
+
+    public TrainVersion updateTrainBranch(String partner, UUID trainId, UUID branchId, String comment, Train train) {
+        TrainVersion branchTrainVersion = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId).orElseThrow();
+        checkSharing(partner, branchTrainVersion);
+        checkBranchOwner(partner, branchTrainVersion);
+        checkBranchState(branchTrainVersion, BranchState.OPEN);
+        branchTrainVersion.setHead(false);
+        trainPersistence.updateVersion(branchTrainVersion);
+        TrainVersion newVersion = branchTrainVersion.createNewVersion(train, comment);
+        newVersion.setPayload(train);
+        newVersion.setTimestamp(OffsetDateTime.now());
+        newVersion.setComment(comment);
+        newVersion.setTrainNumber(train.getId());
+        newVersion.setOperationalDay(train.getStartdate());
+        trainPersistence.insertVersion(newVersion);
+        Changelog changelog = Changelog.forUpdate(partner, newVersion, comment);
         changelogPersistence.insert(changelog);
         return newVersion;
     }
@@ -163,6 +203,13 @@ public class TrainService {
     private void checkBranchOrInstanceOwner(String partner, TrainVersion trainVersion) {
         if (!partner.equals(trainVersion.getOwner()) && !partner.equals(instanceOwner)) {
             throw new AuthorizationDeniedException("Partner is not branch or instance owner");
+        }
+    }
+
+    private void checkBranchState(TrainVersion trainVersion, BranchState... allowedStates) {
+        Set<BranchState> allowedStateSet = Arrays.stream(allowedStates).collect(Collectors.toSet());
+        if (!allowedStateSet.contains(trainVersion.getBranchState())) {
+            throw new IllegalStateException("Branch state not allowed: " + trainVersion.getBranchState());
         }
     }
 }

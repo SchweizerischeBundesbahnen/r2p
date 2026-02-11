@@ -27,7 +27,8 @@ public class TrainMapper {
 
     Branch toBranch(TrainVersion train) {
         return new Branch()
-            .branchName(train.getBranchName())
+            .branchId(train.getBranchId())
+            .branchName(train.getPrefixedBranchName())
             .business(new BranchBusinessData()
                 .trainNumber(train.getTrainNumber())
                 .operationalDay(train.getOperationalDay()))
@@ -43,7 +44,9 @@ public class TrainMapper {
         return new Change()
             .action(changelog.getAction())
             .partner(changelog.getPartner())
+            .concernedPartner(changelog.getConcernedPartner())
             .trainId(changelog.getTrainId())
+            .branchId(changelog.getBranchId())
             .branchName(changelog.getBranchName())
             .version(changelog.getVersion())
             .timestamp(changelog.getTimestamp())

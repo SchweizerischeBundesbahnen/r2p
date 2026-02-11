@@ -22,6 +22,7 @@ public class TrainVersion {
     UUID trainId;
     String trainNumber;
     LocalDate operationalDay;
+    UUID branchId;
     String branchName;
     String owner;
     String comment;
@@ -44,8 +45,13 @@ public class TrainVersion {
 
     public TrainVersion createBranch(String branchName, String owner, Train payload, String comment) {
         TrainVersion newVersion = createNewVersion(payload, comment);
+        newVersion.setBranchId(UUID.randomUUID());
         newVersion.setBranchName(branchName);
         newVersion.setOwner(owner);
         return newVersion;
+    }
+
+    public String getPrefixedBranchName() {
+        return "%s-%s".formatted(owner, branchName);
     }
 }

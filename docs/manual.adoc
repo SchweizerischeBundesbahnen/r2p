@@ -148,6 +148,8 @@ Supported types are:
 |Is it important to address quality requirements like performance or concurrency already in the PoC? | | | | []
 |Unclear if the current date/time handling is the best or if it would be better to e.g. use Time and Timezone | | | | []
 |Unclear if the current versioning strategy (version in path) is the best or if other possibilities would be beneficial, e.g. header/parameter instead of path, datetime instead of number, ...| | | | []
+|Who should be allowed to share a train? Whoever it has been shared with (current implementation)? Or only Lead RU| | | | []
+|Who should be allowed to unshared a train for someone? The Lead RU and a partner for himself (current implementation)?| | | | []
 |===
 
 == Limitations of current implementation
