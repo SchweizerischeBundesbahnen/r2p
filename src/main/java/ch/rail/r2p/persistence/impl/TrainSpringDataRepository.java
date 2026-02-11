@@ -27,12 +27,6 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
 
     @Query("""
         SELECT * FROM train_version
-        WHERE train_id=:trainId AND branch_name=:branchName AND head=true
-        """)
-    Optional<TrainVersion> findHeadVersionByTrainIdAndBranchName(UUID trainId, String branchName);
-
-    @Query("""
-        SELECT * FROM train_version
         WHERE (:operationalDayFrom IS NULL OR operational_day>=:operationalDayFrom)
           AND (:operationalDayTo IS NULL OR operational_day<=:operationalDayTo)
           AND EXISTS (SELECT 1 FROM train_partner WHERE train_partner.train_id=train_version.train_id AND train_partner.partner=:partner)
@@ -56,5 +50,13 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
         """)
     List<String> getPartners(UUID trainId);
 
+    @Query("""
+        SELECT train_id, partner FROM train_partner WHERE train_id IN (:trainIds)
+        """)
+    List<TrainIdAndPartner> getPartnersByTrainIds(List<UUID> trainIds);
+
     void deleteByTrainId(UUID trainId);
+
+    record TrainIdAndPartner(UUID trainId, String partner) {
+    }
 }

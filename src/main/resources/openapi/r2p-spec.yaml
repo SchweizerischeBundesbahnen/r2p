@@ -536,9 +536,6 @@ components:
         - action
         - partner
         - trainId
-        - branchId
-        - branchName
-        - version
         - timestamp
       properties:
         action:

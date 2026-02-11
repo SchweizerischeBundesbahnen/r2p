@@ -31,6 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
@@ -176,8 +177,8 @@ class TrainControllerTests {
         var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
         trainController.shareTrain(SBB, train.getBody().getTrainId(), "SOB");
         trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "test", loadSampleTrain(), branchName);
-        // assertThrows(DuplicateKeyException.class, () -> trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "test", loadSampleTrain(), branchName));
-        // assertThrows(DuplicateKeyException.class, () -> trainController.createTrainBranch(SBB, train.getBody().getTrainId(), "test", loadSampleTrain(), branchName));
+        assertThrows(DuplicateKeyException.class, () -> trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "test", loadSampleTrain(), branchName));
+        assertThrows(DuplicateKeyException.class, () -> trainController.createTrainBranch(SBB, train.getBody().getTrainId(), "test", loadSampleTrain(), branchName));
     }
 
     @Test
@@ -313,7 +314,7 @@ class TrainControllerTests {
         assertThat(result).hasSize(6);
         assertThat(result.stream().map(Change::getTimestamp)).allMatch(timestamp -> timestamp.isAfter(startTime) && timestamp.isBefore(endTime));
         assertThat(result.stream().map(Change::getTrainId)).allMatch(trainId::equals);
-        assertThat(result.stream().map(Change::getBranchName)).containsExactly(PREFIXED_MAIN_BRANCH_NAME, PREFIXED_MAIN_BRANCH_NAME, PREFIXED_MAIN_BRANCH_NAME, prefixedBranchName, prefixedBranchName,
+        assertThat(result.stream().map(Change::getBranchName)).containsExactly(PREFIXED_MAIN_BRANCH_NAME, null, PREFIXED_MAIN_BRANCH_NAME, prefixedBranchName, prefixedBranchName,
             prefixedBranchName);
         assertThat(result.stream().map(Change::getAction)).containsExactly(Action.CREATED, Action.SHARED, Action.UPDATED, Action.CREATED, Action.UPDATED, Action.DELETED);
         assertThat(result.stream().map(Change::getPartner)).containsExactly("SBB", "SBB", "SBB", "SOB", "SOB", "SOB");
@@ -342,8 +343,8 @@ class TrainControllerTests {
         var sbbChangelog = trainController.getTrainChangesById(SBB, trainId, null, null).getBody();
         assertThat(sbbChangelog).hasSize(7);
         assertThat(sbbChangelog.stream().map(Change::getTrainId)).allMatch(trainId::equals);
-        assertThat(sbbChangelog.stream().map(Change::getBranchName)).containsExactly(PREFIXED_MAIN_BRANCH_NAME, PREFIXED_MAIN_BRANCH_NAME, PREFIXED_MAIN_BRANCH_NAME, prefixedBranchName,
-            prefixedBranchName, PREFIXED_MAIN_BRANCH_NAME, prefixedBranchName);
+        assertThat(sbbChangelog.stream().map(Change::getBranchName)).containsExactly(PREFIXED_MAIN_BRANCH_NAME, null, PREFIXED_MAIN_BRANCH_NAME, prefixedBranchName, prefixedBranchName, null,
+            prefixedBranchName);
         assertThat(sbbChangelog.stream().map(Change::getAction)).containsExactly(Action.CREATED, Action.SHARED, Action.UPDATED, Action.CREATED, Action.UPDATED, Action.UNSHARED, Action.DELETED);
         assertThat(sbbChangelog.stream().map(Change::getPartner)).containsExactly("SBB", "SBB", "SBB", "SOB", "SOB", "SBB", "SBB");
         assertThat(sbbChangelog.stream().map(Change::getComment)).containsExactly("initial creation", "Train shared", "update main branch", "create branch", "update branch", "Train unshared",

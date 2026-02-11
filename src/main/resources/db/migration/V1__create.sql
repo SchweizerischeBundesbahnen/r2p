@@ -5,17 +5,26 @@ create table train_version
     train_number    varchar(255)             not null,
     operational_day date                     not null,
     branch_id       uuid                     not null,
-    branch_name     varchar(255)             not null,
-    owner           varchar(255)             not null,
     comment         text                     not null,
     timestamp       timestamp with time zone not null,
     payload         jsonb                    not null,
-    branch_state    varchar(255)             not null,
     head            boolean                  not null,
     primary key (version)
 );
 create index idx_train_version_train_id on train_version (train_id);
 create index idx_train_version_operational_day on train_version (operational_day);
+
+create table branch
+(
+    branch_id uuid         not null,
+    train_id  uuid         not null,
+    name      varchar(255) not null,
+    owner     varchar(255) not null,
+    state     varchar(255) not null,
+    primary key (branch_id),
+    constraint unique_branch_name_per_train unique (train_id, name)
+);
+create index idx_branch_train_id on branch (train_id);
 
 create table train_partner
 (
@@ -32,9 +41,9 @@ create table changelog
     partner           varchar(255)             not null,
     concerned_partner varchar(255),
     train_id          uuid                     not null,
-    branch_id         uuid                     not null,
-    branch_name       varchar(255)             not null,
-    version           uuid                     not null,
+    branch_id         uuid,
+    branch_name       varchar(255),
+    version           uuid,
     timestamp         timestamp with time zone not null,
     comment           text                     not null,
     primary key (id)
