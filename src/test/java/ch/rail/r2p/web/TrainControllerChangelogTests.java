@@ -1,6 +1,6 @@
 package ch.rail.r2p.web;
 
-import static ch.rail.r2p.Constants.MAIN_BRANCH_NAME;
+import static ch.rail.r2p.domain.Branch.MAIN_BRANCH_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ch.rail.r2p.api.dto.Action;

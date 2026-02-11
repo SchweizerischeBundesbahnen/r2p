@@ -1,7 +1,5 @@
 package ch.rail.r2p.web;
 
-import static ch.rail.r2p.Constants.MAIN_BRANCH_NAME;
-
 import ch.rail.r2p.api.dto.Branch;
 import ch.rail.r2p.api.dto.BranchBusinessData;
 import ch.rail.r2p.api.dto.BranchTechnicalData;
@@ -11,14 +9,13 @@ import ch.rail.r2p.domain.Changelog;
 import ch.rail.r2p.domain.TrainVersion;
 import ch.rail.r2p.domain.TrainVersionEnriched;
 import java.util.Collection;
-import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TrainMapper {
 
     TrainListElement toTrainListElement(Collection<TrainVersionEnriched> trains) {
-        TrainVersionEnriched main = trains.stream().filter(train -> train.branch().getName().equals(MAIN_BRANCH_NAME)).findAny().orElseThrow();
+        TrainVersionEnriched main = trains.stream().filter(train -> train.branch().isMainBranch()).findAny().orElseThrow();
         return new TrainListElement()
             .trainId(main.trainVersion().getTrainId())
             .partners(main.partners())

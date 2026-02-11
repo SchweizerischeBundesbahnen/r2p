@@ -14,6 +14,8 @@ import org.springframework.data.annotation.Id;
 @Setter
 public class Branch {
 
+    public static final String MAIN_BRANCH_NAME = "main";
+
     @Id
     UUID branchId;
     UUID trainId;
@@ -23,6 +25,10 @@ public class Branch {
 
     public static Branch createBranch(UUID trainId, String name, String owner) {
         return new Branch(UUID.randomUUID(), trainId, name, owner, BranchState.OPEN);
+    }
+
+    public boolean isMainBranch() {
+        return MAIN_BRANCH_NAME.equals(name);
     }
 
     public String getPrefixedName() {

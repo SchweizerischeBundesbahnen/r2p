@@ -1,6 +1,6 @@
 package ch.rail.r2p.web;
 
-import static ch.rail.r2p.Constants.MAIN_BRANCH_NAME;
+import static ch.rail.r2p.domain.Branch.MAIN_BRANCH_NAME;
 import static ch.rail.r2p.api.dto.PartnerToken.BLS;
 import static ch.rail.r2p.api.dto.PartnerToken.SBB;
 import static ch.rail.r2p.api.dto.PartnerToken.SOB;
@@ -54,7 +54,7 @@ class TrainControllerTests {
 
     Set<UUID> trainIdsForCleanup = new HashSet<>();
 
-    private final static String PREFIXED_MAIN_BRANCH_NAME = "%s-%s".formatted(SBB, MAIN_BRANCH_NAME);
+    private static final String PREFIXED_MAIN_BRANCH_NAME = "%s-%s".formatted(SBB, MAIN_BRANCH_NAME);
 
     Train loadSampleTrain() {
         if (sampleTrain == null) {

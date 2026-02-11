@@ -1,6 +1,6 @@
 package ch.rail.r2p.web;
 
-import static ch.rail.r2p.Constants.MAIN_BRANCH_NAME;
+import static ch.rail.r2p.domain.Branch.MAIN_BRANCH_NAME;
 import static java.util.stream.Collectors.groupingBy;
 
 import ch.rail.r2p.api.dto.BranchState;
@@ -66,7 +66,7 @@ public class TrainService {
         Changelog changelog = Changelog.forDeletion(partner, train.branch(), comment);
         changelogPersistence.insert(changelog);
         // If main branch is deleted, delete all other branches as well
-        if (train.branch().getName().equals(MAIN_BRANCH_NAME)) {
+        if (train.branch().isMainBranch()) {
             List<Branch> branches = trainPersistence.findBranchesByTrainId(trainId);
             for (Branch branch : branches) {
                 if (branch.getState() != BranchState.DELETED) {
@@ -113,9 +113,7 @@ public class TrainService {
 
     public void unshareTrain(String partner, UUID trainId, String unshareWith) {
         TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME).orElseThrow();
-        if (!partner.equals(instanceOwner) && !partner.equals(unshareWith)) {
-            throw new AuthorizationDeniedException("Partner is not instance owner or himself");
-        }
+        checkUnsharingAuthorization(partner, unshareWith);
         trainPersistence.removePartner(trainId, unshareWith);
         Changelog changelog = Changelog.forUnsharing(partner, unshareWith, main.trainVersion(), "Train unshared");
         changelogPersistence.insert(changelog);
@@ -180,6 +178,12 @@ public class TrainService {
     private void checkBranchOwner(String partner, Branch branch) {
         if (!partner.equals(branch.getOwner())) {
             throw new AuthorizationDeniedException("Partner is not branch owner");
+        }
+    }
+
+    private void checkUnsharingAuthorization(String partner, String unshareWith) {
+        if (!partner.equals(instanceOwner) && !partner.equals(unshareWith)) {
+            throw new AuthorizationDeniedException("Partner is not instance owner or himself");
         }
     }
 
