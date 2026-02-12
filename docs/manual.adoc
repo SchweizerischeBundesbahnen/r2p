@@ -33,6 +33,11 @@ In order to persist the data in a file, configure a corresponding datasource via
 DATABASE_STORAGE=file:C:/devsbb/h2/r2p
 ----
 
+In order to automatically clean the database in case of a validation error encountered by Flyway, the following environment variable can be set:
+----
+DATABASE_CLEAN_ON_VALIDATION_ERROR=true
+----
+
 === Deploy on OpenShift
 
 The Docker image is available at `ghcr-private.docker.bin.sbb.ch/schweizerischebundesbahnen/r2p:latest`.
