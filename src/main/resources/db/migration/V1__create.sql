@@ -39,7 +39,7 @@ create table changelog
     id                uuid                     not null,
     action            varchar(255)             not null,
     partner           varchar(255)             not null,
-    concerned_partner varchar(255),
+    affected_partner varchar(255),
     train_id          uuid                     not null,
     branch_id         uuid,
     branch_name       varchar(255),

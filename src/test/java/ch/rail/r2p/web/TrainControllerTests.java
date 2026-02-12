@@ -35,6 +35,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
+// TODO split this class into multiple test classes, e.g. TrainControllerBranchTests, TrainControllerSharingTests, etc.
 @SpringBootTest
 class TrainControllerTests {
 
@@ -338,7 +339,7 @@ class TrainControllerTests {
         assertThat(sobChangelog).hasSize(2);
         assertThat(sobChangelog.stream().map(Change::getTrainId)).allMatch(trainId::equals);
         assertThat(sobChangelog.stream().map(Change::getAction)).containsExactly(Action.SHARED, Action.UNSHARED);
-        assertThat(sobChangelog.stream().map(Change::getConcernedPartner)).containsExactly("SOB", "SOB");
+        assertThat(sobChangelog.stream().map(Change::getAffectedPartner)).containsExactly("SOB", "SOB");
 
         var sbbChangelog = trainController.getTrainChangesById(SBB, trainId, null, null).getBody();
         assertThat(sbbChangelog).hasSize(7);

@@ -17,7 +17,7 @@ public interface ChangelogSpringDataRepository extends CrudRepository<Changelog,
           AND (:to IS NULL OR timestamp<=:to)
           AND (:trainId IS NULL OR train_id=:trainId)
           AND (EXISTS (SELECT 1 FROM train_partner WHERE train_partner.train_id=changelog.train_id AND train_partner.partner=:partner)
-              OR concerned_partner=:partner
+              OR affected_partner=:partner
               )
           ORDER BY timestamp
         """)

@@ -19,7 +19,7 @@ public class Changelog {
     private final UUID id;
     private final Action action;
     private final String partner;
-    private final String concernedPartner;
+    private final String affectedPartner;
     private final UUID trainId;
     private final UUID branchId;
     private final String branchName;
@@ -42,13 +42,13 @@ public class Changelog {
             comment);
     }
 
-    public static Changelog forSharing(String partner, String concernedPartner, TrainVersion trainVersion, String comment) {
-        return new Changelog(UUID.randomUUID(), Action.SHARED, partner, concernedPartner, trainVersion.trainId, null, null, trainVersion.version,
+    public static Changelog forSharing(String partner, String affectedPartner, TrainVersion trainVersion, String comment) {
+        return new Changelog(UUID.randomUUID(), Action.SHARED, partner, affectedPartner, trainVersion.trainId, null, null, trainVersion.version,
             OffsetDateTime.now(), comment);
     }
 
-    public static Changelog forUnsharing(String partner, String concernedPartner, TrainVersion trainVersion, String comment) {
-        return new Changelog(UUID.randomUUID(), Action.UNSHARED, partner, concernedPartner, trainVersion.trainId, null, null, trainVersion.version,
+    public static Changelog forUnsharing(String partner, String affectedPartner, TrainVersion trainVersion, String comment) {
+        return new Changelog(UUID.randomUUID(), Action.UNSHARED, partner, affectedPartner, trainVersion.trainId, null, null, trainVersion.version,
             OffsetDateTime.now(), comment);
     }
 }

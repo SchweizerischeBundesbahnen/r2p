@@ -43,7 +43,7 @@ public class TrainMapper {
         return new Change()
             .action(changelog.getAction())
             .partner(changelog.getPartner())
-            .concernedPartner(changelog.getConcernedPartner())
+            .affectedPartner(changelog.getAffectedPartner())
             .trainId(changelog.getTrainId())
             .branchId(changelog.getBranchId())
             .branchName(changelog.getBranchName())

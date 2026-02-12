@@ -543,9 +543,9 @@ components:
         partner:
           type: string
           description: partner that has performed this action
-        concernedPartner:
+        affectedPartner:
           type: string
-          description: partner that is concerned by this action (e.g. sharing or unsharing)
+          description: partner that is affected by this action (e.g. sharing or unsharing)
         trainId:
           type: string
           format: uuid
