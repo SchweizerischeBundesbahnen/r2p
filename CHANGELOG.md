@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.0.11](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.10...r2p-v0.0.11) (2026-02-12)
+
+
+### Features
+
+* implement changes requested at review at 2026-01-09 ([1f481d3](https://github.com/SchweizerischeBundesbahnen/r2p/commit/1f481d3798cd02e86a227c6b95d84196a19c3eae))
+* update spec ([#55](https://github.com/SchweizerischeBundesbahnen/r2p/issues/55)) ([8a58e3a](https://github.com/SchweizerischeBundesbahnen/r2p/commit/8a58e3accb25cffa1bd041c73c58724bdf9c3444))
+
+
+### Documentation
+
+* add copilot-instructions ([#51](https://github.com/SchweizerischeBundesbahnen/r2p/issues/51)) ([01cea2f](https://github.com/SchweizerischeBundesbahnen/r2p/commit/01cea2f0e378c4f91d3a5c7ad023d086c4e89ee6))
+* describe openshift deployment ([#50](https://github.com/SchweizerischeBundesbahnen/r2p/issues/50)) ([b2e47ff](https://github.com/SchweizerischeBundesbahnen/r2p/commit/b2e47ff2441add5f05d8a2ac6deb4d6ecdc306e5))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.11-SNAPSHOT ([#49](https://github.com/SchweizerischeBundesbahnen/r2p/issues/49)) ([4718c5b](https://github.com/SchweizerischeBundesbahnen/r2p/commit/4718c5b7c9fc1b90ef6c703185e6be0faef44bf2))
+
+
+### Build System
+
+* **deps-dev:** bump org.openapitools:openapi-generator-maven-plugin ([#53](https://github.com/SchweizerischeBundesbahnen/r2p/issues/53)) ([c71c820](https://github.com/SchweizerischeBundesbahnen/r2p/commit/c71c820756b8745d96ebb49477438e4f46ea47dc))
+* **deps-dev:** bump the commitlint group with 2 updates ([#57](https://github.com/SchweizerischeBundesbahnen/r2p/issues/57)) ([933dbb6](https://github.com/SchweizerischeBundesbahnen/r2p/commit/933dbb63d13454c742d78092a2848d695f89c5e8))
+* **deps:** bump org.openapitools:jackson-databind-nullable ([#56](https://github.com/SchweizerischeBundesbahnen/r2p/issues/56)) ([0ae44eb](https://github.com/SchweizerischeBundesbahnen/r2p/commit/0ae44eb25a5fd5e8b36ff5c235db27a32e0cc1d6))
+* **deps:** bump org.springframework.boot:spring-boot-starter-parent ([#54](https://github.com/SchweizerischeBundesbahnen/r2p/issues/54)) ([d85386d](https://github.com/SchweizerischeBundesbahnen/r2p/commit/d85386dec1b38cc14f1f0500ff2fabbdc6672621))
+
 ## [0.0.10](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.9...r2p-v0.0.10) (2026-01-16)
 
 
