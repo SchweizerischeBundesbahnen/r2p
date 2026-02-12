@@ -1,17 +1,15 @@
 package ch.rail.r2p.web;
 
-import static ch.rail.r2p.Constants.MAIN_BRANCH_NAME;
+import static ch.rail.r2p.domain.Branch.MAIN_BRANCH_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ch.rail.r2p.api.dto.Action;
-import ch.rail.r2p.api.dto.Change;
 import ch.rail.r2p.api.dto.PartnerToken;
 import ch.rail.r2p.domain.Changelog;
 import ch.rail.r2p.persistence.impl.ChangelogSpringDataRepository;
 import ch.rail.r2p.persistence.impl.TrainSpringDataRepository;
 import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -134,11 +132,13 @@ public class TrainControllerChangelogTests {
 
     private void generateChangelog(UUID trainId, String partner, String branchName, int updates, OffsetDateTime startTime, Duration interval) {
         OffsetDateTime time = startTime;
-        changelogSpringDataRepository.insert(new Changelog(UUID.randomUUID(), Action.CREATED, partner, trainId, branchName, UUID.randomUUID(), time, "Create %s/%s".formatted(trainId, branchName)));
+        changelogSpringDataRepository.insert(new Changelog(UUID.randomUUID(), Action.CREATED, partner, null, trainId, UUID.nameUUIDFromBytes(branchName.getBytes()), branchName, UUID.randomUUID(), time,
+            "Create %s/%s".formatted(trainId, branchName)));
         for (int i = 0; i < updates; i++) {
             time = time.plus(interval);
             changelogSpringDataRepository.insert(
-                new Changelog(UUID.randomUUID(), Action.UPDATED, partner, trainId, branchName, UUID.randomUUID(), time, "Update %s/%s".formatted(trainId, branchName)));
+                new Changelog(UUID.randomUUID(), Action.UPDATED, partner, null, trainId, UUID.nameUUIDFromBytes(branchName.getBytes()), branchName, UUID.randomUUID(), time,
+                    "Update %s/%s".formatted(trainId, branchName)));
         }
     }
 

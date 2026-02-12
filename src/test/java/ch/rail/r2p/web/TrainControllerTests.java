@@ -1,6 +1,6 @@
 package ch.rail.r2p.web;
 
-import static ch.rail.r2p.Constants.MAIN_BRANCH_NAME;
+import static ch.rail.r2p.domain.Branch.MAIN_BRANCH_NAME;
 import static ch.rail.r2p.api.dto.PartnerToken.BLS;
 import static ch.rail.r2p.api.dto.PartnerToken.SBB;
 import static ch.rail.r2p.api.dto.PartnerToken.SOB;
@@ -10,9 +10,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
 import ch.rail.r2p.api.dto.Action;
+import ch.rail.r2p.api.dto.Branch;
 import ch.rail.r2p.api.dto.BranchState;
 import ch.rail.r2p.api.dto.Change;
+import ch.rail.r2p.api.dto.PartnerToken;
 import ch.rail.r2p.api.dto.Train;
+import ch.rail.r2p.api.dto.TrainListElement;
 import ch.rail.r2p.domain.TrainVersion;
 import ch.rail.r2p.persistence.ChangelogPersistence;
 import ch.rail.r2p.persistence.TrainPersistence;
@@ -29,9 +32,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
+// TODO split this class into multiple test classes, e.g. TrainControllerBranchTests, TrainControllerSharingTests, etc.
 @SpringBootTest
 class TrainControllerTests {
 
@@ -51,6 +56,8 @@ class TrainControllerTests {
 
     Set<UUID> trainIdsForCleanup = new HashSet<>();
 
+    private static final String PREFIXED_MAIN_BRANCH_NAME = getPrefixedBranchName(SBB, MAIN_BRANCH_NAME);
+
     Train loadSampleTrain() {
         if (sampleTrain == null) {
             try {
@@ -62,6 +69,10 @@ class TrainControllerTests {
             }
         }
         return sampleTrain;
+    }
+
+    static String getPrefixedBranchName(PartnerToken owner, String branchName) {
+        return "%s-%s".formatted(owner.name(), branchName);
     }
 
     @BeforeEach
@@ -83,13 +94,17 @@ class TrainControllerTests {
 
     @Test
     void should_create_train_for_instance_owner() {
-        var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
+        Train sampleTrain = loadSampleTrain();
+        var train = trainController.createTrain(SBB, "new train", sampleTrain);
         var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
         assertThat(result).isNotNull();
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getBranches()).hasSize(1);
+        assertThat(result.getBody().getBranches().getFirst().getBusiness().getTrainNumber()).isEqualTo(sampleTrain.getId());
     }
 
     @Test
-    void should_not_create_train_for_other_partner() {
+    void should_not_create_train_for_non_instance_owner() {
         assertThrows(AuthorizationDeniedException.class, () -> trainController.createTrain(SOB, "new train", loadSampleTrain()));
     }
 
@@ -102,7 +117,7 @@ class TrainControllerTests {
     }
 
     @Test
-    void should_not_list_unshared_trains() {
+    void should_not_list_not_shared_trains() {
         trainController.createTrain(SBB, "new train", loadSampleTrain());
         var result = trainController.listTrains(BLS, null, null);
         assertThat(result).isNotNull();
@@ -129,7 +144,7 @@ class TrainControllerTests {
         var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
         assertThat(result).isNotNull();
         assertThat(result.getBody().getBranches()).hasSize(1);
-        assertThat(result.getBody().getBranches().getFirst().getBranchName()).isEqualTo(MAIN_BRANCH_NAME);
+        assertThat(result.getBody().getBranches().getFirst().getBranchName()).isEqualTo(PREFIXED_MAIN_BRANCH_NAME);
         assertThat(result.getBody().getBranches().getFirst().getTechnical().getComment()).isEqualTo(comment);
     }
 
@@ -139,7 +154,7 @@ class TrainControllerTests {
     }
 
     @Test
-    void should_not_get_unshared_train_by_id() {
+    void should_not_get_not_shared_train_by_id() {
         var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
         assertThrows(AuthorizationDeniedException.class, () -> trainController.getTrainById(SOB, train.getBody().getTrainId()));
     }
@@ -156,30 +171,80 @@ class TrainControllerTests {
     void should_create_branch() {
         var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
         trainController.shareTrain(SBB, train.getBody().getTrainId(), "SOB");
-        trainController.updateTrainBranch(SOB, train.getBody().getTrainId(), "myBranch", "test", loadSampleTrain());
+        trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "test", loadSampleTrain(), "myBranch");
         var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
         assertThat(result).isNotNull();
         assertThat(result.getBody().getBranches()).hasSize(2);
+    }
+
+    @Test
+    void should_not_create_branch_with_same_name() {
+        String branchName = "myBranch";
+        var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
+        trainController.shareTrain(SBB, train.getBody().getTrainId(), "SOB");
+        trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "test", loadSampleTrain(), branchName);
+        assertThrows(DuplicateKeyException.class, () -> trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "test", loadSampleTrain(), branchName));
+        assertThrows(DuplicateKeyException.class, () -> trainController.createTrainBranch(SBB, train.getBody().getTrainId(), "test", loadSampleTrain(), branchName));
     }
 
     @Test
     void should_delete_branch() {
         String branchName = "myBranch";
         var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
-        trainController.updateTrainBranch(SBB, train.getBody().getTrainId(), branchName, "test", loadSampleTrain());
-        trainController.deleteTrainBranch(SBB, train.getBody().getTrainId(), branchName, "delete branch");
+        trainController.shareTrain(SBB, train.getBody().getTrainId(), "SOB");
+        var branch = trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "test", loadSampleTrain(), branchName);
+        trainController.deleteTrainBranch(SOB, train.getBody().getTrainId(), branch.getBody().getBranchId(), "delete branch");
         var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
         assertThat(result).isNotNull();
         assertThat(result.getBody().getBranches()).hasSize(2);
-        var branch = result.getBody().getBranches().stream().filter(b -> b.getBranchName().equals(branchName)).findAny();
-        assertThat(branch).isPresent();
-        assertThat(branch.get().getTechnical().getBranchState()).isEqualTo(BranchState.DELETED);
+        var deletedBranch = result.getBody().getBranches().stream().filter(b -> b.getBranchName().equals(getPrefixedBranchName(SOB, branchName))).findAny();
+        assertThat(deletedBranch).isPresent();
+        assertThat(deletedBranch.get().getTechnical().getBranchState()).isEqualTo(BranchState.DELETED);
+    }
+
+    @Test
+    void should_not_delete_branch_of_other_partner() {
+        String branchName = "myBranch";
+        var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
+        trainController.shareTrain(SBB, train.getBody().getTrainId(), "SOB");
+        var branch = trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "test", loadSampleTrain(), branchName);
+        assertThrows(AuthorizationDeniedException.class, () -> trainController.deleteTrainBranch(BLS, train.getBody().getTrainId(), branch.getBody().getBranchId(), "delete branch"));
+        assertThrows(AuthorizationDeniedException.class, () -> trainController.deleteTrainBranch(SBB, train.getBody().getTrainId(), branch.getBody().getBranchId(), "delete branch"));
+    }
+
+    @Test
+    void should_delete_all_branches_when_deleting_main_branch() {
+        String branchName = "myBranch";
+        var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
+        trainController.createTrainBranch(SBB, train.getBody().getTrainId(), "test", loadSampleTrain(), branchName);
+        trainController.deleteTrainBranch(SBB, train.getBody().getTrainId(), train.getBody().getBranches().getFirst().getBranchId(), "delete main branch");
+        var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
+        assertThat(result).isNotNull();
+        assertThat(result.getBody().getBranches().stream().map(Branch::getBranchName)).containsExactlyInAnyOrder(PREFIXED_MAIN_BRANCH_NAME, getPrefixedBranchName(SBB, branchName));
+        assertThat(result.getBody().getBranches()).allMatch(b -> b.getTechnical().getBranchState() == BranchState.DELETED, "branch is deleted");
+    }
+
+    @Test
+    void should_not_update_deleted_branch() {
+        String branchName = "myBranch";
+        var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
+        var branch = trainController.createTrainBranch(SBB, train.getBody().getTrainId(), "test", loadSampleTrain(), branchName);
+        trainController.deleteTrainBranch(SBB, train.getBody().getTrainId(), branch.getBody().getBranchId(), "delete branch");
+        assertThrows(IllegalStateException.class, () -> trainController.updateTrainBranch(SBB, train.getBody().getTrainId(), branch.getBody().getBranchId(), "update after delete", loadSampleTrain()));
+    }
+
+    @Test
+    void should_not_create_branch_when_main_branch_was_deleted() {
+        String branchName = "myBranch";
+        var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
+        trainController.deleteTrainBranch(SBB, train.getBody().getTrainId(), train.getBody().getBranches().getFirst().getBranchId(), "delete main branch");
+        assertThrows(IllegalStateException.class, () -> trainController.createTrainBranch(SBB, train.getBody().getTrainId(), "test", loadSampleTrain(), branchName));
     }
 
     @Test
     void should_update_main_branch() {
         var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
-        trainController.updateTrainBranch(SBB, train.getBody().getTrainId(), "main", "test", loadSampleTrain());
+        trainController.updateTrainBranch(SBB, train.getBody().getTrainId(), train.getBody().getBranches().getFirst().getBranchId(), "test", loadSampleTrain());
         var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
         assertThat(result).isNotNull();
         assertThat(result.getBody().getBranches()).hasSize(1);
@@ -188,30 +253,107 @@ class TrainControllerTests {
     }
 
     @Test
+    void should_unshare_train() {
+        var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
+        trainController.shareTrain(SBB, train.getBody().getTrainId(), "SOB");
+        var sharedTrains = trainController.listTrains(SOB, null, null);
+        assertThat(sharedTrains).isNotNull();
+        assertThat(sharedTrains.getBody()).hasSize(1);
+
+        trainController.unshareTrain(SBB, train.getBody().getTrainId(), "SOB");
+
+        var result = trainController.listTrains(SOB, null, null);
+        assertThat(result).isNotNull();
+        assertThat(result.getBody()).isEmpty();
+        assertThrows(AuthorizationDeniedException.class, () -> trainController.getTrainById(SOB, train.getBody().getTrainId()));
+    }
+
+    @Test
+    void should_delete_owned_branches_when_unsharing_train() {
+        var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
+        trainController.shareTrain(SBB, train.getBody().getTrainId(), "SOB");
+        trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "test", loadSampleTrain(), "myBranch");
+
+        trainController.unshareTrain(SBB, train.getBody().getTrainId(), "SOB");
+
+        var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
+        assertThat(result).isNotNull();
+        assertThat(result.getBody().getBranches()).hasSize(2);
+        var sbbBranch = result.getBody().getBranches().stream().filter(b -> b.getTechnical().getOwner().equals("SBB")).findAny().orElseThrow();
+        var sobBranch = result.getBody().getBranches().stream().filter(b -> b.getTechnical().getOwner().equals("SOB")).findAny().orElseThrow();
+        assertThat(sbbBranch.getTechnical().getBranchState()).isEqualTo(BranchState.OPEN);
+        assertThat(sobBranch.getTechnical().getBranchState()).isEqualTo(BranchState.DELETED);
+    }
+
+    @Test
+    void should_not_allow_unsharing_for_other_partners() {
+        var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
+        trainController.shareTrain(SBB, train.getBody().getTrainId(), "SOB");
+        trainController.shareTrain(SOB, train.getBody().getTrainId(), "BLS");
+
+        assertThrows(AuthorizationDeniedException.class, () -> trainController.unshareTrain(SOB, train.getBody().getTrainId(), "BLS"));
+    }
+
+    @Test
     void should_not_update_main_branch_by_other_partner() {
         var train = trainController.createTrain(SBB, "new train", loadSampleTrain());
         trainController.shareTrain(SBB, train.getBody().getTrainId(), "SOB");
-        assertThrows(AuthorizationDeniedException.class, () -> trainController.updateTrainBranch(SOB, train.getBody().getTrainId(), "main", "test", loadSampleTrain()));
+        assertThrows(AuthorizationDeniedException.class,
+            () -> trainController.updateTrainBranch(SOB, train.getBody().getTrainId(), train.getBody().getBranches().getFirst().getBranchId(), "test", loadSampleTrain()));
     }
 
     @Test
     void should_write_changelog() {
         String branchName = "myBranch";
+        String prefixedBranchName = getPrefixedBranchName(SOB, branchName);
         OffsetDateTime startTime = OffsetDateTime.now();
-        UUID trainId = trainController.createTrain(SBB, "initial creation", loadSampleTrain()).getBody().getTrainId();
+        TrainListElement train = trainController.createTrain(SBB, "initial creation", loadSampleTrain()).getBody();
+        UUID trainId = train.getTrainId();
+        UUID mainBranchId = train.getBranches().getFirst().getBranchId();
         trainController.shareTrain(SBB, trainId, "SOB");
-        trainController.updateTrainBranch(SBB, trainId, MAIN_BRANCH_NAME, "update main branch", loadSampleTrain());
-        trainController.updateTrainBranch(SOB, trainId, branchName, "create branch", loadSampleTrain());
-        trainController.updateTrainBranch(SOB, trainId, branchName, "update branch", loadSampleTrain());
-        trainController.deleteTrainBranch(SOB, trainId, branchName, "delete branch");
+        trainController.updateTrainBranch(SBB, trainId, mainBranchId, "update main branch", loadSampleTrain());
+        UUID branchId = trainController.createTrainBranch(SOB, trainId, "create branch", loadSampleTrain(), branchName).getBody().getBranchId();
+        trainController.updateTrainBranch(SOB, trainId, branchId, "update branch", loadSampleTrain());
+        trainController.deleteTrainBranch(SOB, trainId, branchId, "delete branch");
         OffsetDateTime endTime = OffsetDateTime.now();
         var result = trainController.getTrainChangesById(SBB, trainId, null, null).getBody();
-        assertThat(result).hasSize(5);
+        assertThat(result).hasSize(6);
         assertThat(result.stream().map(Change::getTimestamp)).allMatch(timestamp -> timestamp.isAfter(startTime) && timestamp.isBefore(endTime));
         assertThat(result.stream().map(Change::getTrainId)).allMatch(trainId::equals);
-        assertThat(result.stream().map(Change::getBranchName)).containsExactly(MAIN_BRANCH_NAME, MAIN_BRANCH_NAME, branchName, branchName, branchName);
-        assertThat(result.stream().map(Change::getAction)).containsExactly(Action.CREATED, Action.UPDATED, Action.CREATED, Action.UPDATED, Action.DELETED);
-        assertThat(result.stream().map(Change::getPartner)).containsExactly("SBB", "SBB", "SOB", "SOB", "SOB");
-        assertThat(result.stream().map(Change::getComment)).containsExactly("initial creation", "update main branch", "create branch", "update branch", "delete branch");
+        assertThat(result.stream().map(Change::getBranchName)).containsExactly(PREFIXED_MAIN_BRANCH_NAME, null, PREFIXED_MAIN_BRANCH_NAME, prefixedBranchName, prefixedBranchName,
+            prefixedBranchName);
+        assertThat(result.stream().map(Change::getAction)).containsExactly(Action.CREATED, Action.SHARED, Action.UPDATED, Action.CREATED, Action.UPDATED, Action.DELETED);
+        assertThat(result.stream().map(Change::getPartner)).containsExactly("SBB", "SBB", "SBB", "SOB", "SOB", "SOB");
+        assertThat(result.stream().map(Change::getComment)).containsExactly("initial creation", "Train shared", "update main branch", "create branch", "update branch", "delete branch");
+    }
+
+    @Test
+    void should_write_changelog_for_unsharing() {
+        String branchName = "myBranch";
+        String prefixedBranchName = getPrefixedBranchName(SOB, branchName);
+        TrainListElement train = trainController.createTrain(SBB, "initial creation", loadSampleTrain()).getBody();
+        UUID trainId = train.getTrainId();
+        UUID mainBranchId = train.getBranches().getFirst().getBranchId();
+        trainController.shareTrain(SBB, trainId, "SOB");
+        trainController.updateTrainBranch(SBB, trainId, mainBranchId, "update main branch", loadSampleTrain());
+        UUID branchId = trainController.createTrainBranch(SOB, trainId, "create branch", loadSampleTrain(), branchName).getBody().getBranchId();
+        trainController.updateTrainBranch(SOB, trainId, branchId, "update branch", loadSampleTrain());
+        trainController.unshareTrain(SBB, trainId, "SOB");
+
+        var sobChangelog = trainController.getTrainChangesById(SOB, trainId, null, null).getBody();
+        assertThat(sobChangelog).hasSize(2);
+        assertThat(sobChangelog.stream().map(Change::getTrainId)).allMatch(trainId::equals);
+        assertThat(sobChangelog.stream().map(Change::getAction)).containsExactly(Action.SHARED, Action.UNSHARED);
+        assertThat(sobChangelog.stream().map(Change::getAffectedPartner)).containsExactly("SOB", "SOB");
+
+        var sbbChangelog = trainController.getTrainChangesById(SBB, trainId, null, null).getBody();
+        assertThat(sbbChangelog).hasSize(7);
+        assertThat(sbbChangelog.stream().map(Change::getTrainId)).allMatch(trainId::equals);
+        assertThat(sbbChangelog.stream().map(Change::getBranchName)).containsExactly(PREFIXED_MAIN_BRANCH_NAME, null, PREFIXED_MAIN_BRANCH_NAME, prefixedBranchName, prefixedBranchName, null,
+            prefixedBranchName);
+        assertThat(sbbChangelog.stream().map(Change::getAction)).containsExactly(Action.CREATED, Action.SHARED, Action.UPDATED, Action.CREATED, Action.UPDATED, Action.UNSHARED, Action.DELETED);
+        assertThat(sbbChangelog.stream().map(Change::getPartner)).containsExactly("SBB", "SBB", "SBB", "SOB", "SOB", "SBB", "SBB");
+        assertThat(sbbChangelog.stream().map(Change::getComment)).containsExactly("initial creation", "Train shared", "update main branch", "create branch", "update branch", "Train unshared",
+            "Branch deleted due to unsharing of train");
     }
 }

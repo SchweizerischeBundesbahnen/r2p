@@ -8,6 +8,5 @@ import lombok.NoArgsConstructor;
 public final class Constants {
 
     public static final ZoneId ZURICH_ZONE_ID = ZoneId.of("Europe/Zurich");
-    public static final String MAIN_BRANCH_NAME = "main";
 
 }

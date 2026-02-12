@@ -1,5 +1,8 @@
 package ch.rail.r2p.persistence;
 
+import ch.rail.r2p.api.dto.BranchState;
+import ch.rail.r2p.domain.Branch;
+import ch.rail.r2p.domain.TrainVersionEnriched;
 import ch.rail.r2p.domain.TrainVersion;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -10,13 +13,28 @@ import java.util.UUID;
 public interface TrainPersistence {
 
     void insertVersion(TrainVersion train);
+
     void updateVersion(TrainVersion train);
-    List<TrainVersion> findHeadVersionsByTrainId(UUID trainId);
-    Optional<TrainVersion> findHeadVersionByTrainIdAndBranchName(UUID trainId, String branchName);
-    List<TrainVersion> findHeadVersionsByCriteria(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo);
-    TrainVersion getVersion(UUID version);
+
+    List<TrainVersionEnriched> findHeadVersionsByTrainId(UUID trainId);
+
+    Optional<TrainVersionEnriched> findHeadVersionByTrainIdAndBranchName(UUID trainId, String branchName);
+
+    Optional<TrainVersionEnriched> findHeadVersionByTrainIdAndBranchId(UUID trainId, UUID branchId);
+
+    List<TrainVersionEnriched> findHeadVersions(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo);
+
+    TrainVersionEnriched getVersion(UUID version);
+
     void deleteTrains(Collection<UUID> trainIds);
 
+    void insertBranch(Branch branch);
+
+    Branch updateBranchState(UUID branchId, BranchState state);
+
+    List<Branch> findBranchesByTrainId(UUID trainId);
+
     void addPartner(UUID trainId, String partner);
-    List<String> getPartners(UUID trainId);
+
+    void removePartner(UUID trainId, String partner);
 }

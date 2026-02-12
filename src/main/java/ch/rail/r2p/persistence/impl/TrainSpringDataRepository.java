@@ -21,9 +21,9 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
 
     @Query("""
         SELECT * FROM train_version
-        WHERE train_id=:trainId AND branch_name=:branchName AND head=true
+        WHERE train_id=:trainId AND branch_id=:branchId AND head=true
         """)
-    Optional<TrainVersion> findHeadVersionByTrainIdAndBranchName(UUID trainId, String branchName);
+    Optional<TrainVersion> findHeadVersionByTrainIdAndBranchId(UUID trainId, UUID branchId);
 
     @Query("""
         SELECT * FROM train_version
@@ -31,7 +31,7 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
           AND (:operationalDayTo IS NULL OR operational_day<=:operationalDayTo)
           AND EXISTS (SELECT 1 FROM train_partner WHERE train_partner.train_id=train_version.train_id AND train_partner.partner=:partner)
         """)
-    List<TrainVersion> findHeadVersionsByCriteria(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo);
+    List<TrainVersion> findHeadVersions(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo);
 
     @Query("""
         INSERT INTO train_partner(train_id, partner) VALUES(:trainId, :partner);
@@ -40,9 +40,23 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
     void addPartner(UUID trainId, String partner);
 
     @Query("""
+        DELETE FROM train_partner WHERE train_id=:trainId and partner=:partner;
+        """)
+    @Modifying
+    void removePartner(UUID trainId, String partner);
+
+    @Query("""
         SELECT partner FROM train_partner WHERE train_id=:trainId
         """)
     List<String> getPartners(UUID trainId);
 
+    @Query("""
+        SELECT train_id, partner FROM train_partner WHERE train_id IN (:trainIds)
+        """)
+    List<TrainIdAndPartner> getPartnersByTrainIds(List<UUID> trainIds);
+
     void deleteByTrainId(UUID trainId);
+
+    record TrainIdAndPartner(UUID trainId, String partner) {
+    }
 }

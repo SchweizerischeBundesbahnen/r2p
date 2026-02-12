@@ -33,6 +33,11 @@ In order to persist the data in a file, configure a corresponding datasource via
 DATABASE_STORAGE=file:C:/devsbb/h2/r2p
 ----
 
+In order to automatically clean the database in case of a validation error encountered by Flyway, the following environment variable can be set:
+----
+DATABASE_CLEAN_ON_VALIDATION_ERROR=true
+----
+
 === Deploy on OpenShift
 
 The Docker image is available at `ghcr-private.docker.bin.sbb.ch/schweizerischebundesbahnen/r2p:latest`.
@@ -148,6 +153,8 @@ Supported types are:
 |Is it important to address quality requirements like performance or concurrency already in the PoC? | | | | []
 |Unclear if the current date/time handling is the best or if it would be better to e.g. use Time and Timezone | | | | []
 |Unclear if the current versioning strategy (version in path) is the best or if other possibilities would be beneficial, e.g. header/parameter instead of path, datetime instead of number, ...| | | | []
+|Who should be allowed to share a train? Whoever it has been shared with (current implementation)? Or only Lead RU| | | | []
+|Who should be allowed to unshare a train for someone? The Lead RU and a partner for himself (current implementation)?| | | | []
 |===
 
 == Limitations of current implementation

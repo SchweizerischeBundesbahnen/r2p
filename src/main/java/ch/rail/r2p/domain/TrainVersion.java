@@ -1,6 +1,5 @@
 package ch.rail.r2p.domain;
 
-import ch.rail.r2p.api.dto.BranchState;
 import ch.rail.r2p.api.dto.Train;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -22,12 +21,10 @@ public class TrainVersion {
     UUID trainId;
     String trainNumber;
     LocalDate operationalDay;
-    String branchName;
-    String owner;
+    UUID branchId;
     String comment;
     OffsetDateTime timestamp;
     Train payload;
-    BranchState branchState;
     boolean head;
 
     public TrainVersion createNewVersion(Train payload, String comment) {
@@ -40,12 +37,5 @@ public class TrainVersion {
             .comment(comment)
             .head(true)
             .build();
-    }
-
-    public TrainVersion createBranch(String branchName, String owner, Train payload, String comment) {
-        TrainVersion newVersion = createNewVersion(payload, comment);
-        newVersion.setBranchName(branchName);
-        newVersion.setOwner(owner);
-        return newVersion;
     }
 }

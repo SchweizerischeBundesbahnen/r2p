@@ -19,21 +19,36 @@ public class Changelog {
     private final UUID id;
     private final Action action;
     private final String partner;
+    private final String affectedPartner;
     private final UUID trainId;
+    private final UUID branchId;
     private final String branchName;
     private final UUID version;
     private final OffsetDateTime timestamp;
     private final String comment;
 
-    public static Changelog forCreation(String partner, TrainVersion trainVersion, String comment) {
-        return new Changelog(UUID.randomUUID(), Action.CREATED, partner, trainVersion.trainId, trainVersion.branchName, trainVersion.version, trainVersion.timestamp, comment);
+    public static Changelog forCreation(String partner, TrainVersion trainVersion, Branch branch, String comment) {
+        return new Changelog(UUID.randomUUID(), Action.CREATED, partner, null, trainVersion.trainId, trainVersion.branchId, branch.getPrefixedName(), trainVersion.version, trainVersion.timestamp,
+            comment);
     }
 
-    public static Changelog forUpdate(String partner, TrainVersion trainVersion, String comment) {
-        return new Changelog(UUID.randomUUID(), Action.UPDATED, partner, trainVersion.trainId, trainVersion.branchName, trainVersion.version, trainVersion.timestamp, comment);
+    public static Changelog forUpdate(String partner, TrainVersion trainVersion, Branch branch, String comment) {
+        return new Changelog(UUID.randomUUID(), Action.UPDATED, partner, null, trainVersion.trainId, trainVersion.branchId, branch.getPrefixedName(), trainVersion.version, trainVersion.timestamp,
+            comment);
     }
 
-    public static Changelog forDeletion(String partner, TrainVersion trainVersion, String comment) {
-        return new Changelog(UUID.randomUUID(), Action.DELETED, partner, trainVersion.trainId, trainVersion.branchName, trainVersion.version, OffsetDateTime.now(), comment);
+    public static Changelog forDeletion(String partner, Branch branch, String comment) {
+        return new Changelog(UUID.randomUUID(), Action.DELETED, partner, null, branch.trainId, branch.branchId, branch.getPrefixedName(), null, OffsetDateTime.now(),
+            comment);
+    }
+
+    public static Changelog forSharing(String partner, String affectedPartner, TrainVersion trainVersion, String comment) {
+        return new Changelog(UUID.randomUUID(), Action.SHARED, partner, affectedPartner, trainVersion.trainId, null, null, trainVersion.version,
+            OffsetDateTime.now(), comment);
+    }
+
+    public static Changelog forUnsharing(String partner, String affectedPartner, TrainVersion trainVersion, String comment) {
+        return new Changelog(UUID.randomUUID(), Action.UNSHARED, partner, affectedPartner, trainVersion.trainId, null, null, trainVersion.version,
+            OffsetDateTime.now(), comment);
     }
 }

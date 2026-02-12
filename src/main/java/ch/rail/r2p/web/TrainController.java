@@ -7,12 +7,12 @@ import ch.rail.r2p.api.dto.PartnerToken;
 import ch.rail.r2p.api.dto.Train;
 import ch.rail.r2p.api.dto.TrainListElement;
 import ch.rail.r2p.domain.Changelog;
-import ch.rail.r2p.domain.TrainVersion;
-import ch.rail.r2p.web.TrainService.TrainWithPartners;
+import ch.rail.r2p.domain.TrainVersionEnriched;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,26 +29,32 @@ public class TrainController implements V1Api {
     @Override
     public ResponseEntity<TrainListElement> createTrain(PartnerToken token, String comment, Train train) {
         String owner = token.name();
-        TrainWithPartners createdTrain = trainService.createTrain(owner, comment, train);
-        return ResponseEntity.ok(toTrainListElement(createdTrain));
+        TrainVersionEnriched createdTrain = trainService.createTrain(owner, comment, train);
+        return ResponseEntity.ok(trainMapper.toTrainListElement(List.of(createdTrain)));
     }
 
     @Override
-    public ResponseEntity<Branch> deleteTrainBranch(PartnerToken token, UUID trainId, String branchName, String comment) {
-        TrainVersion trainVersion = trainService.deleteTrainBranch(token.name(), trainId, branchName, comment);
-        return ResponseEntity.ok(trainMapper.toBranch(trainVersion));
+    public ResponseEntity<Branch> createTrainBranch(PartnerToken token, UUID trainId, String comment, Train train, String branchName) {
+        TrainVersionEnriched created = trainService.createTrainBranch(token.name(), trainId, branchName, comment, train);
+        return ResponseEntity.ok(trainMapper.toBranch(created));
+    }
+
+    @Override
+    public ResponseEntity<Branch> deleteTrainBranch(PartnerToken token, UUID trainId, UUID branchId, String comment) {
+        TrainVersionEnriched deleted = trainService.deleteTrainBranch(token.name(), trainId, branchId, comment);
+        return ResponseEntity.ok(trainMapper.toBranch(deleted));
     }
 
     @Override
     public ResponseEntity<TrainListElement> getTrainById(PartnerToken token, UUID trainId) {
-        TrainWithPartners train = trainService.getTrainById(token.name(), trainId);
-        return ResponseEntity.ok(toTrainListElement(train));
+        List<TrainVersionEnriched> train = trainService.getTrainById(token.name(), trainId);
+        return ResponseEntity.ok(trainMapper.toTrainListElement(train));
     }
 
     @Override
-    public ResponseEntity<Branch> getTrainBranch(PartnerToken token, UUID trainId, String branchName) {
-        TrainVersion trainVersion = trainService.getTrainBranch(token.name(), trainId, branchName);
-        return ResponseEntity.ok(trainMapper.toBranch(trainVersion));
+    public ResponseEntity<Branch> getTrainBranch(PartnerToken token, UUID trainId, UUID branchId) {
+        TrainVersionEnriched train = trainService.getTrainBranch(token.name(), trainId, branchId);
+        return ResponseEntity.ok(trainMapper.toBranch(train));
     }
 
     @Override
@@ -59,20 +65,27 @@ public class TrainController implements V1Api {
 
     @Override
     public ResponseEntity<List<TrainListElement>> listTrains(PartnerToken token, LocalDate from, LocalDate to) {
-        List<TrainWithPartners> trains = trainService.listTrains(token.name(), from, to);
-        return ResponseEntity.ok(trains.stream().map(this::toTrainListElement).toList());
+        Map<UUID, List<TrainVersionEnriched>> trains = trainService.listTrains(token.name(), from, to);
+        return ResponseEntity.ok(trains.values().stream().map(trainMapper::toTrainListElement).toList());
     }
 
     @Override
     public ResponseEntity<TrainListElement> shareTrain(PartnerToken token, UUID trainId, String shareWith) {
         trainService.shareTrain(token.name(), trainId, shareWith);
-        TrainWithPartners train = trainService.getTrainById(token.name(), trainId);
-        return ResponseEntity.ok(toTrainListElement(train));
+        List<TrainVersionEnriched> train = trainService.getTrainById(token.name(), trainId);
+        return ResponseEntity.ok(trainMapper.toTrainListElement(train));
     }
 
     @Override
-    public ResponseEntity<Branch> updateTrainBranch(PartnerToken token, UUID trainId, String branchName, String comment, Train train) {
-        TrainVersion newVersion = trainService.updateTrainBranch(token.name(), trainId, branchName, comment, train);
+    public ResponseEntity<TrainListElement> unshareTrain(PartnerToken token, UUID trainId, String unshareWith) {
+        trainService.unshareTrain(token.name(), trainId, unshareWith);
+        List<TrainVersionEnriched> train = trainService.getTrainById(token.name(), trainId);
+        return ResponseEntity.ok(trainMapper.toTrainListElement(train));
+    }
+
+    @Override
+    public ResponseEntity<Branch> updateTrainBranch(PartnerToken token, UUID trainId, UUID branchId, String comment, Train train) {
+        TrainVersionEnriched newVersion = trainService.updateTrainBranch(token.name(), trainId, branchId, comment, train);
         return ResponseEntity.ok(trainMapper.toBranch(newVersion));
     }
 
@@ -86,9 +99,5 @@ public class TrainController implements V1Api {
     public ResponseEntity<List<Change>> listTrainChanges(PartnerToken token, OffsetDateTime from, OffsetDateTime to) {
         List<Changelog> changelogs = trainService.getChangelogs(token.name(), from, to, null);
         return ResponseEntity.ok(changelogs.stream().map(trainMapper::toChange).toList());
-    }
-
-    private TrainListElement toTrainListElement(TrainWithPartners train) {
-        return trainMapper.toTrainListElement(train.trainVersions(), train.partners());
     }
 }
