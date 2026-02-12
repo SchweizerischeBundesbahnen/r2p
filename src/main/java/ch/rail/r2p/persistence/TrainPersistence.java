@@ -22,7 +22,7 @@ public interface TrainPersistence {
 
     Optional<TrainVersionEnriched> findHeadVersionByTrainIdAndBranchId(UUID trainId, UUID branchId);
 
-    List<TrainVersionEnriched> findHeadVersionsByCriteria(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo);
+    List<TrainVersionEnriched> findHeadVersions(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo);
 
     TrainVersionEnriched getVersion(UUID version);
 

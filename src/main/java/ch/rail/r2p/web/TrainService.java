@@ -99,7 +99,7 @@ public class TrainService {
 
     public Map<UUID, List<TrainVersionEnriched>> listTrains(String partner, LocalDate from, LocalDate to) {
         // PERF: Paging needed when dealing with hundreds or thousands of trains per day
-        List<TrainVersionEnriched> trainVersions = trainPersistence.findHeadVersionsByCriteria(partner, from, to);
+        List<TrainVersionEnriched> trainVersions = trainPersistence.findHeadVersions(partner, from, to);
         return trainVersions.stream().collect(groupingBy(t -> t.trainVersion().getTrainId()));
     }
 

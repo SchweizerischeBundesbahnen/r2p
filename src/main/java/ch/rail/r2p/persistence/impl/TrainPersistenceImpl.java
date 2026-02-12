@@ -56,8 +56,8 @@ public class TrainPersistenceImpl implements TrainPersistence {
     }
 
     @Override
-    public List<TrainVersionEnriched> findHeadVersionsByCriteria(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo) {
-        return enrich(trainSpringDataRepository.findHeadVersionsByCriteria(partner, operationalDayFrom, operationalDayTo));
+    public List<TrainVersionEnriched> findHeadVersions(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo) {
+        return enrich(trainSpringDataRepository.findHeadVersions(partner, operationalDayFrom, operationalDayTo));
     }
 
     @Override

@@ -13,6 +13,7 @@ import ch.rail.r2p.api.dto.Action;
 import ch.rail.r2p.api.dto.Branch;
 import ch.rail.r2p.api.dto.BranchState;
 import ch.rail.r2p.api.dto.Change;
+import ch.rail.r2p.api.dto.PartnerToken;
 import ch.rail.r2p.api.dto.Train;
 import ch.rail.r2p.api.dto.TrainListElement;
 import ch.rail.r2p.domain.TrainVersion;
@@ -55,7 +56,7 @@ class TrainControllerTests {
 
     Set<UUID> trainIdsForCleanup = new HashSet<>();
 
-    private static final String PREFIXED_MAIN_BRANCH_NAME = "%s-%s".formatted(SBB, MAIN_BRANCH_NAME);
+    private static final String PREFIXED_MAIN_BRANCH_NAME = getPrefixedBranchName(SBB, MAIN_BRANCH_NAME);
 
     Train loadSampleTrain() {
         if (sampleTrain == null) {
@@ -68,6 +69,10 @@ class TrainControllerTests {
             }
         }
         return sampleTrain;
+    }
+
+    static String getPrefixedBranchName(PartnerToken owner, String branchName) {
+        return "%s-%s".formatted(owner.name(), branchName);
     }
 
     @BeforeEach
@@ -192,7 +197,7 @@ class TrainControllerTests {
         var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
         assertThat(result).isNotNull();
         assertThat(result.getBody().getBranches()).hasSize(2);
-        var deletedBranch = result.getBody().getBranches().stream().filter(b -> b.getBranchName().equals("SOB-" + branchName)).findAny();
+        var deletedBranch = result.getBody().getBranches().stream().filter(b -> b.getBranchName().equals(getPrefixedBranchName(SOB, branchName))).findAny();
         assertThat(deletedBranch).isPresent();
         assertThat(deletedBranch.get().getTechnical().getBranchState()).isEqualTo(BranchState.DELETED);
     }
@@ -215,7 +220,7 @@ class TrainControllerTests {
         trainController.deleteTrainBranch(SBB, train.getBody().getTrainId(), train.getBody().getBranches().getFirst().getBranchId(), "delete main branch");
         var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
         assertThat(result).isNotNull();
-        assertThat(result.getBody().getBranches().stream().map(Branch::getBranchName)).containsExactlyInAnyOrder(PREFIXED_MAIN_BRANCH_NAME, "SBB-" + branchName);
+        assertThat(result.getBody().getBranches().stream().map(Branch::getBranchName)).containsExactlyInAnyOrder(PREFIXED_MAIN_BRANCH_NAME, getPrefixedBranchName(SBB, branchName));
         assertThat(result.getBody().getBranches()).allMatch(b -> b.getTechnical().getBranchState() == BranchState.DELETED, "branch is deleted");
     }
 
@@ -300,7 +305,7 @@ class TrainControllerTests {
     @Test
     void should_write_changelog() {
         String branchName = "myBranch";
-        String prefixedBranchName = "SOB-myBranch";
+        String prefixedBranchName = getPrefixedBranchName(SOB, branchName);
         OffsetDateTime startTime = OffsetDateTime.now();
         TrainListElement train = trainController.createTrain(SBB, "initial creation", loadSampleTrain()).getBody();
         UUID trainId = train.getTrainId();
@@ -325,7 +330,7 @@ class TrainControllerTests {
     @Test
     void should_write_changelog_for_unsharing() {
         String branchName = "myBranch";
-        String prefixedBranchName = "SOB-myBranch";
+        String prefixedBranchName = getPrefixedBranchName(SOB, branchName);
         TrainListElement train = trainController.createTrain(SBB, "initial creation", loadSampleTrain()).getBody();
         UUID trainId = train.getTrainId();
         UUID mainBranchId = train.getBranches().getFirst().getBranchId();

@@ -31,7 +31,7 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
           AND (:operationalDayTo IS NULL OR operational_day<=:operationalDayTo)
           AND EXISTS (SELECT 1 FROM train_partner WHERE train_partner.train_id=train_version.train_id AND train_partner.partner=:partner)
         """)
-    List<TrainVersion> findHeadVersionsByCriteria(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo);
+    List<TrainVersion> findHeadVersions(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo);
 
     @Query("""
         INSERT INTO train_partner(train_id, partner) VALUES(:trainId, :partner);
