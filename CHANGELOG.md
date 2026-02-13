@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.0.12](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.11...r2p-v0.0.12) (2026-02-13)
+
+
+### Features
+
+* enable automatic updates ([#60](https://github.com/SchweizerischeBundesbahnen/r2p/issues/60)) ([9f08ae8](https://github.com/SchweizerischeBundesbahnen/r2p/commit/9f08ae848a034471cfb13fb27b00323d1e7e9fb1))
+
+
+### Documentation
+
+* updated copilot-instructions, readme, manual and added a description to the openapi endpoints ([d86c03a](https://github.com/SchweizerischeBundesbahnen/r2p/commit/d86c03ab01b53899c574cbc54d8fd431669777cc))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.12-SNAPSHOT ([#59](https://github.com/SchweizerischeBundesbahnen/r2p/issues/59)) ([d13fb54](https://github.com/SchweizerischeBundesbahnen/r2p/commit/d13fb54386c9163f9c54120c170ab55b1b244afe))
+
 ## [0.0.11](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.10...r2p-v0.0.11) (2026-02-12)
 
 
