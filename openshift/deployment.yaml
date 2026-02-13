@@ -2,6 +2,23 @@
 # Note: Update the ConfigMap values according to your environment before applying
 
 ---
+# ImageStream for automatic image updates
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: r2p
+  labels:
+    app: r2p
+spec:
+  tags:
+    - name: latest
+      from:
+        kind: DockerImage
+        name: ghcr-private.docker.bin.sbb.ch/schweizerischebundesbahnen/r2p:latest
+      importPolicy:
+        scheduled: true # by default every 15 minutes clusterwide
+
+---
 # ConfigMap for application configuration
 apiVersion: v1
 kind: ConfigMap
@@ -44,6 +61,9 @@ metadata:
     app: r2p
     app.kubernetes.io/name: r2p
     app.kubernetes.io/component: backend
+  annotations:
+    # This annotation enables automatic deployment when ImageStream is updated
+    image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"r2p:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"r2p\")].image"}]'
 spec:
   replicas: 1
   selector:
