@@ -309,7 +309,7 @@ These instructions are validated and accurate. Only perform additional searches 
 
 **All workflow configurations have been verified from actual `.github/workflows/` files.**
 
-## Aditional manual notes
+## Additional manual notes
 
 * Only the "Lead RU" can create a new train and update the main branch
 * As soon as the "Lead RU" shares the train with a partner, that partner can create/update branches and see the history. It can also do changes in his own branches.
