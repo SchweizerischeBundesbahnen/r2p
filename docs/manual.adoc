@@ -4,12 +4,12 @@
 :sectnums:
 :source-highlighter: coderay
 :icons: font
-:revnumber: 0.0.1-SNAPSHOT
+:revnumber: 0.0.12-SNAPSHOT
 :revdate: {localdate}
 
 == Overview
 
-R2P is a prototype demonstrating RU - RU - partner communication. To keep things leightweight and portable
+R2P is a prototype demonstrating RU - RU - partner communication. To keep things lightweight and portable,
 the prototype uses Java and H2 (no need for a dedicated database server).
 
 == Quick Start
@@ -17,25 +17,35 @@ the prototype uses Java and H2 (no need for a dedicated database server).
 === Test and execute the prototype
 [source,bash]
 ----
-mvnw clean verify
-mvnw spring-boot:run
+mvn clean verify
+mvn spring-boot:run
 ----
 
 Visit: http://localhost:8080/
+
+**Interactive API Testing:**
+
+- Swagger UI: http://localhost:8080/swagger-ui.html
+- OpenAPI Spec: http://localhost:8080/v3/api-docs
+
+**Documentation:** Available in `target/docs/` after building:
+
+- `r2p-manual.html` / `r2p-manual.pdf` - User manual
+- `r2p-api.html` / `r2p-api.pdf` - API documentation
 
 Note: in order to access secured endpoints, you need to be a member of the AD-group DG_SEC_DEV_R2P_Admin.
 
 ==== Database
 
-By default, the prototype uses a H2 in-memory database., so its content is lost when the application is stopped.
-In order to persist the data in a file, configure a corresponding datasource via a environment varialbes, for example:
+By default, the prototype uses a H2 in-memory database, so its content is lost when the application is stopped.
+In order to persist the data in a file, configure a corresponding datasource via an environment variable, for example:
 ----
 DATABASE_STORAGE=file:C:/devsbb/h2/r2p
 ----
 
 In order to automatically clean the database in case of a validation error encountered by Flyway, the following environment variable can be set:
 ----
-DATABASE_CLEAN_ON_VALIDATION_ERROR=true
+FLYWAY_CLEAN_ON_VALIDATION_ERROR=true
 ----
 
 === Deploy on OpenShift
@@ -51,60 +61,9 @@ oc project r2p
 oc apply -f deployment.yaml
 ----
 
-== Domain Model
+include::domain-model.adoc[leveloffset=+1]
 
-Each train, branch and version is represented by following model. A train is related to partners. It has a main branch which is the current state. A change can be submitted by creating a new branch.
-Every change of the branch creates a new version. The changes of the branch can be applied to the main branch. Changes can be commented. The payload contains all data. Identifiers are 'trainId' and 'version'.
-
-[plantuml, uml-diagramm, png]
-----
-@startuml
-
-class TrainRow {
-  ~ trainId: UUID
-  ~ trainNumber: String
-  ~ operationalDay: LocalDate
-  ~ branchName: String
-  ~ comment: String
-  ~ payload: Train
-  ~ partners: List<String>
-  ~ timestamp: OffsetDateTime
-  ~ version: UUID
-  ~ branchState: BranchState
-}
-
-@enduml
-----
-
-The actual payload (`TrainRow.payload`) corresponds to the schema defined in `src/main/resources/openapi/schemas/train.yaml`, which is the same schema used by in the REST endpoints.
-
-It was created based on the initially provided OpenAPI yaml file according to the following steps, which may have to repeated for new versions of that file:
-
-* Cut `Train` schema definition and all its dependencies
-* Paste them at the root of the new file (i.e. no longer inside `components/schemas/`); formatting is done automatically by IntelliJ
-* Adapt references inside the file: replace `#/components/schemas/` by `#/`
-
-== REST Endpoints
-
-See also: link:../src/main/resources/openapi/r2p-spec.yaml[r2p-spec.yaml]
-
-=== Train
-
-* GET /trains - list all trains which are available for the partner, the response shows all branches with their latest version
-* POST /trains - creates a new train with the given payload
-* POST /trains/+{trainId}+/share - shares the train with another partner
-* GET /trains/+{trainId}+ - gets the the train by the passed trainId, the response shows all branches with their latest version
-
-=== Branch
-
-* GET /trains/+{trainId}+/branches/+{branchName}+ - gets the branch by the passed branch name
-* GET /trains/versions/+{version}+ - gets the specific version of the train
-* PUT /trains/+{trainId}+/branches/+{branchName}+ - creates a new version of the branch with the given payload (can also be the main branch)
-* DELETE /trains/+{trainId}+/branches/+{branchName}+ - deletes the branch
-
-=== Changes
-* GET /trains/+{trainId}+/changes - gets all changes for the train with the passed trainId
-* GET /trains/changes - gets all changes for all trains available for the partner
+include::rest-endpoints.adoc[leveloffset=+1]
 
 == Development
 

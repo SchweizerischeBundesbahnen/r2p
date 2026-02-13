@@ -1,0 +1,134 @@
+= REST Endpoints
+
+All endpoints are under the `/v1` path prefix. See also: link:../src/main/resources/openapi/r2p-spec.yaml[r2p-spec.yaml]
+
+All endpoints require a `token` header parameter containing the partner's authentication token.
+
+== Train Management
+
+=== List Trains
+* *GET* `/v1/trains`
+* *Query Parameters:*
+  - `operationalDayFrom` (optional): Filter for trains from this date (inclusive)
+  - `operationalDayTo` (optional): Filter for trains up to this date (inclusive)
+* *Description:* Returns all trains accessible to the partner, showing all branches with their latest version
+* *Response:* Array of `TrainListElement` objects containing trainId, partners, branches, and main branch timestamp
+
+=== Create Train
+* *POST* `/v1/trains`
+* *Query Parameters:*
+  - `comment` (required): Description of the train creation
+* *Request Body:* `Train` object (JSON)
+* *Description:* Creates a new train with the given payload. Automatically creates a main branch owned by the creating partner.
+* *Response:* `TrainListElement` with the newly created train information
+
+=== Get Train by ID
+* *GET* `/v1/trains/\{trainId}`
+* *Path Parameters:*
+  - `trainId` (UUID): The train identifier
+* *Description:* Returns detailed information about a specific train, including all branches and their latest versions
+* *Response:* `TrainListElement` object
+
+=== Share Train
+* *POST* `/v1/trains/\{trainId}/share`
+* *Path Parameters:*
+  - `trainId` (UUID): The train identifier
+* *Query Parameters:*
+  - `shareWith` (required): Partner name to share the train with
+* *Description:* Grants access to the train for another partner
+* *Response:* Updated `TrainListElement`
+
+=== Unshare Train
+* *POST* `/v1/trains/\{trainId}/unshare`
+* *Path Parameters:*
+  - `trainId` (UUID): The train identifier
+* *Query Parameters:*
+  - `unshareWith` (required): Partner name to revoke access from
+* *Description:* Revokes train access from a partner. Lead RU can unshare with any partner; partners can unshare with themselves.
+* *Response:* Updated `TrainListElement`
+
+== Branch Management
+
+=== Create Branch
+* *POST* `/v1/trains/\{trainId}/branches`
+* *Path Parameters:*
+  - `trainId` (UUID): The train identifier
+* *Query Parameters:*
+  - `branchName` (optional): Name for the new branch (max 255 chars)
+  - `comment` (required): Description of why the branch is created
+* *Request Body:* `Train` object (JSON) with the proposed changes
+* *Description:* Creates a new branch for proposing changes to the train
+* *Response:* `Branch` object with business and technical data
+
+=== Get Branch
+* *GET* `/v1/trains/\{trainId}/branches/\{branchId}`
+* *Path Parameters:*
+  - `trainId` (UUID): The train identifier
+  - `branchId` (UUID): The branch identifier
+* *Description:* Returns detailed information about a specific branch
+* *Response:* `Branch` object
+
+=== Update Branch
+* *PUT* `/v1/trains/\{trainId}/branches/\{branchId}`
+* *Path Parameters:*
+  - `trainId` (UUID): The train identifier
+  - `branchId` (UUID): The branch identifier
+* *Query Parameters:*
+  - `comment` (required): Description of the changes
+* *Request Body:* `Train` object (JSON) with updated data
+* *Description:* Creates a new version of the branch with the provided train data. Can be used on any branch including main.
+* *Response:* Updated `Branch` object
+
+=== Delete Branch
+* *DELETE* `/v1/trains/\{trainId}/branches/\{branchId}`
+* *Path Parameters:*
+  - `trainId` (UUID): The train identifier
+  - `branchId` (UUID): The branch identifier
+* *Query Parameters:*
+  - `comment` (required): Reason for deletion
+* *Description:* Marks a branch as deleted. The main branch cannot be deleted.
+* *Response:* `Branch` object with state set to `DELETED`
+
+== Version Management
+
+=== Get Specific Version
+* *GET* `/v1/trains/versions/\{version}`
+* *Path Parameters:*
+  - `version` (UUID): The specific version identifier
+* *Description:* Returns the train data for a specific version. The trainId is implied by the version.
+* *Response:* `Train` object (JSON)
+
+== Change Log
+
+=== Get Train Changes
+* *GET* `/v1/trains/\{trainId}/changes`
+* *Path Parameters:*
+  - `trainId` (UUID): The train identifier
+* *Query Parameters:*
+  - `from` (optional): Timestamp to filter changes from (inclusive)
+  - `to` (optional): Timestamp to filter changes to (inclusive)
+* *Description:* Returns all changes (creates, updates, shares, etc.) for a specific train
+* *Response:* Array of `Change` objects
+
+=== List All Changes
+* *GET* `/v1/trains/changes`
+* *Query Parameters:*
+  - `from` (required): Timestamp to filter changes from (inclusive)
+  - `to` (required): Timestamp to filter changes to (inclusive)
+* *Description:* Returns all changes for all trains accessible to the partner
+* *Response:* Array of `Change` objects
+
+== Response Models
+
+=== TrainListElement
+Contains: `trainId`, `mainTimestamp`, `partners` (array of partner names), `branches` (array of Branch objects)
+
+=== Branch
+Contains: `branchId`, `branchName`, `business` (BranchBusinessData), `technical` (BranchTechnicalData)
+
+* *BranchBusinessData:* `trainNumber`, `operationalDay`
+* *BranchTechnicalData:* `version`, `timestamp`, `comment`, `owner`, `state`
+
+=== Change
+Contains: `action`, `partner`, `affectedPartner`, `trainId`, `branchId`, `branchName`, `version`, `timestamp`, `comment`
+
