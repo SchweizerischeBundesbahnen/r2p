@@ -68,7 +68,6 @@ r2p/
 ├── .spectral.yaml                    # Spectral linting rules for OpenAPI validation
 ├── .release-please-manifest.json     # Release-please version tracking
 ├── release-please-config.json        # Release-please changelog configuration
-├── Dockerfile                        # Multi-stage Docker build
 ├── src/main/java/ch/rail/r2p/
 │   ├── R2pApplication.java           # Main entry point (@SpringBootApplication)
 │   ├── Constants.java                # Shared constants (e.g., ZURICH_ZONE_ID)
@@ -195,7 +194,7 @@ Examples:
    - `r2p-macos.tar.gz` (native app-image)
    - `r2p-documentation.zip` (HTML + PDF docs)
    - `r2p-test-results.zip` (combined test results)
-4. **Docker Image**: Builds and pushes to `ghcr.io/schweizerischebundesbahnen/r2p`
+4. **Docker Image**: Builds and pushes to `ghcr.io/schweizerischebundesbahnen/r2p` using Spring Boot buildpacks
    - Tags: `latest`, `<version>`, `<major>.<minor>`, `<major>`
 
 ### Automerge Snapshot PRs (`.github/workflows/automerge-snapshot.yml`)
@@ -294,6 +293,17 @@ This automatically removes read-only attributes before cleaning.
 2. **TrainService.java**: Implement security checks using Spring Security instead of manual validation
 3. **train.yaml**: Add description for some schema properties
 
+## Datenmodell (train.yaml)
+
+Kurzuebersicht fuer KI-Agenten zum OpenAPI-Schema `src/main/resources/openapi/schemas/train.yaml`:
+- `Train` ist das Wurzelobjekt (id, references, links, name, startdate, timestamp, journey).
+- `Journey` enthaelt eine geordnete Liste von `Journeylocation`-Eintraegen (min. 2), die den Ablauf beschreiben.
+- `Journeylocation` besteht aus `locations`, `activities` und `requirements` und bildet einen Abschnitt/Ort im Ablauf ab.
+- `Activity` modelliert Aktionen mit `type`, `timings` und Verantwortung/Alignment; optional `capability` und `requirement`.
+- `Capability` und `Requirement` beschreiben benoetigte/angebotene Eigenschaften ueber `featuresets` und `features` (mit `Feature`, `Restriction`, `Condition`).
+- Rollmaterial ist in `RollingStock` modelliert und kann `wagonGroups` oder `units` (mit `WagonGroup`, `Unit`, `Carbody`) enthalten.
+- Viele Felder sind ueber Enums typisiert (z. B. `ActivityType`, `LocationType`, `PlanStatus`, `TimingType`).
+
 ## Trust These Instructions
 
 These instructions are validated and accurate. Only perform additional searches if:
@@ -313,3 +323,4 @@ These instructions are validated and accurate. Only perform additional searches 
 
 * Only the "Lead RU" can create a new train and update the main branch
 * As soon as the "Lead RU" shares the train with a partner, that partner can create/update branches and see the history. It can also do changes in his own branches.
+* EVU = Eisenbahnverkehrsunternehmen
