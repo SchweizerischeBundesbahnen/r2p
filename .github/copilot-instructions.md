@@ -293,16 +293,16 @@ This automatically removes read-only attributes before cleaning.
 2. **TrainService.java**: Implement security checks using Spring Security instead of manual validation
 3. **train.yaml**: Add description for some schema properties
 
-## Datenmodell (train.yaml)
+## Data model (train.yaml)
 
-Kurzuebersicht fuer KI-Agenten zum OpenAPI-Schema `src/main/resources/openapi/schemas/train.yaml`:
-- `Train` ist das Wurzelobjekt (id, references, links, name, startdate, timestamp, journey).
-- `Journey` enthaelt eine geordnete Liste von `Journeylocation`-Eintraegen (min. 2), die den Ablauf beschreiben.
-- `Journeylocation` besteht aus `locations`, `activities` und `requirements` und bildet einen Abschnitt/Ort im Ablauf ab.
-- `Activity` modelliert Aktionen mit `type`, `timings` und Verantwortung/Alignment; optional `capability` und `requirement`.
-- `Capability` und `Requirement` beschreiben benoetigte/angebotene Eigenschaften ueber `featuresets` und `features` (mit `Feature`, `Restriction`, `Condition`).
-- Rollmaterial ist in `RollingStock` modelliert und kann `wagonGroups` oder `units` (mit `WagonGroup`, `Unit`, `Carbody`) enthalten.
-- Viele Felder sind ueber Enums typisiert (z. B. `ActivityType`, `LocationType`, `PlanStatus`, `TimingType`).
+Short overview for AI agents of the OpenAPI schema `src/main/resources/openapi/schemas/train.yaml`:
+- `Train` is the root object (id, references, links, name, startdate, timestamp, journey).
+- `Journey` contains an ordered list of `Journeylocation` entries (at least 2) that describe the sequence of the journey.
+- `Journeylocation` consists of `locations`, `activities`, and `requirements` and represents a segment/location within the journey.
+- `Activity` models actions using `type`, `timings`, and responsibility/alignment; optionally it can reference `capability` and `requirement`.
+- `Capability` and `Requirement` describe required/offered characteristics via `featuresets` and `features` (using `Feature`, `Restriction`, `Condition`).
+- Rolling stock is modeled in `RollingStock` and can contain `wagonGroups` or `units` (with `WagonGroup`, `Unit`, `Carbody`).
+- Many fields are defined as enums (for example `ActivityType`, `LocationType`, `PlanStatus`, `TimingType`).
 
 ## Trust These Instructions
 
