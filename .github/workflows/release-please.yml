@@ -16,6 +16,10 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+      major: ${{ steps.release.outputs.major }}
+      minor: ${{ steps.release.outputs.minor }}
+      patch: ${{ steps.release.outputs.patch }}
     steps:
       - name: Run release-please
         id: release
@@ -44,7 +48,7 @@ jobs:
           cache: 'maven'
 
       - name: Build with Maven including native image
-        run: mvn clean package -Papp-image-unix
+        run: ./mvnw clean package -Papp-image-unix
 
       - name: Create Linux archive
         run: |
@@ -87,7 +91,7 @@ jobs:
           cache: 'maven'
 
       - name: Build with Maven including native image
-        run: mvn clean package -Papp-image-windows
+        run: .\mvnw.cmd clean package -Papp-image-windows
 
       - name: Create Windows archive
         shell: pwsh
@@ -123,7 +127,7 @@ jobs:
           cache: 'maven'
 
       - name: Build with Maven including native image
-        run: mvn clean package -Papp-image-mac
+        run: ./mvnw clean package -Papp-image-mac
 
       - name: Create macOS archive
         run: |
@@ -225,28 +229,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract version from tag
-        id: version
+      - name: Build Docker image with Spring Boot
+        env:
+          VERSION: ${{ needs.release-please.outputs.version }}
         run: |
-          VERSION="${{ needs.release-please.outputs.tag_name }}"
-          VERSION="${VERSION#v}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          MAJOR=$(echo "$VERSION" | cut -d. -f1)
-          MAJOR_MINOR=$(echo "$VERSION" | cut -d. -f1-2)
-          echo "major=$MAJOR" >> $GITHUB_OUTPUT
-          echo "major_minor=$MAJOR_MINOR" >> $GITHUB_OUTPUT
+          ./mvnw spring-boot:build-image \
+            -Dspring-boot.build-image.imageName=ghcr.io/${{ github.repository }}:${VERSION} \
+            -DskipTests
 
-      - name: Build and push Docker image with Spring Boot
+      - name: Tag and push Docker images
+        env:
+          VERSION: ${{ needs.release-please.outputs.version }}
+          MAJOR: ${{ needs.release-please.outputs.major }}
+          MINOR: ${{ needs.release-please.outputs.minor }}
         run: |
-          mvn spring-boot:build-image \
-            -Dspring-boot.build-image.imageName=ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }} \
-            -Dspring-boot.build-image.publish=true
-
-      - name: Tag and push additional versions
-        run: |
-          docker tag ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }} ghcr.io/${{ github.repository }}:${{ steps.version.outputs.major_minor }}
-          docker tag ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }} ghcr.io/${{ github.repository }}:${{ steps.version.outputs.major }}
-          docker tag ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }} ghcr.io/${{ github.repository }}:latest
-          docker push ghcr.io/${{ github.repository }}:${{ steps.version.outputs.major_minor }}
-          docker push ghcr.io/${{ github.repository }}:${{ steps.version.outputs.major }}
+          MAJOR_MINOR="${MAJOR}.${MINOR}"
+          # Tag with additional version tags
+          docker tag ghcr.io/${{ github.repository }}:${VERSION} ghcr.io/${{ github.repository }}:${MAJOR_MINOR}
+          docker tag ghcr.io/${{ github.repository }}:${VERSION} ghcr.io/${{ github.repository }}:${MAJOR}
+          docker tag ghcr.io/${{ github.repository }}:${VERSION} ghcr.io/${{ github.repository }}:latest
+          # Push all tags
+          docker push ghcr.io/${{ github.repository }}:${VERSION}
+          docker push ghcr.io/${{ github.repository }}:${MAJOR_MINOR}
+          docker push ghcr.io/${{ github.repository }}:${MAJOR}
           docker push ghcr.io/${{ github.repository }}:latest
