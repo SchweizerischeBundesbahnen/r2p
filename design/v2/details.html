@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Details - R2P</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Back Navigation -->
+        <a href="index.html" class="back-link" tabindex="0">Back to Overview</a>
+
+        <!-- Header -->
+        <header class="header compact-header">
+            <h1 id="page-title">Train Details</h1>
+        </header>
+
+        <!-- Loading/Error State -->
+        <div id="error-message" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">⚠️</div>
+            <div class="empty-state-text">Train not found</div>
+            <div class="empty-state-subtext">The requested train could not be found. Please return to the overview.</div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-content" style="display: none;">
+
+            <!-- Section 1: General Information -->
+            <section class="compact-section">
+                <div class="card" style="padding: var(--spacing-md);">
+                    <h2 class="mt-0" style="font-size: 1.25rem; margin-bottom: var(--spacing-sm);">General Information</h2>
+                    <div class="detail-grid-horizontal">
+                        <div class="detail-item">
+                            <div class="detail-label">Train ID</div>
+                            <div class="detail-value id-cell">
+                                <span id="train-id" class="id-truncated" title="">-</span>
+                                <button class="clipboard-btn" onclick="copyToClipboard('train-id-full')" aria-label="Copy train ID" title="Copy full ID">📋</button>
+                                <input type="hidden" id="train-id-full" value="">
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Train Number</div>
+                            <div class="detail-value" id="train-number">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Operational Day</div>
+                            <div class="detail-value" id="operational-day">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Lead RU</div>
+                            <div class="detail-value" id="lead-ru">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Partners</div>
+                            <div class="detail-value" id="partners">-</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Merge Requests -->
+            <section class="compact-section">
+                <h2 style="font-size: 1.25rem;">Merge Requests</h2>
+                <div class="empty-state empty-state-compact">
+                    <div class="empty-state-icon">🔀</div>
+                    <div class="empty-state-text">No merge requests available</div>
+                    <div class="empty-state-subtext">Merge requests are not yet implemented. This feature will be available in a future release.</div>
+                </div>
+            </section>
+
+            <!-- Section 3: Branches -->
+            <section class="section">
+                <h2 style="font-size: 1.25rem;">Branches</h2>
+
+                <!-- Branch Filter Bar -->
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label for="branch-filter-status">Status</label>
+                        <select id="branch-filter-status" class="filter-select" onchange="applyBranchFilters()">
+                            <option value="all">All</option>
+                            <option value="open">Open</option>
+                            <option value="merged">Merged</option>
+                            <option value="deleted">Deleted</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="branch-filter-owner">Owner</label>
+                        <select id="branch-filter-owner" class="filter-select" onchange="applyBranchFilters()">
+                            <option value="all">All</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="branches-table">
+                        <thead>
+                            <tr>
+                                <th>Branch ID</th>
+                                <th class="sort-header" tabindex="0" onclick="sortBranches('name')" onkeypress="handleBranchSortKeyPress(event, 'name')" aria-sort="none">
+                                    Name
+                                    <span class="sort-indicator" id="branch-sort-name"></span>
+                                </th>
+                                <th class="sort-header" tabindex="0" onclick="sortBranches('owner')" onkeypress="handleBranchSortKeyPress(event, 'owner')" aria-sort="none">
+                                    Owner
+                                    <span class="sort-indicator" id="branch-sort-owner"></span>
+                                </th>
+                                <th class="sort-header" tabindex="0" onclick="sortBranches('createdAt')" onkeypress="handleBranchSortKeyPress(event, 'createdAt')" aria-sort="none">
+                                    Creation Date
+                                    <span class="sort-indicator" id="branch-sort-createdAt"></span>
+                                </th>
+                                <th>State</th>
+                            </tr>
+                        </thead>
+                        <tbody id="branches-tbody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container">
+                        <div class="pagination-info" id="branch-pagination-info">Showing 0-0 of 0 branches</div>
+                        <div class="pagination">
+                            <button class="pagination-btn" id="branch-btn-first" onclick="goToBranchPage(1)" aria-label="First page">« First</button>
+                            <button class="pagination-btn" id="branch-btn-prev" onclick="goToBranchPage(currentBranchPage - 1)" aria-label="Previous page">‹ Previous</button>
+                            <span class="pagination-text" id="branch-page-info">Page 1 of 1</span>
+                            <button class="pagination-btn" id="branch-btn-next" onclick="goToBranchPage(currentBranchPage + 1)" aria-label="Next page">Next ›</button>
+                            <button class="pagination-btn" id="branch-btn-last" onclick="goToBranchPage(totalBranchPages)" aria-label="Last page">Last »</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: Changelog -->
+            <section class="section">
+                <h2 style="font-size: 1.25rem;">Changelog</h2>
+
+                <!-- Changelog Filter Bar -->
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label for="changelog-filter-action">Action</label>
+                        <select id="changelog-filter-action" class="filter-select" onchange="applyChangelogFilters()">
+                            <option value="all">All</option>
+                            <option value="created">Created</option>
+                            <option value="updated">Updated</option>
+                            <option value="merged">Merged</option>
+                            <option value="deleted">Deleted</option>
+                            <option value="shared">Shared</option>
+                            <option value="unshared">Unshared</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="changelog-filter-partner">Partner</label>
+                        <select id="changelog-filter-partner" class="filter-select" onchange="applyChangelogFilters()">
+                            <option value="all">All</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="changelog-filter-comment">Comment</label>
+                        <input type="text" id="changelog-filter-comment" class="filter-input" placeholder="Search in comments" oninput="debouncedApplyChangelogFilters()">
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="changelog-table">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Timestamp</th>
+                                <th>Branch Name</th>
+                                <th>Version ID</th>
+                                <th>Partner</th>
+                                <th>Comment</th>
+                            </tr>
+                        </thead>
+                        <tbody id="changelog-tbody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container">
+                        <div class="pagination-info" id="changelog-pagination-info">Showing 0-0 of 0 entries</div>
+                        <div class="pagination">
+                            <button class="pagination-btn" id="changelog-btn-first" onclick="goToChangelogPage(1)" aria-label="First page">« First</button>
+                            <button class="pagination-btn" id="changelog-btn-prev" onclick="goToChangelogPage(currentChangelogPage - 1)" aria-label="Previous page">‹ Previous</button>
+                            <span class="pagination-text" id="changelog-page-info">Page 1 of 1</span>
+                            <button class="pagination-btn" id="changelog-btn-next" onclick="goToChangelogPage(currentChangelogPage + 1)" aria-label="Next page">Next ›</button>
+                            <button class="pagination-btn" id="changelog-btn-last" onclick="goToChangelogPage(totalChangelogPages)" aria-label="Last page">Last »</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast" style="display: none;"></div>
+
+    <!-- Sample Data -->
+    <script src="sampleData.js"></script>
+
+    <script>
+        // ========================================
+        // Global State
+        // ========================================
+        let currentTrain = null;
+
+        // Branches
+        let allBranches = [];
+        let filteredBranches = [];
+        let currentBranchPage = 1;
+        let totalBranchPages = 1;
+        let branchSortColumn = null;
+        let branchSortDirection = 'asc';
+
+        // Changelog
+        let allChangelog = [];
+        let filteredChangelog = [];
+        let currentChangelogPage = 1;
+        let totalChangelogPages = 1;
+
+        const itemsPerPage = 20;
+
+        // ========================================
+        // Utility Functions
+        // ========================================
+
+        function formatSwissDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+
+        function formatSwissTimestamp(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+        }
+
+        function truncateId(id, length = 8) {
+            return id.substring(0, length) + '...';
+        }
+
+        function getPartnerBadgeClass(partner) {
+            const mapping = {
+                'SBB': 'partner-badge-SBB',
+                'BLS': 'partner-badge-BLS',
+                'SOB': 'partner-badge-SOB'
+            };
+            return mapping[partner] || 'partner-badge-default';
+        }
+
+        function getBranchStateBadge(state) {
+            const badgeMap = {
+                'open': 'badge-open',
+                'merged': 'badge-merged',
+                'deleted': 'badge-deleted'
+            };
+            return `badge ${badgeMap[state] || 'badge-open'}`;
+        }
+
+        function getActionBadge(action) {
+            const badgeMap = {
+                'created': 'badge-created',
+                'updated': 'badge-updated',
+                'merged': 'badge-merged-action',
+                'deleted': 'badge-deleted-action',
+                'shared': 'badge-shared',
+                'unshared': 'badge-unshared'
+            };
+            return `badge ${badgeMap[action] || 'badge-created'}`;
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.value || element.textContent;
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                showToast('Failed to copy');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        const debouncedApplyChangelogFilters = debounce(applyChangelogFilters, 300);
+
+        // ========================================
+        // Branch Functions
+        // ========================================
+
+        function applyBranchFilters() {
+            const statusFilter = document.getElementById('branch-filter-status').value;
+            const ownerFilter = document.getElementById('branch-filter-owner').value;
+
+            filteredBranches = allBranches.filter(branch => {
+                if (statusFilter !== 'all' && branch.state !== statusFilter) {
+                    return false;
+                }
+                if (ownerFilter !== 'all' && branch.owner !== ownerFilter) {
+                    return false;
+                }
+                return true;
+            });
+
+            currentBranchPage = 1;
+            totalBranchPages = Math.ceil(filteredBranches.length / itemsPerPage);
+            renderBranchesTable();
+            updateBranchPaginationControls();
+        }
+
+        function sortBranches(column) {
+            if (branchSortColumn === column) {
+                branchSortDirection = branchSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                branchSortColumn = column;
+                branchSortDirection = 'asc';
+            }
+
+            updateBranchSortIndicators();
+
+            filteredBranches.sort((a, b) => {
+                let valueA, valueB;
+
+                switch (column) {
+                    case 'name':
+                        valueA = a.name.toLowerCase();
+                        valueB = b.name.toLowerCase();
+                        break;
+                    case 'owner':
+                        valueA = a.owner.toLowerCase();
+                        valueB = b.owner.toLowerCase();
+                        break;
+                    case 'createdAt':
+                        valueA = new Date(a.createdAt);
+                        valueB = new Date(b.createdAt);
+                        break;
+                    default:
+                        return 0;
+                }
+
+                if (valueA < valueB) return branchSortDirection === 'asc' ? -1 : 1;
+                if (valueA > valueB) return branchSortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            renderBranchesTable();
+        }
+
+        function updateBranchSortIndicators() {
+            document.querySelectorAll('#branches-table .sort-indicator').forEach(el => {
+                el.textContent = '';
+            });
+
+            document.querySelectorAll('#branches-table .sort-header').forEach(el => {
+                el.setAttribute('aria-sort', 'none');
+                el.classList.remove('active-sort');
+            });
+
+            if (branchSortColumn) {
+                const indicator = document.getElementById(`branch-sort-${branchSortColumn}`);
+                if (indicator) {
+                    indicator.textContent = branchSortDirection === 'asc' ? '▲' : '▼';
+                }
+
+                const header = document.querySelector(`[onclick*="sortBranches('${branchSortColumn}')"]`);
+                if (header) {
+                    header.setAttribute('aria-sort', branchSortDirection === 'asc' ? 'ascending' : 'descending');
+                    header.classList.add('active-sort');
+                }
+            }
+        }
+
+        function handleBranchSortKeyPress(event, column) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                sortBranches(column);
+            }
+        }
+
+        function goToBranchPage(page) {
+            if (page < 1 || page > totalBranchPages) return;
+            currentBranchPage = page;
+            renderBranchesTable();
+            updateBranchPaginationControls();
+        }
+
+        function updateBranchPaginationControls() {
+            const start = (currentBranchPage - 1) * itemsPerPage + 1;
+            const end = Math.min(currentBranchPage * itemsPerPage, filteredBranches.length);
+            const total = filteredBranches.length;
+
+            document.getElementById('branch-pagination-info').textContent =
+                total > 0 ? `Showing ${start}-${end} of ${total} branches` : 'No branches found';
+            document.getElementById('branch-page-info').textContent = `Page ${currentBranchPage} of ${totalBranchPages}`;
+
+            document.getElementById('branch-btn-first').disabled = currentBranchPage === 1;
+            document.getElementById('branch-btn-prev').disabled = currentBranchPage === 1;
+            document.getElementById('branch-btn-next').disabled = currentBranchPage === totalBranchPages;
+            document.getElementById('branch-btn-last').disabled = currentBranchPage === totalBranchPages;
+        }
+
+        function renderBranchesTable() {
+            const tbody = document.getElementById('branches-tbody');
+            tbody.innerHTML = '';
+
+            const start = (currentBranchPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageBranches = filteredBranches.slice(start, end);
+
+            pageBranches.forEach(branch => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td class="id-cell">
+                        <span class="id-truncated" title="${branch.branchId}">${truncateId(branch.branchId)}</span>
+                        <button class="clipboard-btn" onclick="copyToClipboard('branch-id-${branch.branchId}')" aria-label="Copy branch ID" title="Copy full ID">📋</button>
+                        <input type="hidden" id="branch-id-${branch.branchId}" value="${branch.branchId}">
+                    </td>
+                    <td><strong>${branch.name}</strong></td>
+                    <td><span class="partner-badge ${getPartnerBadgeClass(branch.owner)}">${branch.owner}</span></td>
+                    <td>${formatSwissTimestamp(branch.createdAt)}</td>
+                    <td><span class="${getBranchStateBadge(branch.state)}" aria-label="${branch.state}">${branch.state}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // ========================================
+        // Changelog Functions
+        // ========================================
+
+        function applyChangelogFilters() {
+            const actionFilter = document.getElementById('changelog-filter-action').value;
+            const partnerFilter = document.getElementById('changelog-filter-partner').value;
+            const commentFilter = document.getElementById('changelog-filter-comment').value.toLowerCase();
+
+            filteredChangelog = allChangelog.filter(entry => {
+                if (actionFilter !== 'all' && entry.action !== actionFilter) {
+                    return false;
+                }
+                if (partnerFilter !== 'all' && entry.partner !== partnerFilter) {
+                    return false;
+                }
+                if (commentFilter && !entry.comment.toLowerCase().includes(commentFilter)) {
+                    return false;
+                }
+                return true;
+            });
+
+            currentChangelogPage = 1;
+            totalChangelogPages = Math.ceil(filteredChangelog.length / itemsPerPage);
+            renderChangelogTable();
+            updateChangelogPaginationControls();
+        }
+
+        function goToChangelogPage(page) {
+            if (page < 1 || page > totalChangelogPages) return;
+            currentChangelogPage = page;
+            renderChangelogTable();
+            updateChangelogPaginationControls();
+        }
+
+        function updateChangelogPaginationControls() {
+            const start = (currentChangelogPage - 1) * itemsPerPage + 1;
+            const end = Math.min(currentChangelogPage * itemsPerPage, filteredChangelog.length);
+            const total = filteredChangelog.length;
+
+            document.getElementById('changelog-pagination-info').textContent =
+                total > 0 ? `Showing ${start}-${end} of ${total} entries` : 'No entries found';
+            document.getElementById('changelog-page-info').textContent = `Page ${currentChangelogPage} of ${totalChangelogPages}`;
+
+            document.getElementById('changelog-btn-first').disabled = currentChangelogPage === 1;
+            document.getElementById('changelog-btn-prev').disabled = currentChangelogPage === 1;
+            document.getElementById('changelog-btn-next').disabled = currentChangelogPage === totalChangelogPages;
+            document.getElementById('changelog-btn-last').disabled = currentChangelogPage === totalChangelogPages;
+        }
+
+        function renderChangelogTable() {
+            const tbody = document.getElementById('changelog-tbody');
+            tbody.innerHTML = '';
+
+            const start = (currentChangelogPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageChangelog = filteredChangelog.slice(start, end);
+
+            pageChangelog.forEach(entry => {
+                const row = document.createElement('tr');
+
+                const versionDisplay = entry.version ?
+                    `<span class="id-cell">
+                        <span class="id-truncated" title="${entry.version}">${truncateId(entry.version)}</span>
+                        <button class="clipboard-btn" onclick="copyToClipboard('version-id-${entry.version}')" aria-label="Copy version ID" title="Copy full ID">📋</button>
+                        <input type="hidden" id="version-id-${entry.version}" value="${entry.version}">
+                    </span>` :
+                    '-';
+
+                const comment = entry.affectedPartner ?
+                    `${entry.comment} (${entry.affectedPartner})` :
+                    entry.comment;
+
+                row.innerHTML = `
+                    <td><span class="${getActionBadge(entry.action)}" aria-label="${entry.action}">${entry.action}</span></td>
+                    <td>${formatSwissTimestamp(entry.timestamp)}</td>
+                    <td>${entry.branchName}</td>
+                    <td>${versionDisplay}</td>
+                    <td><span class="partner-badge ${getPartnerBadgeClass(entry.partner)}">${entry.partner}</span></td>
+                    <td>${comment}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // ========================================
+        // General Information
+        // ========================================
+
+        function populateGeneralInfo(train) {
+            document.getElementById('train-id-full').value = train.trainId;
+            document.getElementById('train-id').textContent = truncateId(train.trainId);
+            document.getElementById('train-id').setAttribute('title', train.trainId);
+
+            document.getElementById('train-number').textContent = train.trainNumber;
+            document.getElementById('operational-day').textContent = formatSwissDate(train.operationalDay);
+
+            const leadRUHtml = `<span class="partner-badge ${getPartnerBadgeClass(train.leadRU)}">${train.leadRU}</span>`;
+            document.getElementById('lead-ru').innerHTML = leadRUHtml;
+
+            const otherPartners = train.partners.filter(p => p !== train.leadRU);
+            const partnersHtml = otherPartners.map(p =>
+                `<span class="partner-badge ${getPartnerBadgeClass(p)}">${p}</span>`
+            ).join(' ');
+            document.getElementById('partners').innerHTML = partnersHtml || '<span class="text-muted">None</span>';
+
+            document.getElementById('page-title').textContent = `Train Details - ${train.trainNumber}`;
+        }
+
+        // ========================================
+        // Initialization
+        // ========================================
+
+        function initializeFilters() {
+            // Populate owner filter for branches
+            const owners = new Set();
+            allBranches.forEach(branch => owners.add(branch.owner));
+            const sortedOwners = Array.from(owners).sort();
+
+            const ownerFilter = document.getElementById('branch-filter-owner');
+            sortedOwners.forEach(owner => {
+                const option = document.createElement('option');
+                option.value = owner;
+                option.textContent = owner;
+                ownerFilter.appendChild(option);
+            });
+
+            // Populate partner filter for changelog
+            const partners = new Set();
+            allChangelog.forEach(entry => partners.add(entry.partner));
+            const sortedPartners = Array.from(partners).sort();
+
+            const partnerFilter = document.getElementById('changelog-filter-partner');
+            sortedPartners.forEach(partner => {
+                const option = document.createElement('option');
+                option.value = partner;
+                option.textContent = partner;
+                partnerFilter.appendChild(option);
+            });
+        }
+
+        function loadTrainData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const trainId = urlParams.get('trainId');
+
+            if (!trainId) {
+                showError();
+                return;
+            }
+
+            const train = sampleData.trains.find(t => t.trainId === trainId);
+
+            if (!train) {
+                showError();
+                return;
+            }
+
+            currentTrain = train;
+            allBranches = train.branches;
+            filteredBranches = [...allBranches];
+            allChangelog = train.changelog;
+            filteredChangelog = [...allChangelog];
+
+            // Calculate pagination
+            totalBranchPages = Math.ceil(filteredBranches.length / itemsPerPage);
+            totalChangelogPages = Math.ceil(filteredChangelog.length / itemsPerPage);
+
+            // Show main content
+            document.getElementById('main-content').style.display = 'block';
+
+            // Populate data
+            populateGeneralInfo(train);
+            initializeFilters();
+            renderBranchesTable();
+            updateBranchPaginationControls();
+            renderChangelogTable();
+            updateChangelogPaginationControls();
+        }
+
+        function showError() {
+            document.getElementById('error-message').style.display = 'block';
+        }
+
+        // ========================================
+        // Initialize on page load
+        // ========================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTrainData();
+        });
+    </script>
+</body>
+</html>
+
