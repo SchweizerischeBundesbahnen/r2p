@@ -28,6 +28,6 @@
 * Partner entspricht einer Liste von EVU: dem Lead RU und den weiteren Partnern mit denen der Verkehr geteilt wurde
 * Nutze die OpenAPI Spezifikation (r2p-spec.yaml und train.yaml) um die benötigten Informationen für die Anzeige zu erhalten.
 * Nutze das Datenbankschema V1__create.sql um die benötigten Informationen für die Anzeige zu erhalten.
-* Zeit- und Datum sollen schweierisch formatiert angezeigt werden (z.B. 01.01.2024 12:00:00)
+* Zeit- und Datum sollen schweizerisch formatiert angezeigt werden (z.B. 01.01.2024 12:00:00)
 * Die Sprache der Benutzeroberfläche soll Englisch sein.
 * Das Lead RU und die Partner sollen jeweils mit ihrem Namen (nicht nur Abkürzung) aufgeführt werden.
