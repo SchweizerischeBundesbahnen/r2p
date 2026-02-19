@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSONtr.ee - R2P Sample Train Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background-color: #ffffff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .description {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .controls {
+            background-color: #ffffff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .controls h2 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .control-group {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .control-group input[type="color"] {
+            width: 50px;
+            height: 30px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .control-group input[type="number"] {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #json-tree {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: auto;
+            max-width: 100%;
+            max-height: 80vh;
+            cursor: grab;
+            user-select: none;
+        }
+
+        #json-tree.dragging {
+            cursor: grabbing;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        /* Custom SVG styles */
+        rect {
+            /* Uncomment to override with CSS */
+            /* fill: #ffffff !important; */
+            /* stroke: #000000 !important; */
+            /* stroke-width: 2pt !important; */
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚂 JSONtr.ee - R2P Sample Train Visualization</h1>
+        <p class="description">Interactive visualization of the R2P sample train data structure</p>
+        <p class="description">Powered by <a href="https://github.com/The-01-Company/jsontr.ee" target="_blank">jsontr.ee</a></p>
+    </div>
+
+    <div class="controls">
+        <h2>⚙️ Customization Options</h2>
+
+        <div class="control-group">
+            <label for="arrowColor">Arrow Color</label>
+            <input type="color" id="arrowColor" value="#475872">
+        </div>
+
+        <div class="control-group">
+            <label for="nodeBorderColor">Node Border Color</label>
+            <input type="color" id="nodeBorderColor" value="#475872">
+        </div>
+
+        <div class="control-group">
+            <label for="nodeBackgroundColor">Node Background</label>
+            <input type="color" id="nodeBackgroundColor" value="#f6f8fa">
+        </div>
+
+        <div class="control-group">
+            <label for="keyColor">Key Color</label>
+            <input type="color" id="keyColor" value="#b16b2a">
+        </div>
+
+        <div class="control-group">
+            <label for="valueColor">Value Color</label>
+            <input type="color" id="valueColor" value="#008000">
+        </div>
+
+        <div class="control-group">
+            <label for="fontSize">Font Size (px)</label>
+            <input type="number" id="fontSize" value="12" min="8" max="24">
+        </div>
+
+        <div class="control-group">
+            <label for="lineHeight">Line Height (px)</label>
+            <input type="number" id="lineHeight" value="18" min="12" max="36">
+        </div>
+
+        <div class="control-group">
+            <label for="padding">Padding (px)</label>
+            <input type="number" id="padding" value="10" min="5" max="30">
+        </div>
+
+        <br>
+        <button onclick="updateVisualization()">🔄 Update Visualization</button>
+        <button onclick="resetToDefaults()">↩️ Reset to Defaults</button>
+    </div>
+
+    <div id="json-tree">
+        <div class="loading">Loading train data...</div>
+    </div>
+
+    <!-- Include the jsontr.ee library -->
+    <script src="jsontr.ee.js"></script>
+
+    <script>
+        // R2P Sample Train Data
+        const sampleTrainData = {
+  "id": "sample-train-001",
+  "references": [
+    {
+      "type": "tttreftrain",
+      "startdate": "2025-12-01",
+      "name": "TR2185900000127853012025"
+    }
+  ],
+  "links": [
+    {
+      "type": "doc",
+      "name": "train/to/other-file.json#/Attachment/MyDocument1.docx"
+    }
+  ],
+  "name": "Train for oil traffic",
+  "startdate": "2025-12-01",
+  "timestamp": "2025-12-01T12:51:26.632Z",
+  "journey": {
+    "journeylocations": [
+      {
+        "locations": [
+          {
+            "type": "SLC",
+            "typeCode": "37",
+            "code": "1966700002",
+            "name": "FVL BielMett"
+          }
+        ],
+        "activities": [
+          {
+            "type": "train.halt.1",
+            "timings": [
+              {
+                "type": "arrival",
+                "time": "08:30:00",
+                "offset": 0,
+                "focus": "planning",
+                "source": "2187"
+              },
+              {
+                "type": "departure",
+                "time": "08:45:00",
+                "offset": 0,
+                "focus": "planning",
+                "source": "2187"
+              }
+            ],
+            "responsibility": {
+              "type": "rim",
+              "id": "ID-12-234-34-1",
+              "status": "confirmed"
+            },
+            "alignment": {
+              "status": "confirmed"
+            },
+            "capability": {
+              "features": [
+                {
+                  "feature": {
+                    "type": "WIFI on board",
+                    "offeredservice": "Passenger WiFi",
+                    "capacity": "200"
+                  },
+                  "restriction": {
+                    "type": "temporary restriction",
+                    "restrictedvalue": 80,
+                    "creator": "SBB",
+                    "creationtime": "2025-11-15T10:00:00.000Z",
+                    "starttime": "2025-12-01T06:00:00.000Z",
+                    "endtime": "2025-12-01T18:00:00.000Z",
+                    "freetext": "Limited capacity during construction",
+                    "resolution": "Restriction lifted",
+                    "resolutiontime": "2025-12-01T18:00:00.000Z"
+                  }
+                }
+              ],
+              "staff": [
+                {
+                  "type": "conductor",
+                  "action": "passenger service"
+                }
+              ],
+              "rollingStock": {
+                "weight": 450000,
+                "length": 185000,
+                "maxSpeed": 160,
+                "brakingRatio": 115.0,
+                "routeClass": "B2",
+                "features": [
+                  {
+                    "feature": {
+                      "type": "electric traction",
+                      "offeredservice": "15kV AC",
+                      "capacity": "6400"
+                    }
+                  }
+                ],
+                "units": [
+                  {
+                    "position": 1,
+                    "type": "Re420",
+                    "carbodies": [
+                      {
+                        "position": 1,
+                        "type": "Re 420",
+                        "traction": "electric",
+                        "vehiclenumber": "420294",
+                        "frontcoupling": "automaticTypeX",
+                        "backcoupling": "automaticTypeX",
+                        "profile": "EBO",
+                        "features": [
+                          {
+                            "feature": {
+                              "type": "traction power",
+                              "offeredservice": "6400 kW",
+                              "capacity": "6400"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "features": [
+                      {
+                        "feature": {
+                          "type": "locomotive",
+                          "offeredservice": "electric traction",
+                          "capacity": "1"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "position": 2,
+                    "type": "passenger coach",
+                    "carbodies": [
+                      {
+                        "position": 1,
+                        "type": "EW IV",
+                        "traction": "none",
+                        "vehiclenumber": "999999999962",
+                        "frontcoupling": "automaticTypeX",
+                        "backcoupling": "automaticTypeX",
+                        "profile": "UIC-C",
+                        "features": [
+                          {
+                            "feature": {
+                              "type": "passenger seats",
+                              "offeredservice": "2nd class",
+                              "capacity": "72"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "features": [
+                      {
+                        "feature": {
+                          "type": "passenger coach",
+                          "offeredservice": "seating",
+                          "capacity": "72"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "requirement": {
+              "features": [
+                {
+                  "feature": {
+                    "type": "platform length",
+                    "offeredservice": "minimum platform",
+                    "capacity": "185"
+                  },
+                  "condition": {
+                    "conditiontype": "gte",
+                    "comparetype": "number",
+                    "reference": "185",
+                    "mandatory": true
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "requirements": [
+          {
+            "features": [
+              {
+                "feature": {
+                  "type": "electrification",
+                  "offeredservice": "15kV AC",
+                  "capacity": "15000"
+                },
+                "condition": {
+                  "conditiontype": "eq",
+                  "comparetype": "string",
+                  "reference": "15kV AC",
+                  "mandatory": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "locations": [
+          {
+            "type": "PLC",
+            "code": "CH00123",
+            "name": "Basel SBB"
+          }
+        ],
+        "activities": [
+          {
+            "type": "train.halt.1",
+            "timings": [
+              {
+                "type": "arrival",
+                "time": "10:15:00",
+                "offset": 0,
+                "focus": "planning",
+                "source": "R2P"
+              }
+            ],
+            "responsibility": {
+              "type": "rru",
+              "id": "ID-98-765-43-2",
+              "status": "requested"
+            },
+            "alignment": {
+              "status": "proposed"
+            },
+            "capability": {
+              "features": [
+                {
+                  "feature": {
+                    "type": "passenger service",
+                    "offeredservice": "regional train",
+                    "capacity": "150"
+                  }
+                }
+              ],
+              "staff": [
+                {
+                  "type": "driver",
+                  "action": "train operation"
+                }
+              ],
+              "rollingStock": {
+                "weight": 450000,
+                "length": 185000,
+                "maxSpeed": 160,
+                "brakingRatio": 115.0,
+                "routeClass": "B2",
+                "wagonGroups": [
+                  {
+                    "id": "WG-001",
+                    "position": 1,
+                    "length": 185000,
+                    "weight": 450000,
+                    "profile": "UIC-C",
+                    "wagoncount": 5,
+                    "features": [
+                      {
+                        "feature": {
+                          "type": "freight",
+                          "offeredservice": "general cargo",
+                          "capacity": "100"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "requirement": {
+              "features": [
+                {
+                  "feature": {
+                    "type": "track gauge",
+                    "offeredservice": "standard gauge",
+                    "capacity": "1435"
+                  },
+                  "condition": {
+                    "conditiontype": "eq",
+                    "comparetype": "number",
+                    "reference": "1435",
+                    "mandatory": true
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "requirements": [
+          {
+            "features": [
+              {
+                "feature": {
+                  "type": "signaling system",
+                  "offeredservice": "ETCS Level 2",
+                  "capacity": "1"
+                },
+                "condition": {
+                  "conditiontype": "in",
+                  "comparetype": "string",
+                  "reference": "ETCS Level 1,ETCS Level 2",
+                  "mandatory": false
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+};
+
+        // Default options
+        const defaultOptions = {
+            arrowColor: "#475872",
+            nodeBorderColor: "#475872",
+            nodeBackgroundColor: "#f6f8fa",
+            keyColor: "#b16b2a",
+            valueColor: "#008000",
+            padding: 10,
+            lineHeight: 18,
+            fontSize: 12,
+            fontFamily: "monospace"
+        };
+
+        // Function to get current options from controls
+        function getCurrentOptions() {
+            return {
+                arrowColor: document.getElementById('arrowColor').value,
+                nodeBorderColor: document.getElementById('nodeBorderColor').value,
+                nodeBackgroundColor: document.getElementById('nodeBackgroundColor').value,
+                keyColor: document.getElementById('keyColor').value,
+                valueColor: document.getElementById('valueColor').value,
+                padding: parseInt(document.getElementById('padding').value),
+                lineHeight: parseInt(document.getElementById('lineHeight').value),
+                fontSize: parseInt(document.getElementById('fontSize').value),
+                fontFamily: "monospace"
+            };
+        }
+
+        // Function to update visualization
+        function updateVisualization() {
+            const options = getCurrentOptions();
+            const container = document.getElementById('json-tree');
+            container.innerHTML = generateJSONTree(sampleTrainData, options);
+        }
+
+        // Function to reset to defaults
+        function resetToDefaults() {
+            document.getElementById('arrowColor').value = defaultOptions.arrowColor;
+            document.getElementById('nodeBorderColor').value = defaultOptions.nodeBorderColor;
+            document.getElementById('nodeBackgroundColor').value = defaultOptions.nodeBackgroundColor;
+            document.getElementById('keyColor').value = defaultOptions.keyColor;
+            document.getElementById('valueColor').value = defaultOptions.valueColor;
+            document.getElementById('padding').value = defaultOptions.padding;
+            document.getElementById('lineHeight').value = defaultOptions.lineHeight;
+            document.getElementById('fontSize').value = defaultOptions.fontSize;
+            updateVisualization();
+        }
+
+        // Initial visualization on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            updateVisualization();
+            initializeDragScroll();
+        });
+
+        // Drag-to-scroll functionality
+        function initializeDragScroll() {
+            const container = document.getElementById('json-tree');
+            let isDown = false;
+            let startX;
+            let startY;
+            let scrollLeft;
+            let scrollTop;
+
+            container.addEventListener('mousedown', (e) => {
+                isDown = true;
+                container.classList.add('dragging');
+                startX = e.pageX - container.offsetLeft;
+                startY = e.pageY - container.offsetTop;
+                scrollLeft = container.scrollLeft;
+                scrollTop = container.scrollTop;
+            });
+
+            container.addEventListener('mouseleave', () => {
+                isDown = false;
+                container.classList.remove('dragging');
+            });
+
+            container.addEventListener('mouseup', () => {
+                isDown = false;
+                container.classList.remove('dragging');
+            });
+
+            container.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - container.offsetLeft;
+                const y = e.pageY - container.offsetTop;
+                const walkX = (x - startX) * 1.5; // Scroll speed multiplier
+                const walkY = (y - startY) * 1.5;
+                container.scrollLeft = scrollLeft - walkX;
+                container.scrollTop = scrollTop - walkY;
+            });
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Details - R2P</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Back Navigation -->
+        <a href="index.html" class="back-link">Back to Overview</a>
+
+        <!-- Header -->
+        <header class="header">
+            <h1 id="page-title">Train Details</h1>
+        </header>
+
+        <!-- Loading/Error State -->
+        <div id="error-message" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">⚠️</div>
+            <div class="empty-state-text">Train not found</div>
+            <div class="empty-state-subtext">The requested train could not be found. Please return to the overview.</div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-content" style="display: none;">
+
+            <!-- Section 1: General Information -->
+            <section class="section">
+                <div class="card">
+                    <h2 class="mt-0">General Information</h2>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Train ID</div>
+                            <div class="detail-value" id="train-id">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Train Number</div>
+                            <div class="detail-value" id="train-number">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Operational Day</div>
+                            <div class="detail-value" id="operational-day">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Partners</div>
+                            <div class="detail-value" id="partners">-</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Merge Requests -->
+            <section class="section">
+                <h2>Merge Requests</h2>
+                <div class="empty-state">
+                    <div class="empty-state-icon">🔀</div>
+                    <div class="empty-state-text">No merge requests available</div>
+                    <div class="empty-state-subtext">Merge requests are not yet implemented. This feature will be available in a future release.</div>
+                </div>
+            </section>
+
+            <!-- Section 3: Branches -->
+            <section class="section">
+                <h2>Branches</h2>
+                <div class="table-container">
+                    <table id="branches-table">
+                        <thead>
+                            <tr>
+                                <th>Branch ID</th>
+                                <th>Name</th>
+                                <th>Owner</th>
+                                <th>Creation Date</th>
+                                <th>State</th>
+                            </tr>
+                        </thead>
+                        <tbody id="branches-tbody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section 4: Changelog -->
+            <section class="section">
+                <h2>Changelog</h2>
+                <div class="table-container">
+                    <table id="changelog-table">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Timestamp</th>
+                                <th>Branch Name</th>
+                                <th>Version ID</th>
+                                <th>Partner</th>
+                                <th>Comment</th>
+                            </tr>
+                        </thead>
+                        <tbody id="changelog-tbody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // Static Sample Data (Same as index.html)
+        // ========================================
+        const sampleData = {
+            trains: [
+                {
+                    trainId: '550e8400-e29b-41d4-a716-446655440001',
+                    trainNumber: 'IC 1234',
+                    operationalDay: '2026-02-15',
+                    partners: ['SBB'],
+                    lastChange: '2026-02-13T10:30:00Z',
+                    branches: [
+                        {
+                            branchId: 'b50e8400-e29b-41d4-a716-446655440001',
+                            name: 'SBB-main',
+                            owner: 'SBB',
+                            state: 'open',
+                            createdAt: '2026-02-10T08:00:00Z'
+                        }
+                    ],
+                    changelog: [
+                        {
+                            action: 'created',
+                            timestamp: '2026-02-10T08:00:00Z',
+                            branchName: 'SBB-main',
+                            version: 'v50e8400-e29b-41d4-a716-446655440001',
+                            partner: 'SBB',
+                            comment: 'Initial train creation'
+                        },
+                        {
+                            action: 'updated',
+                            timestamp: '2026-02-13T10:30:00Z',
+                            branchName: 'SBB-main',
+                            version: 'v50e8400-e29b-41d4-a716-446655440002',
+                            partner: 'SBB',
+                            comment: 'Updated journey times'
+                        }
+                    ]
+                },
+                {
+                    trainId: '550e8400-e29b-41d4-a716-446655440002',
+                    trainNumber: 'RE 5678',
+                    operationalDay: '2026-02-16',
+                    partners: ['SBB', 'BLS'],
+                    lastChange: '2026-02-13T14:15:00Z',
+                    branches: [
+                        {
+                            branchId: 'b50e8400-e29b-41d4-a716-446655440002',
+                            name: 'SBB-main',
+                            owner: 'SBB',
+                            state: 'open',
+                            createdAt: '2026-02-11T09:00:00Z'
+                        },
+                        {
+                            branchId: 'b50e8400-e29b-41d4-a716-446655440003',
+                            name: 'BLS-proposal-1',
+                            owner: 'BLS',
+                            state: 'open',
+                            createdAt: '2026-02-12T11:30:00Z'
+                        },
+                        {
+                            branchId: 'b50e8400-e29b-41d4-a716-446655440004',
+                            name: 'BLS-optimization',
+                            owner: 'BLS',
+                            state: 'merged',
+                            createdAt: '2026-02-10T15:00:00Z'
+                        }
+                    ],
+                    changelog: [
+                        {
+                            action: 'created',
+                            timestamp: '2026-02-11T09:00:00Z',
+                            branchName: 'SBB-main',
+                            version: 'v50e8400-e29b-41d4-a716-446655440003',
+                            partner: 'SBB',
+                            comment: 'Initial train creation'
+                        },
+                        {
+                            action: 'shared',
+                            timestamp: '2026-02-11T10:00:00Z',
+                            branchName: 'SBB-main',
+                            version: 'v50e8400-e29b-41d4-a716-446655440003',
+                            partner: 'SBB',
+                            comment: 'Train shared with BLS',
+                            affectedPartner: 'BLS'
+                        },
+                        {
+                            action: 'created',
+                            timestamp: '2026-02-10T15:00:00Z',
+                            branchName: 'BLS-optimization',
+                            version: 'v50e8400-e29b-41d4-a716-446655440004',
+                            partner: 'BLS',
+                            comment: 'Created optimization proposal'
+                        },
+                        {
+                            action: 'merged',
+                            timestamp: '2026-02-11T16:00:00Z',
+                            branchName: 'BLS-optimization',
+                            version: 'v50e8400-e29b-41d4-a716-446655440005',
+                            partner: 'SBB',
+                            comment: 'Merged BLS optimization into main'
+                        },
+                        {
+                            action: 'created',
+                            timestamp: '2026-02-12T11:30:00Z',
+                            branchName: 'BLS-proposal-1',
+                            version: 'v50e8400-e29b-41d4-a716-446655440006',
+                            partner: 'BLS',
+                            comment: 'New proposal for route changes'
+                        },
+                        {
+                            action: 'updated',
+                            timestamp: '2026-02-13T14:15:00Z',
+                            branchName: 'BLS-proposal-1',
+                            version: 'v50e8400-e29b-41d4-a716-446655440007',
+                            partner: 'BLS',
+                            comment: 'Updated proposal with revised timings'
+                        }
+                    ]
+                },
+                {
+                    trainId: '550e8400-e29b-41d4-a716-446655440003',
+                    trainNumber: 'S 9',
+                    operationalDay: '2026-02-14',
+                    partners: ['SBB', 'BLS', 'SOB'],
+                    lastChange: '2026-02-13T16:45:00Z',
+                    branches: [
+                        {
+                            branchId: 'b50e8400-e29b-41d4-a716-446655440005',
+                            name: 'SBB-main',
+                            owner: 'SBB',
+                            state: 'open',
+                            createdAt: '2026-02-09T07:00:00Z'
+                        },
+                        {
+                            branchId: 'b50e8400-e29b-41d4-a716-446655440006',
+                            name: 'BLS-changes',
+                            owner: 'BLS',
+                            state: 'merged',
+                            createdAt: '2026-02-11T13:00:00Z'
+                        },
+                        {
+                            branchId: 'b50e8400-e29b-41d4-a716-446655440007',
+                            name: 'SOB-update',
+                            owner: 'SOB',
+                            state: 'open',
+                            createdAt: '2026-02-12T16:00:00Z'
+                        },
+                        {
+                            branchId: 'b50e8400-e29b-41d4-a716-446655440008',
+                            name: 'SOB-old-proposal',
+                            owner: 'SOB',
+                            state: 'deleted',
+                            createdAt: '2026-02-10T10:00:00Z'
+                        }
+                    ],
+                    changelog: [
+                        {
+                            action: 'created',
+                            timestamp: '2026-02-09T07:00:00Z',
+                            branchName: 'SBB-main',
+                            version: 'v50e8400-e29b-41d4-a716-446655440008',
+                            partner: 'SBB',
+                            comment: 'Initial train creation'
+                        },
+                        {
+                            action: 'shared',
+                            timestamp: '2026-02-09T08:00:00Z',
+                            branchName: 'SBB-main',
+                            version: 'v50e8400-e29b-41d4-a716-446655440008',
+                            partner: 'SBB',
+                            comment: 'Train shared with BLS',
+                            affectedPartner: 'BLS'
+                        },
+                        {
+                            action: 'created',
+                            timestamp: '2026-02-10T10:00:00Z',
+                            branchName: 'SOB-old-proposal',
+                            version: 'v50e8400-e29b-41d4-a716-446655440009',
+                            partner: 'SOB',
+                            comment: 'Initial proposal from SOB'
+                        },
+                        {
+                            action: 'shared',
+                            timestamp: '2026-02-10T11:00:00Z',
+                            branchName: 'SBB-main',
+                            version: 'v50e8400-e29b-41d4-a716-446655440008',
+                            partner: 'SBB',
+                            comment: 'Train shared with SOB',
+                            affectedPartner: 'SOB'
+                        },
+                        {
+                            action: 'deleted',
+                            timestamp: '2026-02-10T17:00:00Z',
+                            branchName: 'SOB-old-proposal',
+                            version: 'v50e8400-e29b-41d4-a716-446655440009',
+                            partner: 'SOB',
+                            comment: 'Proposal withdrawn'
+                        },
+                        {
+                            action: 'created',
+                            timestamp: '2026-02-11T13:00:00Z',
+                            branchName: 'BLS-changes',
+                            version: 'v50e8400-e29b-41d4-a716-446655440010',
+                            partner: 'BLS',
+                            comment: 'BLS operational changes'
+                        },
+                        {
+                            action: 'merged',
+                            timestamp: '2026-02-12T09:00:00Z',
+                            branchName: 'BLS-changes',
+                            version: 'v50e8400-e29b-41d4-a716-446655440011',
+                            partner: 'SBB',
+                            comment: 'Merged BLS changes into main'
+                        },
+                        {
+                            action: 'created',
+                            timestamp: '2026-02-12T16:00:00Z',
+                            branchName: 'SOB-update',
+                            version: 'v50e8400-e29b-41d4-a716-446655440012',
+                            partner: 'SOB',
+                            comment: 'SOB infrastructure update'
+                        },
+                        {
+                            action: 'updated',
+                            timestamp: '2026-02-13T16:45:00Z',
+                            branchName: 'SOB-update',
+                            version: 'v50e8400-e29b-41d4-a716-446655440013',
+                            partner: 'SOB',
+                            comment: 'Revised SOB update with final timings'
+                        }
+                    ]
+                },
+                {
+                    trainId: '550e8400-e29b-41d4-a716-446655440004',
+                    trainNumber: 'IR 2345',
+                    operationalDay: '2026-02-17',
+                    partners: ['SBB', 'SOB'],
+                    lastChange: '2026-02-12T09:20:00Z',
+                    branches: [
+                        {
+                            branchId: 'b50e8400-e29b-41d4-a716-446655440009',
+                            name: 'SBB-main',
+                            owner: 'SBB',
+                            state: 'open',
+                            createdAt: '2026-02-08T14:00:00Z'
+                        },
+                        {
+                            branchId: 'b50e8400-e29b-41d4-a716-446655440010',
+                            name: 'SOB-integration',
+                            owner: 'SOB',
+                            state: 'merged',
+                            createdAt: '2026-02-09T11:00:00Z'
+                        }
+                    ],
+                    changelog: [
+                        {
+                            action: 'created',
+                            timestamp: '2026-02-08T14:00:00Z',
+                            branchName: 'SBB-main',
+                            version: 'v50e8400-e29b-41d4-a716-446655440014',
+                            partner: 'SBB',
+                            comment: 'Initial train creation'
+                        },
+                        {
+                            action: 'shared',
+                            timestamp: '2026-02-08T15:00:00Z',
+                            branchName: 'SBB-main',
+                            version: 'v50e8400-e29b-41d4-a716-446655440014',
+                            partner: 'SBB',
+                            comment: 'Train shared with SOB',
+                            affectedPartner: 'SOB'
+                        },
+                        {
+                            action: 'created',
+                            timestamp: '2026-02-09T11:00:00Z',
+                            branchName: 'SOB-integration',
+                            version: 'v50e8400-e29b-41d4-a716-446655440015',
+                            partner: 'SOB',
+                            comment: 'SOB network integration proposal'
+                        },
+                        {
+                            action: 'updated',
+                            timestamp: '2026-02-11T14:00:00Z',
+                            branchName: 'SOB-integration',
+                            version: 'v50e8400-e29b-41d4-a716-446655440016',
+                            partner: 'SOB',
+                            comment: 'Updated integration details'
+                        },
+                        {
+                            action: 'merged',
+                            timestamp: '2026-02-12T09:20:00Z',
+                            branchName: 'SOB-integration',
+                            version: 'v50e8400-e29b-41d4-a716-446655440017',
+                            partner: 'SBB',
+                            comment: 'Merged SOB integration into main'
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // ========================================
+        // Utility Functions
+        // ========================================
+
+        /**
+         * Format date to Swiss format: DD.MM.YYYY
+         */
+        function formatSwissDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+
+        /**
+         * Format timestamp to Swiss format: DD.MM.YYYY HH:MM:SS
+         */
+        function formatSwissTimestamp(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+        }
+
+        /**
+         * Expand partner abbreviations to full names
+         */
+        const partnerNames = {
+            'SBB': 'Schweizerische Bundesbahnen',
+            'BLS': 'BLS AG',
+            'SOB': 'Südostbahn AG'
+        };
+
+        function expandPartnerNames(partners) {
+            return partners.map(p => partnerNames[p] || p).join(', ');
+        }
+
+        /**
+         * Get badge class for branch state
+         */
+        function getBranchStateBadge(state) {
+            const badgeMap = {
+                'open': 'badge-open',
+                'merged': 'badge-merged',
+                'deleted': 'badge-deleted'
+            };
+            return `badge ${badgeMap[state] || 'badge-open'}`;
+        }
+
+        /**
+         * Get badge class for changelog action
+         */
+        function getActionBadge(action) {
+            const badgeMap = {
+                'created': 'badge-created',
+                'updated': 'badge-updated',
+                'merged': 'badge-merged-action',
+                'deleted': 'badge-deleted-action',
+                'shared': 'badge-shared',
+                'unshared': 'badge-unshared'
+            };
+            return `badge ${badgeMap[action] || 'badge-created'}`;
+        }
+
+        // ========================================
+        // Data Population
+        // ========================================
+
+        /**
+         * Populate general information section
+         */
+        function populateGeneralInfo(train) {
+            document.getElementById('train-id').textContent = train.trainId;
+            document.getElementById('train-number').textContent = train.trainNumber;
+            document.getElementById('operational-day').textContent = formatSwissDate(train.operationalDay);
+            document.getElementById('partners').textContent = expandPartnerNames(train.partners);
+            document.getElementById('page-title').textContent = `Train Details - ${train.trainNumber}`;
+        }
+
+        /**
+         * Populate branches table
+         */
+        function populateBranches(branches) {
+            const tbody = document.getElementById('branches-tbody');
+            tbody.innerHTML = '';
+
+            // Sort by creation date descending
+            const sortedBranches = [...branches].sort((a, b) =>
+                new Date(b.createdAt) - new Date(a.createdAt)
+            );
+
+            sortedBranches.forEach(branch => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-family: monospace; font-size: 0.875rem;">${branch.branchId}</td>
+                    <td><strong>${branch.name}</strong></td>
+                    <td>${partnerNames[branch.owner] || branch.owner}</td>
+                    <td>${formatSwissTimestamp(branch.createdAt)}</td>
+                    <td><span class="${getBranchStateBadge(branch.state)}">${branch.state}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        /**
+         * Populate changelog table
+         */
+        function populateChangelog(changelog) {
+            const tbody = document.getElementById('changelog-tbody');
+            tbody.innerHTML = '';
+
+            // Sort by timestamp descending
+            const sortedChangelog = [...changelog].sort((a, b) =>
+                new Date(b.timestamp) - new Date(a.timestamp)
+            );
+
+            sortedChangelog.forEach(entry => {
+                const row = document.createElement('tr');
+                const versionDisplay = entry.version ?
+                    `<span style="font-family: monospace; font-size: 0.75rem;">${entry.version.substring(0, 8)}...</span>` :
+                    '-';
+
+                const comment = entry.affectedPartner ?
+                    `${entry.comment} (${partnerNames[entry.affectedPartner] || entry.affectedPartner})` :
+                    entry.comment;
+
+                row.innerHTML = `
+                    <td><span class="${getActionBadge(entry.action)}">${entry.action}</span></td>
+                    <td>${formatSwissTimestamp(entry.timestamp)}</td>
+                    <td>${entry.branchName}</td>
+                    <td>${versionDisplay}</td>
+                    <td>${partnerNames[entry.partner] || entry.partner}</td>
+                    <td>${comment}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // ========================================
+        // Page Initialization
+        // ========================================
+
+        /**
+         * Load train data based on URL parameter
+         */
+        function loadTrainData() {
+            // Get trainId from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const trainId = urlParams.get('trainId');
+
+            if (!trainId) {
+                showError();
+                return;
+            }
+
+            // Find train in sample data
+            const train = sampleData.trains.find(t => t.trainId === trainId);
+
+            if (!train) {
+                showError();
+                return;
+            }
+
+            // Show main content and populate data
+            document.getElementById('main-content').style.display = 'block';
+            populateGeneralInfo(train);
+            populateBranches(train.branches);
+            populateChangelog(train.changelog);
+        }
+
+        /**
+         * Show error message
+         */
+        function showError() {
+            document.getElementById('error-message').style.display = 'block';
+        }
+
+        // ========================================
+        // Initialize on page load
+        // ========================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTrainData();
+        });
+    </script>
+</body>
+</html>
+
