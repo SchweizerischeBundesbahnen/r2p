@@ -17,10 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-public class TrainControllerChangelogTests {
+public class ChangelogTests {
 
     // This class tests querying the changelog.
-    // In order to have test data with defined timestamps, changelogs are direclty inserted via the SpringData Repository.
+    // In order to have test data with defined timestamps, changelogs are directly inserted via the SpringData Repository.
 
     @Autowired
     private TrainController trainController;
