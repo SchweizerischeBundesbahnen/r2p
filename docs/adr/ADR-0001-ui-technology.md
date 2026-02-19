@@ -73,8 +73,8 @@ Alpine.js is a lightweight JavaScript framework designed for adding interactivit
 **Cons:**
 - ❌ **High complexity** for a prototype/minimal UI
 - ❌ Separate build toolchain (Node.js, npm, Angular CLI, webpack)
-- ❌ Many dependencies (hundreds of npm packages)
-- ❌ **High security risk** (npm vulnerabilities, supply chain attacks)
+- ❌ Many dependencies (hundreds of npm packages) - not direct ones but transitive ones
+- ❌ **High security risk** (npm vulnerabilities, supply chain attacks) - especially due to transitive dependencies
 - ❌ **Significant maintenance overhead** (framework updates, dependency management)
 - ❌ Separate deployment or complex build integration (e.g. frontend-maven-plugin) needed
 - ❌ Steeper learning curve compared to lightweight options
