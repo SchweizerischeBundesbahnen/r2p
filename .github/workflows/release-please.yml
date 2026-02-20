@@ -47,6 +47,9 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+
       - name: Build with Maven including native image
         run: ./mvnw clean package -Papp-image-unix
 
@@ -125,6 +128,9 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
           cache: 'maven'
+
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
 
       - name: Build with Maven including native image
         run: ./mvnw clean package -Papp-image-mac
