@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.15](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.14...r2p-v0.0.15) (2026-02-20)
+
+
+### Bug Fixes
+
+* docker image creation failed ([8657419](https://github.com/SchweizerischeBundesbahnen/r2p/commit/865741901050fe9a165c42c68c4b59b9a1b76d85))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.15-SNAPSHOT ([#74](https://github.com/SchweizerischeBundesbahnen/r2p/issues/74)) ([9575fba](https://github.com/SchweizerischeBundesbahnen/r2p/commit/9575fba40d1f8a08756d16021d674095780e248f))
+
 ## [0.0.14](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.13...r2p-v0.0.14) (2026-02-20)
 
 
