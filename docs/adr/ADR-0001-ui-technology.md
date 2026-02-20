@@ -2,8 +2,8 @@
 
 | Metadata        | Value                                   |
 |-----------------|-----------------------------------------|
-| status          | open                                    |
-| date            | ?                                       |
+| status          | decided                                 |
+| date            | 20.02.2026                              |
 | decision-makers | Project Team R2P                        |
 | jira            | https://flow.sbb.ch/browse/BPSGLO-13861 |
 
@@ -25,10 +25,10 @@ This facilitates understanding and testing the system and can be used for demos 
 
 ## Options Considered
 
-* Option 1: Alpine.js (Lightweight JavaScript Framework)
-* Option 2: Angular SPA (Single Page Application)
-* Option 3: Thymeleaf (Full Server-Side Rendering)
-* Option 4: HTMX (Partial Server-Side Rendering)
+* Option 1: Alpine.js (Lightweight JavaScript Framework) -> decided
+* Option 2: Angular SPA (Single Page Application) -> rejected
+* Option 3: Thymeleaf (Full Server-Side Rendering) -> rejected
+* Option 4: HTMX (Partial Server-Side Rendering) -> rejected
 
 ### Option 1: Alpine.js (Lightweight JavaScript Framework)
 
@@ -182,8 +182,6 @@ async loadTrains() {
 
 ---
 
----
-
 ## Recommended Approach
 
 **Top Recommendation: Option 1 (Alpine.js)**
@@ -209,3 +207,8 @@ If server-side rendering is strongly preferred or you want to avoid any JavaScri
 - **Option 2 (Angular SPA):** Massive overkill for prototype, high complexity and maintenance overhead
 - **Option 4 (HTMX):** Good technology but requires server-side endpoints for all interactions, more effort than Alpine.js for this use case
 
+---
+
+## Final decision
+
+We will implement the user interface using **Alpine.js**.
