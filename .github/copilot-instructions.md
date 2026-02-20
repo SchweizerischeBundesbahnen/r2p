@@ -68,7 +68,6 @@ r2p/
 ├── .spectral.yaml                    # Spectral linting rules for OpenAPI validation
 ├── .release-please-manifest.json     # Release-please version tracking
 ├── release-please-config.json        # Release-please changelog configuration
-├── Dockerfile                        # Multi-stage Docker build
 ├── src/main/java/ch/rail/r2p/
 │   ├── R2pApplication.java           # Main entry point (@SpringBootApplication)
 │   ├── Constants.java                # Shared constants (e.g., ZURICH_ZONE_ID)
@@ -195,7 +194,7 @@ Examples:
    - `r2p-macos.tar.gz` (native app-image)
    - `r2p-documentation.zip` (HTML + PDF docs)
    - `r2p-test-results.zip` (combined test results)
-4. **Docker Image**: Builds and pushes to `ghcr.io/schweizerischebundesbahnen/r2p`
+4. **Docker Image**: Builds and pushes to `ghcr.io/schweizerischebundesbahnen/r2p` using Spring Boot buildpacks
    - Tags: `latest`, `<version>`, `<major>.<minor>`, `<major>`
 
 ### Automerge Snapshot PRs (`.github/workflows/automerge-snapshot.yml`)
@@ -294,6 +293,17 @@ This automatically removes read-only attributes before cleaning.
 2. **TrainService.java**: Implement security checks using Spring Security instead of manual validation
 3. **train.yaml**: Add description for some schema properties
 
+## Data model (train.yaml)
+
+Short overview for AI agents of the OpenAPI schema `src/main/resources/openapi/schemas/train.yaml`:
+- `Train` is the root object (id, references, links, name, startdate, timestamp, journey).
+- `Journey` contains an ordered list of `Journeylocation` entries (at least 2) that describe the sequence of the journey.
+- `Journeylocation` consists of `locations`, `activities`, and `requirements` and represents a segment/location within the journey.
+- `Activity` models actions using `type`, `timings`, and responsibility/alignment; optionally it can reference `capability` and `requirement`.
+- `Capability` and `Requirement` describe required/offered characteristics via `featuresets` and `features` (using `Feature`, `Restriction`, `Condition`).
+- Rolling stock is modeled in `RollingStock` and can contain `wagonGroups` or `units` (with `WagonGroup`, `Unit`, `Carbody`).
+- Many fields are defined as enums (for example `ActivityType`, `LocationType`, `PlanStatus`, `TimingType`).
+
 ## Trust These Instructions
 
 These instructions are validated and accurate. Only perform additional searches if:
@@ -313,3 +323,4 @@ These instructions are validated and accurate. Only perform additional searches 
 
 * Only the "Lead RU" can create a new train and update the main branch
 * As soon as the "Lead RU" shares the train with a partner, that partner can create/update branches and see the history. It can also do changes in his own branches.
+* EVU = Eisenbahnverkehrsunternehmen
