@@ -239,8 +239,9 @@ jobs:
         env:
           VERSION: ${{ needs.release-please.outputs.version }}
         run: |
+          REPO_LOWERCASE=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           ./mvnw spring-boot:build-image \
-            -Dspring-boot.build-image.imageName=ghcr.io/${{ github.repository }}:${VERSION} \
+            -Dspring-boot.build-image.imageName=ghcr.io/${REPO_LOWERCASE}:${VERSION} \
             -DskipTests
 
       - name: Tag and push Docker images
@@ -249,13 +250,14 @@ jobs:
           MAJOR: ${{ needs.release-please.outputs.major }}
           MINOR: ${{ needs.release-please.outputs.minor }}
         run: |
+          REPO_LOWERCASE=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           MAJOR_MINOR="${MAJOR}.${MINOR}"
           # Tag with additional version tags
-          docker tag ghcr.io/${{ github.repository }}:${VERSION} ghcr.io/${{ github.repository }}:${MAJOR_MINOR}
-          docker tag ghcr.io/${{ github.repository }}:${VERSION} ghcr.io/${{ github.repository }}:${MAJOR}
-          docker tag ghcr.io/${{ github.repository }}:${VERSION} ghcr.io/${{ github.repository }}:latest
+          docker tag ghcr.io/${REPO_LOWERCASE}:${VERSION} ghcr.io/${REPO_LOWERCASE}:${MAJOR_MINOR}
+          docker tag ghcr.io/${REPO_LOWERCASE}:${VERSION} ghcr.io/${REPO_LOWERCASE}:${MAJOR}
+          docker tag ghcr.io/${REPO_LOWERCASE}:${VERSION} ghcr.io/${REPO_LOWERCASE}:latest
           # Push all tags
-          docker push ghcr.io/${{ github.repository }}:${VERSION}
-          docker push ghcr.io/${{ github.repository }}:${MAJOR_MINOR}
-          docker push ghcr.io/${{ github.repository }}:${MAJOR}
-          docker push ghcr.io/${{ github.repository }}:latest
+          docker push ghcr.io/${REPO_LOWERCASE}:${VERSION}
+          docker push ghcr.io/${REPO_LOWERCASE}:${MAJOR_MINOR}
+          docker push ghcr.io/${REPO_LOWERCASE}:${MAJOR}
+          docker push ghcr.io/${REPO_LOWERCASE}:latest
