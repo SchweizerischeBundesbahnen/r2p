@@ -12,7 +12,7 @@
 ## Context
 
 The R2P prototype should include a minimal user interface additionally to the API.
-The design of the UI follows the existing prototype under desing/v2
+The design of the UI follows the existing prototype under design/v2
 The data is either fetched from the API or included in server side rendered templates.
 This facilitates understanding and testing the system and can be used for demos and internal presentations.
 
