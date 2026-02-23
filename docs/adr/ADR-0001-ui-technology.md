@@ -7,19 +7,23 @@
 | decision-makers | Project Team R2P                        |
 | jira            | https://flow.sbb.ch/browse/BPSGLO-13861 |
 
-# User Interface Technology
+# Server Web Interface Technology
 
 ## Context
 
-The R2P prototype should include a minimal user interface additionally to the API.
+The R2P prototype should include a minimal server web interface additionally to the API.
 The design of the UI follows the existing prototype under design/v2
 The data is either fetched from the API or included in server side rendered templates.
 This facilitates understanding and testing the system and can be used for demos and internal presentations.
 
+The server user interface is limited to read-only operations. At a later stage, there might be added 
+a full-featured web client in this repository or in a separate repository.
+
 ## Factors, Requirements and Constraints
 
 * Stability and reliability: should be mature and stable, and not cause significant maintenance effort
-* Easy to understand and extend: should be easy to understand for developers with different backgrounds, and allow for easy extensions if needed
+* Easy to understand and extend: should be easy to understand for developers with different backgrounds, 
+  and allow for easy extensions (e.g. if the reference implementation is used as base).
 * Security: should not introduce significant security risks especially not requiring a lot of dependencies
 * Deployment: should be integrable in the same deployment as the API, and not require a separate hosting or deployment solution
 
@@ -50,9 +54,12 @@ Alpine.js is a lightweight JavaScript framework designed for adding interactivit
 - ✅ Fast loading and minimal overhead
 - ✅ Excellent documentation and community support
 - ✅ Can serve Alpine.js locally (no CDN dependency)
+- ✅ The existing REST API can be easily integrated with `fetch()` calls
 
 **Cons:**
 - ❌ Less powerful than full SPA frameworks for complex interactions
+
+  **Implementation Effort:** Low (mostly simple code based on existing HTML design, easy task for GitHub Copilot)
 
 ---
 
@@ -79,6 +86,8 @@ Alpine.js is a lightweight JavaScript framework designed for adding interactivit
 - ❌ Separate deployment or complex build integration (e.g. frontend-maven-plugin) needed
 - ❌ Steeper learning curve compared to lightweight options
 - ❌ Longer build times
+
+  **Implementation Effort:** High (new ecosystem, new build process, new "application")
 
 ---
 
@@ -115,6 +124,8 @@ Works well with Thymeleaf or plain HTML.
 
 **Cons:**
 - ❌ Requires server endpoints for all interactions
+
+**Implementation Effort:** Medium (new dependency, new controllers, template conversion)
 
 ---
 
