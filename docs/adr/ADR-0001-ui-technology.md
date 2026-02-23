@@ -139,18 +139,26 @@ The browser (Alpine.js or HTMX) simply makes API calls with the session cookie, 
 
 See draft RFC https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps
 
-┌─────────────┐      ┌──────────────┐      ┌─────────────┐
-│   Browser   │─────▶│ Spring Boot  │─────▶│  Azure AD   │
-│  (Alpine.js)│      │ (OAuth2      │      │   (OIDC)    │
-│             │◀─────│  Client)     │◀─────│             │
-└─────────────┘      └──────────────┘      └─────────────┘
-│                     │
-│  Session Cookie     │
-│◀───────────────────▶│
-│                     │
-│  API Calls          │
-│  (Cookie auto-sent) │
-└────────────────────▶│
+```mermaid
+sequenceDiagram
+    participant Browser as Browser<br/>(Alpine.js)
+    participant SpringBoot as Spring Boot<br/>(OAuth2 Client)
+    participant AzureAD as Azure AD<br/>(OIDC)
+    
+    Note over Browser,AzureAD: OAuth2 Login Flow
+    Browser->>SpringBoot: Initial request
+    SpringBoot->>AzureAD: Redirect to /oauth2/authorization/azure
+    AzureAD->>Browser: Login page
+    Browser->>AzureAD: User credentials
+    AzureAD->>SpringBoot: Authorization code
+    SpringBoot->>AzureAD: Exchange code for tokens
+    AzureAD->>SpringBoot: ID token + Access token
+    SpringBoot->>Browser: Set session cookie
+    
+    Note over Browser,SpringBoot: Authenticated API Calls
+    Browser->>SpringBoot: API call with session cookie
+    SpringBoot->>Browser: JSON response
+```
 
 1. Enable Spring Security OAuth2 Login (session-based)
 2. User logs in via `/oauth2/authorization/azure`
