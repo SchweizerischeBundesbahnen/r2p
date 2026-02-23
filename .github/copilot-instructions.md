@@ -2,14 +2,16 @@
 
 ## Project Overview
 
-**R2P** (RU-RU-Partner) is a Spring Boot 4.0 prototype for railway (RU - Railway Undertaking) partner communication. It's a medium-sized Java project (~33 source files, 5 test files) using an H2 embedded database, Flyway migrations, OpenAPI code generation, and Azure AD OAuth2 authentication.
+**R2P** (RU-RU-Partner) is a Spring Boot 4.0 prototype for railway (RU - Railway Undertaking) partner communication. 
+It's a medium-sized Java project using an H2 embedded database, Flyway migrations, OpenAPI code generation, 
+and Azure AD OAuth2 authentication.
 
 **Key Technologies:**
-- Java 25, Maven 3.9+, Spring Boot 4.0.2
+- Java 25, Maven 3.9+, Spring Boot 4
 - H2 Database (in-memory or file-based), Spring Data JDBC, Flyway
 - OpenAPI Generator 7.20.0 (spring server & asciidoc documentation)
 - Security: OAuth2/JWT (Azure AD), Spring Security
-- Lombok, Jackson, SpringDoc OpenAPI UI 3.0.1
+- Lombok, Jackson, SpringDoc OpenAPI UI 3
 - AsciiDoctor 3.2.0 for documentation (HTML + PDF)
 - Node.js/npm for commit linting (commitlint 20.x, husky 9.x)
 
@@ -22,7 +24,7 @@ mvn clean verify
 This runs the full build including:
 1. OpenAPI code generation (generates DTOs and API interfaces in `target/generated-sources/openapi/`)
 2. Compilation of all source files
-3. All unit tests (~34 tests across 5 test classes)
+3. All unit tests
 4. AsciiDoc documentation generation (HTML + PDF for both manual and API docs)
 5. JAR packaging
 
@@ -112,17 +114,17 @@ r2p/
 │       └── schemas/
 │           └── train.yaml            # Train data schema (extracted from spec)
 ├── src/test/java/ch/rail/r2p/
-│   ├── R2pApplicationTests.java      # Application context tests (4 tests)
+│   ├── R2pApplicationTests.java      # Application context tests
 │   ├── WithMockR2PUser.java          # Test annotation for security (@WithMockR2PUser)
 │   ├── config/
-│   │   └── JwtAuthenticationConverterTests.java  # JWT tests (4 tests)
+│   │   └── JwtAuthenticationConverterTests.java  # JWT tests
 │   └── web/
-│       ├── TrainControllerTests.java  # Main controller tests (20 tests)
-│       └── TrainControllerChangelogTests.java # Changelog tests (6 tests)
+│       ├── TrainControllerTests.java  # Main controller tests
+│       └── TrainControllerChangelogTests.java # Changelog tests
 ├── target/generated-sources/openapi/ # GENERATED - do not edit manually
 │   └── src/main/java/ch/rail/r2p/api/
 │       ├── V1Api.java                # Generated API interface
-│       ├── dto/                      # Generated DTOs (46 classes)
+│       ├── dto/                      # Generated DTOs
 │       └── ApiUtil.java              # Utility class
 ├── target/docs/                      # Generated documentation
 │   ├── r2p-manual.html               # User manual (HTML)
