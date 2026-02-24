@@ -22,7 +22,11 @@ jobs:
           echo "=== Spectral Lint Results ==="
           spectral lint src/main/resources/openapi/r2p-spec.yaml --ruleset .spectral.yaml --format stylish --output spectral-report.txt && SPECTRAL_EXIT=0 || SPECTRAL_EXIT=$?
           spectral lint src/main/resources/openapi/r2p-spec.yaml --ruleset .spectral.yaml --format html --output spectral-report.html || true
-          cat spectral-report.txt || echo "No issues found"
+          if [ -s spectral-report.txt ]; then
+            cat spectral-report.txt
+          else
+            echo "No issues found"
+          fi
           if [ $SPECTRAL_EXIT -ne 0 ]; then
             echo "❌ OpenAPI specification has errors!"
             exit $SPECTRAL_EXIT
