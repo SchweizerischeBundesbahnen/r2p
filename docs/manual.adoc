@@ -97,7 +97,7 @@ Supported types are:
 == Open Issues
 
 Here questions are listed to be clarified with the project team. After clarification, an issue should
-be created in the issue tracken and the questions here can be removed.
+be created in the issue tracker and the questions here can be removed.
 
 == Limitations of current implementation
 * Performance of train list endpoint is not optimized (n+1 pattern to get partners, no paging)
