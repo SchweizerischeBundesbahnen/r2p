@@ -29,6 +29,7 @@ public class FlywayConfig {
                 var result = flyway.validateWithResult();
                 if (result.validationSuccessful) {
                     log.info("Flyway validated the schema: OK ({} migrations)", result.validateCount);
+                    // note: no need to call flyway.migrate(). If there are migrations not yet applied, validationSuccessful will be false.
                 } else {
                     log.warn("Flyway validated the schema: NOK");
                     log.warn("Flyway found the following errors: {}", result.getAllErrorMessages());
