@@ -106,6 +106,17 @@ class SharingTests {
     }
 
     @Test
+    void should_not_allow_unsharing_partner_that_was_never_shared() {
+        var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain());
+        assert train.getBody() != null;
+
+        // Try to unshare SOB without ever sharing with SOB
+        var exception = assertThrows(AuthorizationDeniedException.class,
+            () -> trainController.unshareTrain(SBB, train.getBody().getTrainId(), "SOB"));
+        assertThat(exception.getMessage()).contains("Train is not shared with partner 'SOB'");
+    }
+
+    @Test
     void should_write_changelog_for_unsharing() {
         String branchName = "myBranch";
         String prefixedBranchName = Actor.getPrefixedBranchName(SOB, branchName);

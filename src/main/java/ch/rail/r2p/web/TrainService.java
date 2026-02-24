@@ -113,7 +113,7 @@ public class TrainService {
 
     public void unshareTrain(String partner, UUID trainId, String unshareWith) {
         TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME).orElseThrow();
-        checkUnsharingAuthorization(partner, unshareWith);
+        checkUnsharingAuthorization(main.partners(), partner, unshareWith);
         trainPersistence.removePartner(trainId, unshareWith);
         Changelog changelog = Changelog.forUnsharing(partner, unshareWith, main.trainVersion(), "Train unshared");
         changelogPersistence.insert(changelog);
@@ -141,22 +141,22 @@ public class TrainService {
     }
 
     public TrainVersionEnriched updateTrainBranch(String partner, UUID trainId, UUID branchId, String comment, Train train) {
-        TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId).orElseThrow();
-        checkSharing(partner, main);
-        checkBranchOwner(partner, main.branch());
-        checkBranchState(main.branch(), BranchState.OPEN);
-        main.trainVersion().setHead(false);
-        trainPersistence.updateVersion(main.trainVersion());
-        TrainVersion newVersion = main.trainVersion().createNewVersion(train, comment);
+        TrainVersionEnriched branch = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId).orElseThrow();
+        checkSharing(partner, branch);
+        checkBranchOwner(partner, branch.branch());
+        checkBranchState(branch.branch(), BranchState.OPEN);
+        branch.trainVersion().setHead(false);
+        trainPersistence.updateVersion(branch.trainVersion());
+        TrainVersion newVersion = branch.trainVersion().createNewVersion(train, comment);
         newVersion.setPayload(train);
         newVersion.setTimestamp(OffsetDateTime.now());
         newVersion.setComment(comment);
         newVersion.setTrainNumber(train.getId());
         newVersion.setOperationalDay(train.getStartdate());
         trainPersistence.insertVersion(newVersion);
-        Changelog changelog = Changelog.forUpdate(partner, newVersion, main.branch(), comment);
+        Changelog changelog = Changelog.forUpdate(partner, newVersion, branch.branch(), comment);
         changelogPersistence.insert(changelog);
-        return new TrainVersionEnriched(newVersion, main.branch(), main.partners());
+        return new TrainVersionEnriched(newVersion, branch.branch(), branch.partners());
     }
 
     public List<Changelog> getChangelogs(String partner, OffsetDateTime from, OffsetDateTime to, UUID trainId) {
@@ -183,9 +183,12 @@ public class TrainService {
         }
     }
 
-    private void checkUnsharingAuthorization(String partner, String unshareWith) {
-        if (!partner.equals(instanceOwner) && !partner.equals(unshareWith)) {
+    private void checkUnsharingAuthorization(List<String> allPartners, String currentPartner, String unshareWith) {
+        if (!currentPartner.equals(instanceOwner) && !currentPartner.equals(unshareWith)) {
             throw new AuthorizationDeniedException("Partner is not instance owner or himself");
+        }
+        if (!allPartners.contains(unshareWith)) {
+            throw new AuthorizationDeniedException("Train is not shared with partner '" + unshareWith + "'");
         }
     }
 
