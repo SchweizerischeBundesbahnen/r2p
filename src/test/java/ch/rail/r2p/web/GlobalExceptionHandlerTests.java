@@ -16,8 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Tests for GlobalExceptionHandler using MockMvc to verify exception handling through WebMvc layer.
- * Each test uses .andDo(print()) to output the actual response for verification of which handler was called.
+ * Tests for GlobalExceptionHandler using MockMvc to verify exception handling through the WebMvc layer.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
