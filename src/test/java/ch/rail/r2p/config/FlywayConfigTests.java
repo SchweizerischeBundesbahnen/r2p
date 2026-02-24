@@ -26,7 +26,7 @@ class FlywayConfigTests {
         // Given: the application is started with the custom Flyway migration strategy
 
         // Then: the expected tables should exist
-        assertThat(output).contains("Successfully applied", "migration to schema", "now at version");
+        assertThat(output).contains("Successfully applied", "migrations to schema", "now at version");
         assertTableExists("TRAIN_VERSION");
         assertTableExists("BRANCH");
         assertTableExists("TRAIN_PARTNER");
