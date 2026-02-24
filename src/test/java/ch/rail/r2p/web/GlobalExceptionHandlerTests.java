@@ -1,6 +1,5 @@
 package ch.rail.r2p.web;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -8,16 +7,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import ch.rail.r2p.WithMockR2PUser;
-import jakarta.validation.ConstraintViolationException;
-import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -84,18 +79,17 @@ class GlobalExceptionHandlerTests {
     }
 
     @Test
-    void should_handle_constraint_violation_exception() {
-        // Given: a GlobalExceptionHandler instance and a ConstraintViolationException
-        GlobalExceptionHandler handler = new GlobalExceptionHandler();
-        ConstraintViolationException exception = new ConstraintViolationException("Constraint violated", Set.of());
+    void should_handle_constraint_violation_exception() throws Exception {
+        // Given: a request parameter that violates the @Size(max = 10) constraint
+        String tooLongValue = "this-value-is-longer-than-10-characters";
 
-        // When: handling the exception
-        ProblemDetail problemDetail = handler.handleConstraintViolationException(exception);
-
-        // Then: should return 400 Bad Request with the exception message
-        assertThat(problemDetail).isNotNull();
-        assertThat(problemDetail.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-        assertThat(problemDetail.getDetail()).isEqualTo("Constraint violated");
-        assertThat(problemDetail.getTitle()).isEqualTo("Bad Request");
+        // When: calling the test endpoint with a constraint violation
+        mockMvc.perform(get("/test/constraint")
+                .param("value", tooLongValue)
+                .accept(MediaType.APPLICATION_JSON))
+            // Then: should return 400 with constraint violation message
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.detail").value(containsString("size must be between 1 and 10")));
     }
 }

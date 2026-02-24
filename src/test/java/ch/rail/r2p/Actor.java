@@ -17,14 +17,13 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 @Component
 public class Actor {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockitoSpyBean
+    @Autowired
     private TrainPersistence trainPersistence;
 
     @Autowired

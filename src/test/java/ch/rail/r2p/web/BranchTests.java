@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import ch.rail.r2p.Actor;
 import ch.rail.r2p.api.dto.Branch;
 import ch.rail.r2p.api.dto.BranchState;
+import ch.rail.r2p.persistence.TrainPersistence;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 @SpringBootTest
 class BranchTests {
@@ -27,6 +29,9 @@ class BranchTests {
 
     @Autowired
     private Actor actor;
+
+    @MockitoSpyBean
+    private TrainPersistence trainPersistence;
 
     @BeforeEach
     void setUp() {
@@ -155,6 +160,7 @@ class BranchTests {
     @Test
     void should_not_get_nonexistent_train_branch() {
         var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain()).getBody();
+        assert train != null;
         UUID trainId = train.getTrainId();
 
         assertThrows(NoSuchElementException.class, () -> trainController.getTrainBranch(SBB, trainId, UUID.randomUUID()));
