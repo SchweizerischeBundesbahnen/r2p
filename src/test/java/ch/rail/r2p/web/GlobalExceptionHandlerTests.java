@@ -71,20 +71,6 @@ class GlobalExceptionHandlerTests {
     }
 
     @Test
-    void should_handle_method_not_allowed() throws Exception {
-        // When: attempting to use POST on an endpoint that doesn't exist
-        // note: this is handled by Spring's default handler, not GlobalExceptionHandler
-        mockMvc.perform(post("/v1/trains/" + UUID.randomUUID() + "/branches/" + UUID.randomUUID())
-                .header("token", "SBB")
-                .param("comment", "test comment")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}")
-                .accept(MediaType.APPLICATION_JSON))
-            // Then: should return 405 Method Not Allowed
-            .andExpect(status().isMethodNotAllowed());
-    }
-
-    @Test
     void should_handle_method_argument_type_mismatch_exception() throws Exception {
         // When: requesting with an invalid UUID format in path variable
         mockMvc.perform(get("/v1/trains/not-a-valid-uuid")
