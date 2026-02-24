@@ -16,12 +16,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
       - name: Validate OpenAPI with Spectral
         run: |
-          npm install -g @stoplight/spectral-cli
           echo "=== Spectral Lint Results ==="
-          spectral lint src/main/resources/openapi/r2p-spec.yaml --ruleset .spectral.yaml --format stylish --output spectral-report.txt && SPECTRAL_EXIT=0 || SPECTRAL_EXIT=$?
-          spectral lint src/main/resources/openapi/r2p-spec.yaml --ruleset .spectral.yaml --format html --output spectral-report.html || true
+          npx @stoplight/spectral-cli@6.11.1 lint src/main/resources/openapi/r2p-spec.yaml --ruleset .spectral.yaml --format stylish --output spectral-report.txt && SPECTRAL_EXIT=0 || SPECTRAL_EXIT=$?
+          npx @stoplight/spectral-cli@6.11.1 lint src/main/resources/openapi/r2p-spec.yaml --ruleset .spectral.yaml --format html --output spectral-report.html || true
           if [ -s spectral-report.txt ]; then
             cat spectral-report.txt
           else
