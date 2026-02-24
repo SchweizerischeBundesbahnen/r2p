@@ -53,7 +53,7 @@ class TrainTests {
     void should_create_train_for_instance_owner() {
         Train sampleTrain = actor.loadSampleTrain();
         var train = trainController.createTrain(SBB, "new train", sampleTrain);
-        assert train.getBody() != null;
+        assertThat(train.getBody()).isNotNull();
         var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
         assertThat(result).isNotNull();
         assertThat(result.getBody()).isNotNull();
