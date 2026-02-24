@@ -75,7 +75,7 @@ class SharingTests {
         var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain());
         assert train.getBody() != null;
         trainController.shareTrain(SBB, train.getBody().getTrainId(), "SOB");
-        trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "test", actor.loadSampleTrain(), "myBranch");
+        trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "myBranch", "test", actor.loadSampleTrain());
 
         trainController.unshareTrain(SBB, train.getBody().getTrainId(), "SOB");
 
@@ -126,7 +126,7 @@ class SharingTests {
         UUID mainBranchId = train.getBranches().getFirst().getBranchId();
         trainController.shareTrain(SBB, trainId, "SOB");
         trainController.updateTrainBranch(SBB, trainId, mainBranchId, "update main branch", actor.loadSampleTrain());
-        UUID branchId = Objects.requireNonNull(trainController.createTrainBranch(SOB, trainId, "create branch", actor.loadSampleTrain(), branchName).getBody()).getBranchId();
+        UUID branchId = Objects.requireNonNull(trainController.createTrainBranch(SOB, trainId, branchName, "create branch", actor.loadSampleTrain()).getBody()).getBranchId();
         trainController.updateTrainBranch(SOB, trainId, branchId, "update branch", actor.loadSampleTrain());
         trainController.unshareTrain(SBB, trainId, "SOB");
 

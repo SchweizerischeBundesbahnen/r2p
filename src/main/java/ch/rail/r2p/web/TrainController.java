@@ -34,7 +34,7 @@ public class TrainController implements V1Api {
     }
 
     @Override
-    public ResponseEntity<Branch> createTrainBranch(PartnerToken token, UUID trainId, String comment, Train train, String branchName) {
+    public ResponseEntity<Branch> createTrainBranch(PartnerToken token, UUID trainId, String branchName, String comment, Train train) {
         TrainVersionEnriched created = trainService.createTrainBranch(token.name(), trainId, branchName, comment, train);
         return ResponseEntity.ok(trainMapper.toBranch(created));
     }

@@ -109,7 +109,7 @@ class TrainTests {
         UUID mainBranchId = train.getBranches().getFirst().getBranchId();
         trainController.shareTrain(SBB, trainId, "SOB");
         trainController.updateTrainBranch(SBB, trainId, mainBranchId, "update main branch", actor.loadSampleTrain());
-        UUID branchId = Objects.requireNonNull(trainController.createTrainBranch(SOB, trainId, "create branch", actor.loadSampleTrain(), branchName).getBody()).getBranchId();
+        UUID branchId = Objects.requireNonNull(trainController.createTrainBranch(SOB, trainId, branchName, "create branch", actor.loadSampleTrain()).getBody()).getBranchId();
         trainController.updateTrainBranch(SOB, trainId, branchId, "update branch", actor.loadSampleTrain());
         trainController.deleteTrainBranch(SOB, trainId, branchId, "delete branch");
         OffsetDateTime endTime = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);

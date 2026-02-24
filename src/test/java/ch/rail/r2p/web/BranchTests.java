@@ -48,7 +48,7 @@ class BranchTests {
         var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain());
         assert train.getBody() != null;
         trainController.shareTrain(SBB, train.getBody().getTrainId(), "SOB");
-        trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "test", actor.loadSampleTrain(), "myBranch");
+        trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "myBranch", "test", actor.loadSampleTrain());
         var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
         assertThat(result).isNotNull();
         assert result.getBody() != null;
@@ -61,9 +61,9 @@ class BranchTests {
         var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain());
         assert train.getBody() != null;
         trainController.shareTrain(SBB, train.getBody().getTrainId(), "SOB");
-        trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "test", actor.loadSampleTrain(), branchName);
-        assertThrows(DuplicateKeyException.class, () -> trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "test", actor.loadSampleTrain(), branchName));
-        assertThrows(DuplicateKeyException.class, () -> trainController.createTrainBranch(SBB, train.getBody().getTrainId(), "test", actor.loadSampleTrain(), branchName));
+        trainController.createTrainBranch(SOB, train.getBody().getTrainId(), branchName, "test", actor.loadSampleTrain());
+        assertThrows(DuplicateKeyException.class, () -> trainController.createTrainBranch(SOB, train.getBody().getTrainId(), branchName, "test", actor.loadSampleTrain()));
+        assertThrows(DuplicateKeyException.class, () -> trainController.createTrainBranch(SBB, train.getBody().getTrainId(), branchName, "test", actor.loadSampleTrain()));
     }
 
     @Test
@@ -72,7 +72,7 @@ class BranchTests {
         var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain());
         assert train.getBody() != null;
         trainController.shareTrain(SBB, train.getBody().getTrainId(), "SOB");
-        var branch = trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "test", actor.loadSampleTrain(), branchName);
+        var branch = trainController.createTrainBranch(SOB, train.getBody().getTrainId(), branchName, "test", actor.loadSampleTrain());
         assert branch.getBody() != null;
         trainController.deleteTrainBranch(SOB, train.getBody().getTrainId(), branch.getBody().getBranchId(), "delete branch");
         var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
@@ -90,7 +90,7 @@ class BranchTests {
         var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain());
         assert train.getBody() != null;
         trainController.shareTrain(SBB, train.getBody().getTrainId(), "SOB");
-        var branch = trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "test", actor.loadSampleTrain(), branchName);
+        var branch = trainController.createTrainBranch(SOB, train.getBody().getTrainId(), branchName, "test", actor.loadSampleTrain());
         assertThrows(AuthorizationDeniedException.class, () -> {
             assert branch.getBody() != null;
             trainController.deleteTrainBranch(BLS, train.getBody().getTrainId(), branch.getBody().getBranchId(), "delete branch");
@@ -106,7 +106,7 @@ class BranchTests {
         String branchName = "myBranch";
         var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain());
         assert train.getBody() != null;
-        trainController.createTrainBranch(SBB, train.getBody().getTrainId(), "test", actor.loadSampleTrain(), branchName);
+        trainController.createTrainBranch(SBB, train.getBody().getTrainId(), branchName, "test", actor.loadSampleTrain());
         trainController.deleteTrainBranch(SBB, train.getBody().getTrainId(), train.getBody().getBranches().getFirst().getBranchId(), "delete main branch");
         var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
         assertThat(result).isNotNull();
@@ -120,7 +120,7 @@ class BranchTests {
         String branchName = "myBranch";
         var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain());
         assert train.getBody() != null;
-        var branch = trainController.createTrainBranch(SBB, train.getBody().getTrainId(), "test", actor.loadSampleTrain(), branchName);
+        var branch = trainController.createTrainBranch(SBB, train.getBody().getTrainId(), branchName, "test", actor.loadSampleTrain());
         assert branch.getBody() != null;
         trainController.deleteTrainBranch(SBB, train.getBody().getTrainId(), branch.getBody().getBranchId(), "delete branch");
         assertThrows(IllegalStateException.class, () -> trainController.updateTrainBranch(SBB, train.getBody().getTrainId(), branch.getBody().getBranchId(), "update after delete", actor.loadSampleTrain()));
@@ -132,7 +132,7 @@ class BranchTests {
         var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain());
         assert train.getBody() != null;
         trainController.deleteTrainBranch(SBB, train.getBody().getTrainId(), train.getBody().getBranches().getFirst().getBranchId(), "delete main branch");
-        assertThrows(IllegalStateException.class, () -> trainController.createTrainBranch(SBB, train.getBody().getTrainId(), "test", actor.loadSampleTrain(), branchName));
+        assertThrows(IllegalStateException.class, () -> trainController.createTrainBranch(SBB, train.getBody().getTrainId(), branchName, "test", actor.loadSampleTrain()));
     }
 
     @Test
