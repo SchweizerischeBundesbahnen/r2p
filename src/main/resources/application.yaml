@@ -23,7 +23,7 @@ spring:
     driver-class-name: org.h2.Driver
   flyway:
     locations: classpath:db/migration
-    clean-disabled: false
+    clean-disabled: true
 springdoc:
   swagger-ui:
     oauth:
