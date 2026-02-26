@@ -9,6 +9,9 @@ import ch.rail.r2p.api.dto.PartnerToken;
 import ch.rail.r2p.api.dto.Train;
 import ch.rail.r2p.domain.TrainVersion;
 import ch.rail.r2p.persistence.TrainPersistence;
+import ch.rail.r2p.persistence.impl.BranchSpringDataRepository;
+import ch.rail.r2p.persistence.impl.ChangelogSpringDataRepository;
+import ch.rail.r2p.persistence.impl.TrainSpringDataRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashSet;
 import java.util.Objects;
@@ -24,6 +27,15 @@ public class Actor {
 
     @Autowired
     private TrainPersistence trainPersistence;
+
+    @Autowired
+    private TrainSpringDataRepository trainSpringDataRepository;
+
+    @Autowired
+    private BranchSpringDataRepository branchSpringDataRepository;
+
+    @Autowired
+    private ChangelogSpringDataRepository changelogSpringDataRepository;
 
     private Train sampleTrain;
 
@@ -58,7 +70,13 @@ public class Actor {
     }
 
     public void cleanup() {
-        trainPersistence.deleteTrains(trainIdsForCleanup);
+        // Delete all associated data for each train using repository methods
+        // Order: partners, changelog, then branches (which cascades to train_version via ON DELETE CASCADE)
+        trainIdsForCleanup.forEach(trainId -> {
+            trainSpringDataRepository.deleteTrainPartnersByTrainId(trainId);
+            changelogSpringDataRepository.deleteByTrainId(trainId);
+            branchSpringDataRepository.deleteBranchesByTrainId(trainId);
+        });
         trainIdsForCleanup.clear();
     }
 }

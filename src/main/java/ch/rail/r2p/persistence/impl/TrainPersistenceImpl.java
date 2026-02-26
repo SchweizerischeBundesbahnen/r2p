@@ -6,7 +6,6 @@ import ch.rail.r2p.domain.TrainVersion;
 import ch.rail.r2p.domain.TrainVersionEnriched;
 import ch.rail.r2p.persistence.TrainPersistence;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -68,10 +67,6 @@ public class TrainPersistenceImpl implements TrainPersistence {
             .orElseThrow(() -> new NoSuchElementException("Train version with id %s not found".formatted(version))));
     }
 
-    @Override
-    public void deleteTrains(Collection<UUID> trainIds) {
-        trainIds.forEach(trainSpringDataRepository::deleteByTrainId);
-    }
 
     @Override
     public void insertBranch(Branch branch) {

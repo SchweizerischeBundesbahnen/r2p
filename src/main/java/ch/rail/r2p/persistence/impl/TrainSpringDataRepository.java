@@ -63,13 +63,10 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
     boolean existsByTrainId(UUID trainId);
 
     @Query("""
-        DELETE FROM train_partner WHERE train_id=:trainId;
-        DELETE FROM changelog WHERE train_id=:trainId;
-        DELETE FROM train_version WHERE train_id=:trainId;
-        DELETE FROM branch WHERE train_id=:trainId;
+        DELETE FROM train_partner WHERE train_id=:trainId
         """)
     @Modifying
-    void deleteByTrainId(UUID trainId);
+    void deleteTrainPartnersByTrainId(UUID trainId);
 
     record TrainIdAndPartner(UUID trainId, String partner) {
     }

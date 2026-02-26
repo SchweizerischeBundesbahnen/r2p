@@ -137,4 +137,14 @@ class GlobalExceptionHandlerTests {
             .andExpect(jsonPath("$.status").value(400))
             .andExpect(jsonPath("$.detail").value(containsString("Parameter 'operationalDayTo' (to) must not be before 'operationalDayFrom' (from)")));
     }
+
+    @Test
+    void should_handle_illegal_state_exception() throws Exception {
+        // When: calling an endpoint that might throw IllegalStateException
+        mockMvc.perform(get("/test/illegal-state")
+                .accept(MediaType.APPLICATION_JSON))
+            // Then: should return 500 Internal Server Error with ProblemDetail
+            .andExpect(status().isInternalServerError())
+            .andExpect(jsonPath("$.status").value(500));
+    }
 }

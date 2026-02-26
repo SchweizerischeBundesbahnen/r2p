@@ -9,7 +9,6 @@ import ch.rail.r2p.domain.Changelog;
 import ch.rail.r2p.domain.TrainVersion;
 import ch.rail.r2p.domain.TrainVersionEnriched;
 import java.util.Collection;
-import java.util.NoSuchElementException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,7 +23,7 @@ public class TrainMapper {
         TrainVersionEnriched main = trains.stream()
             .filter(train -> train.branch().isMainBranch())
             .findAny()
-            .orElseThrow(() -> new NoSuchElementException(
+            .orElseThrow(() -> new IllegalStateException(
                 "No main branch found for " + trainIdDescription));
         return new TrainListElement()
             .trainId(main.trainVersion().getTrainId())

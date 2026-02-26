@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -161,7 +162,7 @@ public class ChangelogTests {
     void should_not_get_changelog_for_nonexistent_train() {
         UUID nonExistentTrainId = UUID.randomUUID();
 
-        var exception = assertThrows(java.util.NoSuchElementException.class,
+        var exception = assertThrows(NoSuchElementException.class,
             () -> trainController.getTrainChangesById(PartnerToken.SBB, nonExistentTrainId, null, null));
         assertThat(exception.getMessage()).isEqualTo("Train not found");
     }

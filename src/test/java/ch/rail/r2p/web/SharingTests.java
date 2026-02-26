@@ -12,6 +12,7 @@ import ch.rail.r2p.api.dto.BranchState;
 import ch.rail.r2p.api.dto.Change;
 import ch.rail.r2p.api.dto.TrainListElement;
 import ch.rail.r2p.persistence.TrainPersistence;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -151,7 +152,7 @@ class SharingTests {
     void should_not_share_nonexistent_train() {
         UUID nonExistentTrainId = UUID.randomUUID();
 
-        var exception = assertThrows(java.util.NoSuchElementException.class,
+        var exception = assertThrows(NoSuchElementException.class,
             () -> trainController.shareTrain(SBB, nonExistentTrainId, "SOB"));
         assertThat(exception.getMessage()).isEqualTo("Train or Branch not found");
     }
@@ -160,7 +161,7 @@ class SharingTests {
     void should_not_unshare_nonexistent_train() {
         UUID nonExistentTrainId = UUID.randomUUID();
 
-        var exception = assertThrows(java.util.NoSuchElementException.class,
+        var exception = assertThrows(NoSuchElementException.class,
             () -> trainController.unshareTrain(SBB, nonExistentTrainId, "SOB"));
         assertThat(exception.getMessage()).isEqualTo("Train or Branch not found");
     }
