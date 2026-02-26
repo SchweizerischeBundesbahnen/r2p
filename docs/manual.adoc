@@ -96,25 +96,8 @@ Supported types are:
 
 == Open Issues
 
-[cols="3,3,1,1,1", options="header"]
-|===
-|Question |Notes |Responsible | Date |Done
-|How should branches be merged? PUT on main branch and new POST endpoint to mark branch as merged? Generic PUT endpoint with branch metadata? | | | | []
-|What should happen when putting a new train version for a branch that has previously been deleted? Reopen the branch, or return an error? | | | | []
-|What should happen when putting a new train version for a branch that has previously been merged? Reopen the branch, or return an error? | | | | []
-|Should it be possible for a non-Lead-RU to request a new train (i.e. create a branch for a train not having a main branch yet)? | | | | []
-|Should additional data be included in the changelog (train number, operational day, other business data, branch owner, ...)? | | | | []
-|How should deletions/cancellations of trains be modelled? On the level of the REST API, or within the Train domain model? Should it be possible to request cancellation of a train in a branch?| | | | []
-|Train domain model: What attribute contains the train number to be used in the API (e.g. when listing trains)? Train.id? What is its format (in particular max length)? | | | | []
-|Train domain model: The current model allows for example WagonGroup/Feature or WagonGroup/Unit to be nested recursively arbitrarily. Is this intended? | | | | []
-|Train domain model: Inconsistent spelling of `Responsiblity`: `Responsability` should be replaced by `Responsibility` | | | | []
-|The business data returned by train list endpoints currently just contains train number and operating day. Is there additional data that needs to be included (e.g. origin/destination station/time), and if yes, what are the exact rules to retrieve the information from the domain model? | | | | []
-|Is it important to address quality requirements like performance or concurrency already in the PoC? | | | | []
-|Unclear if the current date/time handling is the best or if it would be better to e.g. use Time and Timezone | | | | []
-|Unclear if the current versioning strategy (version in path) is the best or if other possibilities would be beneficial, e.g. header/parameter instead of path, datetime instead of number, ...| | | | []
-|Who should be allowed to share a train? Whoever it has been shared with (current implementation)? Or only Lead RU| | | | []
-|Who should be allowed to unshare a train for someone? The Lead RU and a partner for himself (current implementation)?| | | | []
-|===
+Here questions are listed to be clarified with the project team. After clarification, an issue should
+be created in the issue tracker and the questions here can be removed.
 
 == Limitations of current implementation
 * Performance of train list endpoint is not optimized (n+1 pattern to get partners, no paging)

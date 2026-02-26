@@ -3,6 +3,7 @@ package ch.rail.r2p.config;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
+import org.springframework.boot.flyway.autoconfigure.FlywayConfigurationCustomizer;
 import org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +16,15 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @Slf4j
 public class FlywayConfig {
+
+    @Bean
+    @ConditionalOnBooleanProperty(prefix = "r2p", name = "flyway-clean-on-validation-error")
+    public FlywayConfigurationCustomizer flywayConfigurationCustomizer() {
+        return configuration -> {
+            log.info("Flyway clean-on-validation-error is enabled, setting cleanDisabled=false");
+            configuration.cleanDisabled(false);
+        };
+    }
 
     /**
      * Migration strategy that validates the schema and resets the database
@@ -29,6 +39,7 @@ public class FlywayConfig {
                 var result = flyway.validateWithResult();
                 if (result.validationSuccessful) {
                     log.info("Flyway validated the schema: OK ({} migrations)", result.validateCount);
+                    // note: no need to call flyway.migrate(). If there are migrations not yet applied, validationSuccessful will be false.
                 } else {
                     log.warn("Flyway validated the schema: NOK");
                     log.warn("Flyway found the following errors: {}", result.getAllErrorMessages());

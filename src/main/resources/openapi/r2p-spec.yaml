@@ -222,8 +222,7 @@ paths:
         Creates a new branch for proposing changes to a train. **Both the Lead RU and shared partners can create 
         branches.** Branches allow partners to work on modifications independently before the Lead RU merges them 
         to the main branch. The branch is owned by the authenticated partner and starts in the OPEN state. 
-        An optional branch name can be provided; if not specified, a default name will be generated. Partners 
-        can only modify their own branches, while the Lead RU has exclusive rights to update the main branch.
+        Partners can only modify their own branches, while the Lead RU has exclusive rights to update the main branch.
       operationId: createTrainBranch
       parameters:
         - name: token
@@ -239,6 +238,7 @@ paths:
             format: uuid
         - name: branchName
           in: query
+          required: true
           schema:
             type: string
             example: myBranch

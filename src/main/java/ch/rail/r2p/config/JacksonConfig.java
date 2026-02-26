@@ -12,7 +12,6 @@ public class JacksonConfig {
     public ObjectMapper objectMapper() {
         return new ObjectMapper()
             .registerModule(new JavaTimeModule())
-            //.registerModule(new JsonNullableModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 }

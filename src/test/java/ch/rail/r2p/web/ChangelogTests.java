@@ -5,9 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import ch.rail.r2p.api.dto.Action;
 import ch.rail.r2p.api.dto.PartnerToken;
+import ch.rail.r2p.domain.Branch;
 import ch.rail.r2p.domain.Changelog;
+import ch.rail.r2p.persistence.impl.BranchSpringDataRepository;
 import ch.rail.r2p.persistence.impl.ChangelogSpringDataRepository;
 import ch.rail.r2p.persistence.impl.TrainSpringDataRepository;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -17,10 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-public class TrainControllerChangelogTests {
+public class ChangelogTests {
 
     // This class tests querying the changelog.
-    // In order to have test data with defined timestamps, changelogs are direclty inserted via the SpringData Repository.
+    // In order to have test data with defined timestamps, changelogs are directly inserted via the SpringData Repository.
 
     @Autowired
     private TrainController trainController;
@@ -29,10 +32,13 @@ public class TrainControllerChangelogTests {
     private ChangelogSpringDataRepository changelogSpringDataRepository;
     @Autowired
     private TrainSpringDataRepository trainSpringDataRepository;
+    @Autowired
+    private BranchSpringDataRepository branchSpringDataRepository;
 
     @AfterEach
     void tearDown() {
         changelogSpringDataRepository.deleteAll();
+        branchSpringDataRepository.deleteAll();
     }
 
     @Test
@@ -131,13 +137,27 @@ public class TrainControllerChangelogTests {
     }
 
     private void generateChangelog(UUID trainId, String partner, String branchName, int updates, OffsetDateTime startTime, Duration interval) {
+        // Create the branch first to satisfy the foreign key constraint
+        UUID branchId = UUID.nameUUIDFromBytes(branchName.getBytes(StandardCharsets.UTF_8));
+
+        // Only create branch if it doesn't exist yet
+        if (branchSpringDataRepository.findById(branchId).isEmpty()) {
+            branchSpringDataRepository.insert(Branch.builder()
+                .branchId(branchId)
+                .trainId(trainId)
+                .name(branchName)
+                .owner(partner)
+                .state(ch.rail.r2p.api.dto.BranchState.OPEN)
+                .build());
+        }
+
         OffsetDateTime time = startTime;
-        changelogSpringDataRepository.insert(new Changelog(UUID.randomUUID(), Action.CREATED, partner, null, trainId, UUID.nameUUIDFromBytes(branchName.getBytes()), branchName, UUID.randomUUID(), time,
+        changelogSpringDataRepository.insert(new Changelog(UUID.randomUUID(), Action.CREATED, partner, null, trainId, branchId, branchName, UUID.randomUUID(), time,
             "Create %s/%s".formatted(trainId, branchName)));
         for (int i = 0; i < updates; i++) {
             time = time.plus(interval);
             changelogSpringDataRepository.insert(
-                new Changelog(UUID.randomUUID(), Action.UPDATED, partner, null, trainId, UUID.nameUUIDFromBytes(branchName.getBytes()), branchName, UUID.randomUUID(), time,
+                new Changelog(UUID.randomUUID(), Action.UPDATED, partner, null, trainId, branchId, branchName, UUID.randomUUID(), time,
                     "Update %s/%s".formatted(trainId, branchName)));
         }
     }
