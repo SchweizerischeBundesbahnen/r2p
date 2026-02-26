@@ -2,17 +2,24 @@ package ch.rail.r2p.web;
 
 import static ch.rail.r2p.domain.Branch.MAIN_BRANCH_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import ch.rail.r2p.api.dto.Action;
+import ch.rail.r2p.api.dto.Journey;
+import ch.rail.r2p.api.dto.Journeylocation;
 import ch.rail.r2p.api.dto.PartnerToken;
+import ch.rail.r2p.api.dto.Train;
 import ch.rail.r2p.domain.Branch;
 import ch.rail.r2p.domain.Changelog;
+import ch.rail.r2p.domain.TrainVersion;
 import ch.rail.r2p.persistence.impl.BranchSpringDataRepository;
 import ch.rail.r2p.persistence.impl.ChangelogSpringDataRepository;
 import ch.rail.r2p.persistence.impl.TrainSpringDataRepository;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +45,7 @@ public class ChangelogTests {
     @AfterEach
     void tearDown() {
         changelogSpringDataRepository.deleteAll();
+        trainSpringDataRepository.deleteAll();
         branchSpringDataRepository.deleteAll();
     }
 
@@ -45,6 +53,8 @@ public class ChangelogTests {
     void should_list_all() {
         UUID trainId1 = UUID.randomUUID();
         UUID trainId2 = UUID.randomUUID();
+        createMinimalTrain(trainId1, MAIN_BRANCH_NAME);
+        createMinimalTrain(trainId2, MAIN_BRANCH_NAME);
         generateChangelog(trainId1, "SBB", MAIN_BRANCH_NAME, 4, OffsetDateTime.parse("2026-01-01T12:00+01:00"), Duration.ofDays(1));
         generateChangelog(trainId2, "SBB", MAIN_BRANCH_NAME, 5, OffsetDateTime.parse("2026-02-01T12:00+01:00"), Duration.ofDays(1));
         trainSpringDataRepository.addPartner(trainId1, "SBB");
@@ -57,6 +67,8 @@ public class ChangelogTests {
     void should_list_all_according_to_interval() {
         UUID trainId1 = UUID.randomUUID();
         UUID trainId2 = UUID.randomUUID();
+        createMinimalTrain(trainId1, MAIN_BRANCH_NAME);
+        createMinimalTrain(trainId2, MAIN_BRANCH_NAME);
         generateChangelog(trainId1, "SBB", MAIN_BRANCH_NAME, 4, OffsetDateTime.parse("2026-01-01T12:00+01:00"), Duration.ofDays(1));
         generateChangelog(trainId2, "SBB", MAIN_BRANCH_NAME, 5, OffsetDateTime.parse("2026-02-01T12:00+01:00"), Duration.ofDays(1));
         trainSpringDataRepository.addPartner(trainId1, "SBB");
@@ -74,6 +86,9 @@ public class ChangelogTests {
     void should_list_all_according_to_sharing() {
         UUID trainId1 = UUID.randomUUID();
         UUID trainId2 = UUID.randomUUID();
+        createMinimalTrain(trainId1, MAIN_BRANCH_NAME);
+        createMinimalTrain(trainId2, MAIN_BRANCH_NAME);
+        createMinimalTrain(trainId2, "SOB_Branch");
         generateChangelog(trainId1, "SBB", MAIN_BRANCH_NAME, 4, OffsetDateTime.parse("2026-01-01T12:00+01:00"), Duration.ofDays(1));
         generateChangelog(trainId2, "SBB", MAIN_BRANCH_NAME, 5, OffsetDateTime.parse("2026-02-01T12:00+01:00"), Duration.ofDays(1));
         generateChangelog(trainId2, "SOB", "SOB_Branch", 3, OffsetDateTime.parse("2026-02-01T13:00+01:00"), Duration.ofDays(1));
@@ -93,6 +108,8 @@ public class ChangelogTests {
     void should_list_train() {
         UUID trainId1 = UUID.randomUUID();
         UUID trainId2 = UUID.randomUUID();
+        createMinimalTrain(trainId1, MAIN_BRANCH_NAME);
+        createMinimalTrain(trainId2, MAIN_BRANCH_NAME);
         generateChangelog(trainId1, "SBB", MAIN_BRANCH_NAME, 4, OffsetDateTime.parse("2026-01-01T12:00+01:00"), Duration.ofDays(1));
         generateChangelog(trainId2, "SBB", MAIN_BRANCH_NAME, 5, OffsetDateTime.parse("2026-01-01T13:00+01:00"), Duration.ofDays(1));
         trainSpringDataRepository.addPartner(trainId1, "SBB");
@@ -106,6 +123,8 @@ public class ChangelogTests {
     void should_list_train_according_to_interval() {
         UUID trainId1 = UUID.randomUUID();
         UUID trainId2 = UUID.randomUUID();
+        createMinimalTrain(trainId1, MAIN_BRANCH_NAME);
+        createMinimalTrain(trainId2, MAIN_BRANCH_NAME);
         generateChangelog(trainId1, "SBB", MAIN_BRANCH_NAME, 4, OffsetDateTime.parse("2026-01-01T12:00+01:00"), Duration.ofDays(1));
         generateChangelog(trainId2, "SBB", MAIN_BRANCH_NAME, 5, OffsetDateTime.parse("2026-01-01T13:00+01:00"), Duration.ofDays(1));
         trainSpringDataRepository.addPartner(trainId1, "SBB");
@@ -123,6 +142,9 @@ public class ChangelogTests {
     void should_list_train_according_to_sharing() {
         UUID trainId1 = UUID.randomUUID();
         UUID trainId2 = UUID.randomUUID();
+        createMinimalTrain(trainId1, MAIN_BRANCH_NAME);
+        createMinimalTrain(trainId2, MAIN_BRANCH_NAME);
+        createMinimalTrain(trainId2, "SOB_Branch");
         generateChangelog(trainId1, "SBB", MAIN_BRANCH_NAME, 4, OffsetDateTime.parse("2026-01-01T12:00+01:00"), Duration.ofDays(1));
         generateChangelog(trainId2, "SBB", MAIN_BRANCH_NAME, 5, OffsetDateTime.parse("2026-02-01T12:00+01:00"), Duration.ofDays(1));
         generateChangelog(trainId2, "SOB", "SOB_Branch", 3, OffsetDateTime.parse("2026-02-01T13:00+01:00"), Duration.ofDays(1));
@@ -134,6 +156,61 @@ public class ChangelogTests {
         assertThat(trainController.getTrainChangesById(PartnerToken.SBB, trainId2, null, null).getBody()).hasSize(10);
         assertThat(trainController.getTrainChangesById(PartnerToken.SOB, trainId1, null, null).getBody()).hasSize(0);
         assertThat(trainController.getTrainChangesById(PartnerToken.SOB, trainId2, null, null).getBody()).hasSize(10);
+    }
+
+    @Test
+    void should_not_get_changelog_for_nonexistent_train() {
+        UUID nonExistentTrainId = UUID.randomUUID();
+
+        var exception = assertThrows(NoSuchElementException.class,
+            () -> trainController.getTrainChangesById(PartnerToken.SBB, nonExistentTrainId, null, null));
+        assertThat(exception.getMessage()).isEqualTo("Train not found");
+    }
+
+    private void createMinimalTrain(UUID trainId, String branchName) {
+        // Create a minimal train version entry to satisfy the train existence check
+        UUID branchId = UUID.nameUUIDFromBytes(branchName.getBytes(StandardCharsets.UTF_8));
+
+        // Create the branch first to satisfy the foreign key constraint
+        if (branchSpringDataRepository.findById(branchId).isEmpty()) {
+            branchSpringDataRepository.insert(Branch.builder()
+                .branchId(branchId)
+                .trainId(trainId)
+                .name(branchName)
+                .owner("SBB")
+                .state(ch.rail.r2p.api.dto.BranchState.OPEN)
+                .build());
+        }
+
+        // Create minimal Train payload with required fields
+        String trainNumber = "TEST-" + trainId.toString().substring(0, 8);
+        LocalDate operationalDay = LocalDate.of(2026, 1, 1);
+
+        Train payload = new Train(
+            trainNumber,  // id
+            java.util.List.of(),  // references
+            java.util.List.of(),  // links
+            "Test Train", // name
+            operationalDay,  // startdate
+            OffsetDateTime.now(),  // timestamp
+            new Journey(java.util.List.of(
+                new Journeylocation(),  // minimal first location
+                new Journeylocation()   // minimal second location (min 2 required)
+            ))
+        );
+
+        TrainVersion trainVersion = TrainVersion.builder()
+            .version(UUID.randomUUID())
+            .trainId(trainId)
+            .trainNumber(trainNumber)
+            .operationalDay(operationalDay)
+            .branchId(branchId)
+            .comment("Test train")
+            .timestamp(OffsetDateTime.now())
+            .payload(payload)
+            .head(true)
+            .build();
+        trainSpringDataRepository.insert(trainVersion);
     }
 
     private void generateChangelog(UUID trainId, String partner, String branchName, int updates, OffsetDateTime startTime, Duration interval) {

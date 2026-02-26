@@ -4,6 +4,8 @@ import ch.rail.r2p.domain.Branch;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jdbc.repository.query.Modifying;
+import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,4 +15,10 @@ public interface BranchSpringDataRepository extends CrudRepository<Branch, UUID>
     List<Branch> findTrainBranchByTrainId(UUID trainId);
 
     Optional<Branch> findTrainBranchByTrainIdAndName(UUID trainId, String branchName);
+
+    @Query("""
+        DELETE FROM branch WHERE train_id=:trainId
+        """)
+    @Modifying
+    void deleteBranchesByTrainId(UUID trainId);
 }

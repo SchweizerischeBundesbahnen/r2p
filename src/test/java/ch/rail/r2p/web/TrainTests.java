@@ -80,6 +80,18 @@ class TrainTests {
     }
 
     @Test
+    void should_throw_exception_when_to_date_is_before_from_date() {
+        LocalDate from = LocalDate.parse("2027-01-01");
+        LocalDate to = LocalDate.parse("2024-01-01");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> trainController.listTrains(SBB, from, to));
+
+        assertThat(exception.getMessage())
+            .isEqualTo("Parameter 'operationalDayTo' (to) must not be before 'operationalDayFrom' (from)");
+    }
+
+    @Test
     void should_get_train_by_id() {
         String comment = "Train creation comment";
         var train = trainController.createTrain(SBB, comment, actor.loadSampleTrain());

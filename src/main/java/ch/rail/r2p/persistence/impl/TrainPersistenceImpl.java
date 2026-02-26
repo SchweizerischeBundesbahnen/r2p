@@ -6,9 +6,9 @@ import ch.rail.r2p.domain.TrainVersion;
 import ch.rail.r2p.domain.TrainVersionEnriched;
 import ch.rail.r2p.persistence.TrainPersistence;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -42,11 +42,9 @@ public class TrainPersistenceImpl implements TrainPersistence {
     @Override
     public Optional<TrainVersionEnriched> findHeadVersionByTrainIdAndBranchName(UUID trainId, String branchName) {
         Optional<Branch> branch = branchSpringDataRepository.findTrainBranchByTrainIdAndName(trainId, branchName);
-        if (branch.isEmpty()) {
-            return Optional.empty();
-        }
-        TrainVersion version = trainSpringDataRepository.findHeadVersionByTrainIdAndBranchId(trainId, branch.get().getBranchId()).orElseThrow();
-        return Optional.of(new TrainVersionEnriched(version, branch.get(), trainSpringDataRepository.getPartners(trainId)));
+        return branch.flatMap(value -> trainSpringDataRepository
+            .findHeadVersionByTrainIdAndBranchId(trainId, value.getBranchId())
+            .map(version -> new TrainVersionEnriched(version, value, trainSpringDataRepository.getPartners(trainId))));
     }
 
     @Override
@@ -62,13 +60,10 @@ public class TrainPersistenceImpl implements TrainPersistence {
 
     @Override
     public TrainVersionEnriched getVersion(UUID version) {
-        return enrich(trainSpringDataRepository.findById(version).orElseThrow());
+        return enrich(trainSpringDataRepository.findById(version)
+            .orElseThrow(() -> new NoSuchElementException("Train version with id %s not found".formatted(version))));
     }
 
-    @Override
-    public void deleteTrains(Collection<UUID> trainIds) {
-        trainIds.forEach(trainSpringDataRepository::deleteByTrainId);
-    }
 
     @Override
     public void insertBranch(Branch branch) {
@@ -77,10 +72,17 @@ public class TrainPersistenceImpl implements TrainPersistence {
 
     @Override
     public Branch updateBranchState(UUID branchId, BranchState state) {
-        Branch branch = branchSpringDataRepository.findById(branchId).orElseThrow();
+        Branch branch = branchSpringDataRepository.findById(branchId)
+            .orElseThrow(() -> new NoSuchElementException("Branch with id %s not found".formatted(branchId)));
         branch.setState(state);
         return branchSpringDataRepository.save(branch);
     }
+
+    @Override
+    public boolean existsByTrainId(UUID trainId) {
+        return trainSpringDataRepository.existsByTrainId(trainId);
+    }
+
 
     @Override
     public List<Branch> findBranchesByTrainId(UUID trainId) {

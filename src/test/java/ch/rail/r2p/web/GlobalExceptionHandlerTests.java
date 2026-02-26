@@ -6,7 +6,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import ch.rail.r2p.Actor;
 import ch.rail.r2p.WithMockR2PUser;
+import ch.rail.r2p.api.dto.Train;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,12 @@ class GlobalExceptionHandlerTests {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private Actor actor;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     void should_handle_no_such_element_exception() throws Exception {
@@ -90,5 +99,52 @@ class GlobalExceptionHandlerTests {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.status").value(400))
             .andExpect(jsonPath("$.detail").value(containsString("size must be between 1 and 10")));
+    }
+
+    @Test
+    void should_handle_authorization_denied_exception() throws Exception {
+        // Given: a valid train JSON and a partner that is not the instance owner
+        Train sampleTrain = actor.loadSampleTrain();
+        String validTrainJson = objectMapper.writeValueAsString(sampleTrain);
+
+        // When: a non-instance owner tries to create a train
+        mockMvc.perform(post("/v1/trains")
+                .header("token", "SOB")  // SOB is not the instance owner (SBB is)
+                .param("comment", "test comment")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(validTrainJson)
+                .accept(MediaType.APPLICATION_JSON))
+            // Then: should return 403 Forbidden with ProblemDetail
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.status").value(403))
+            .andExpect(jsonPath("$.detail").value(containsString("Partner is not instance owner")));
+    }
+
+    @Test
+    void should_handle_illegal_argument_exception() throws Exception {
+        // Given: invalid date parameters where 'to' is before 'from'
+        String from = "2027-01-01";
+        String to = "2024-01-01";
+
+        // When: requesting train list with invalid date range
+        mockMvc.perform(get("/v1/trains")
+                .header("token", "SBB")
+                .param("operationalDayFrom", from)
+                .param("operationalDayTo", to)
+                .accept(MediaType.APPLICATION_JSON))
+            // Then: should return 400 Bad Request with ProblemDetail
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.detail").value(containsString("Parameter 'operationalDayTo' (to) must not be before 'operationalDayFrom' (from)")));
+    }
+
+    @Test
+    void should_handle_illegal_state_exception() throws Exception {
+        // When: calling an endpoint that might throw IllegalStateException
+        mockMvc.perform(get("/test/illegal-state")
+                .accept(MediaType.APPLICATION_JSON))
+            // Then: should return 500 Internal Server Error with ProblemDetail
+            .andExpect(status().isInternalServerError())
+            .andExpect(jsonPath("$.status").value(500));
     }
 }

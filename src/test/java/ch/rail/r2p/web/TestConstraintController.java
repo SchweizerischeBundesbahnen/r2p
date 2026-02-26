@@ -21,5 +21,10 @@ public class TestConstraintController {
     ) {
         return ResponseEntity.ok("Valid: " + value);
     }
+
+    @GetMapping("/test/illegal-state")
+    public ResponseEntity<String> testIllegalState() {
+        throw new IllegalStateException("Test illegal state exception - data integrity issue");
+    }
 }
 

@@ -5,7 +5,6 @@ import ch.rail.r2p.domain.Branch;
 import ch.rail.r2p.domain.TrainVersionEnriched;
 import ch.rail.r2p.domain.TrainVersion;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,9 +23,10 @@ public interface TrainPersistence {
 
     List<TrainVersionEnriched> findHeadVersions(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo);
 
+    boolean existsByTrainId(UUID trainId);
+
     TrainVersionEnriched getVersion(UUID version);
 
-    void deleteTrains(Collection<UUID> trainIds);
 
     void insertBranch(Branch branch);
 

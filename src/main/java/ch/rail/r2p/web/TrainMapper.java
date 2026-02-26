@@ -15,7 +15,16 @@ import org.springframework.stereotype.Component;
 public class TrainMapper {
 
     TrainListElement toTrainListElement(Collection<TrainVersionEnriched> trains) {
-        TrainVersionEnriched main = trains.stream().filter(train -> train.branch().isMainBranch()).findAny().orElseThrow();
+        String trainIdDescription = trains.stream()
+            .findAny()
+            .map(train -> train.trainVersion().getTrainId().toString())
+            .orElse("unknown train (no versions provided)");
+
+        TrainVersionEnriched main = trains.stream()
+            .filter(train -> train.branch().isMainBranch())
+            .findAny()
+            .orElseThrow(() -> new IllegalStateException(
+                "No main branch found for " + trainIdDescription));
         return new TrainListElement()
             .trainId(main.trainVersion().getTrainId())
             .partners(main.partners())

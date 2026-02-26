@@ -55,7 +55,18 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
         """)
     List<TrainIdAndPartner> getPartnersByTrainIds(List<UUID> trainIds);
 
-    void deleteByTrainId(UUID trainId);
+    @Query("""
+        SELECT EXISTS (
+            SELECT 1 FROM train_version WHERE train_id=:trainId
+        )
+        """)
+    boolean existsByTrainId(UUID trainId);
+
+    @Query("""
+        DELETE FROM train_partner WHERE train_id=:trainId
+        """)
+    @Modifying
+    void deleteTrainPartnersByTrainId(UUID trainId);
 
     record TrainIdAndPartner(UUID trainId, String partner) {
     }
