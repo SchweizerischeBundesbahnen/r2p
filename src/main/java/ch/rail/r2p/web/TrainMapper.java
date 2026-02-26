@@ -9,13 +9,15 @@ import ch.rail.r2p.domain.Changelog;
 import ch.rail.r2p.domain.TrainVersion;
 import ch.rail.r2p.domain.TrainVersionEnriched;
 import java.util.Collection;
+import java.util.NoSuchElementException;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TrainMapper {
 
     TrainListElement toTrainListElement(Collection<TrainVersionEnriched> trains) {
-        TrainVersionEnriched main = trains.stream().filter(train -> train.branch().isMainBranch()).findAny().orElseThrow();
+        TrainVersionEnriched main = trains.stream().filter(train -> train.branch().isMainBranch()).findAny()
+            .orElseThrow(() -> new NoSuchElementException("No main branch found for train %s".formatted(trains.stream().findAny().map(train -> train.trainVersion().getTrainId()).orElse(null))));
         return new TrainListElement()
             .trainId(main.trainVersion().getTrainId())
             .partners(main.partners())

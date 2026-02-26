@@ -24,6 +24,8 @@ public interface TrainPersistence {
 
     List<TrainVersionEnriched> findHeadVersions(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo);
 
+    boolean existsByTrainId(UUID trainId);
+
     TrainVersionEnriched getVersion(UUID version);
 
     void deleteTrains(Collection<UUID> trainIds);

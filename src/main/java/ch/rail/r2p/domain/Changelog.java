@@ -1,6 +1,7 @@
 package ch.rail.r2p.domain;
 
 import ch.rail.r2p.api.dto.Action;
+import jakarta.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ public class Changelog {
     private final UUID id;
     private final Action action;
     private final String partner;
+    @Nullable
     private final String affectedPartner;
     private final UUID trainId;
     private final UUID branchId;

@@ -16,6 +16,7 @@ import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -59,7 +60,8 @@ public class TrainService {
     }
 
     public TrainVersionEnriched deleteTrainBranch(String partner, UUID trainId, UUID branchId, String comment) {
-        var train = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId).orElseThrow();
+        var train = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
+            .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkSharing(partner, train);
         checkBranchOwner(partner, train.branch());
         var updatedBranch = trainPersistence.updateBranchState(branchId, BranchState.DELETED);
@@ -86,7 +88,8 @@ public class TrainService {
     }
 
     public TrainVersionEnriched getTrainBranch(String partner, UUID trainId, UUID branchId) {
-        TrainVersionEnriched train = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId).orElseThrow();
+        TrainVersionEnriched train = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
+            .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkSharing(partner, train);
         return train;
     }
@@ -104,7 +107,8 @@ public class TrainService {
     }
 
     public void shareTrain(String partner, UUID trainId, String shareWith) {
-        TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME).orElseThrow();
+        TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME)
+            .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkSharing(partner, main);
         trainPersistence.addPartner(trainId, shareWith);
         Changelog changelog = Changelog.forSharing(partner, shareWith, main.trainVersion(), "Train shared");
@@ -112,7 +116,8 @@ public class TrainService {
     }
 
     public void unshareTrain(String partner, UUID trainId, String unshareWith) {
-        TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME).orElseThrow();
+        TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME)
+            .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkUnsharingAuthorization(main.partners(), partner, unshareWith);
         trainPersistence.removePartner(trainId, unshareWith);
         Changelog changelog = Changelog.forUnsharing(partner, unshareWith, main.trainVersion(), "Train unshared");
@@ -127,7 +132,8 @@ public class TrainService {
     }
 
     public TrainVersionEnriched createTrainBranch(String partner, UUID trainId, String branchName, String comment, Train train) {
-        TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME).orElseThrow();
+        TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME)
+            .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkSharing(partner, main);
         checkBranchState(main.branch(), BranchState.OPEN);
         Branch newBranch = Branch.createBranch(trainId, branchName, partner);
@@ -141,7 +147,8 @@ public class TrainService {
     }
 
     public TrainVersionEnriched updateTrainBranch(String partner, UUID trainId, UUID branchId, String comment, Train train) {
-        TrainVersionEnriched branch = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId).orElseThrow();
+        TrainVersionEnriched branch = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
+            .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkSharing(partner, branch);
         checkBranchOwner(partner, branch.branch());
         checkBranchState(branch.branch(), BranchState.OPEN);
@@ -160,6 +167,9 @@ public class TrainService {
     }
 
     public List<Changelog> getChangelogs(String partner, OffsetDateTime from, OffsetDateTime to, UUID trainId) {
+        if (trainId != null && !trainPersistence.existsByTrainId(trainId)) {
+            throw new NoSuchElementException("Train not found");
+        }
         return changelogPersistence.find(partner, from, to, trainId);
     }
 

@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -45,7 +46,8 @@ public class TrainPersistenceImpl implements TrainPersistence {
         if (branch.isEmpty()) {
             return Optional.empty();
         }
-        TrainVersion version = trainSpringDataRepository.findHeadVersionByTrainIdAndBranchId(trainId, branch.get().getBranchId()).orElseThrow();
+        TrainVersion version = trainSpringDataRepository.findHeadVersionByTrainIdAndBranchId(trainId, branch.get().getBranchId())
+            .orElseThrow(() -> new NoSuchElementException("No head version found for train %s and branch %s".formatted(trainId, branchName)));
         return Optional.of(new TrainVersionEnriched(version, branch.get(), trainSpringDataRepository.getPartners(trainId)));
     }
 
@@ -62,7 +64,8 @@ public class TrainPersistenceImpl implements TrainPersistence {
 
     @Override
     public TrainVersionEnriched getVersion(UUID version) {
-        return enrich(trainSpringDataRepository.findById(version).orElseThrow());
+        return enrich(trainSpringDataRepository.findById(version)
+            .orElseThrow(() -> new NoSuchElementException("Train version with id %s not found".formatted(version))));
     }
 
     @Override
@@ -77,10 +80,17 @@ public class TrainPersistenceImpl implements TrainPersistence {
 
     @Override
     public Branch updateBranchState(UUID branchId, BranchState state) {
-        Branch branch = branchSpringDataRepository.findById(branchId).orElseThrow();
+        Branch branch = branchSpringDataRepository.findById(branchId)
+            .orElseThrow(() -> new NoSuchElementException("Branch with id %s not found".formatted(branchId)));
         branch.setState(state);
         return branchSpringDataRepository.save(branch);
     }
+
+    @Override
+    public boolean existsByTrainId(UUID trainId) {
+        return trainSpringDataRepository.existsByTrainId(trainId);
+    }
+
 
     @Override
     public List<Branch> findBranchesByTrainId(UUID trainId) {

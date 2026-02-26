@@ -146,4 +146,22 @@ class SharingTests {
         assertThat(sbbChangelog.stream().map(Change::getComment)).containsExactly("initial creation", "Train shared", "update main branch", "create branch", "update branch", "Train unshared",
             "Branch deleted due to unsharing of train");
     }
+
+    @Test
+    void should_not_share_nonexistent_train() {
+        UUID nonExistentTrainId = UUID.randomUUID();
+
+        var exception = assertThrows(java.util.NoSuchElementException.class,
+            () -> trainController.shareTrain(SBB, nonExistentTrainId, "SOB"));
+        assertThat(exception.getMessage()).isEqualTo("Train or Branch not found");
+    }
+
+    @Test
+    void should_not_unshare_nonexistent_train() {
+        UUID nonExistentTrainId = UUID.randomUUID();
+
+        var exception = assertThrows(java.util.NoSuchElementException.class,
+            () -> trainController.unshareTrain(SBB, nonExistentTrainId, "SOB"));
+        assertThat(exception.getMessage()).isEqualTo("Train or Branch not found");
+    }
 }

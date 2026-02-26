@@ -162,7 +162,73 @@ class BranchTests {
         var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain()).getBody();
         assert train != null;
         UUID trainId = train.getTrainId();
+        UUID nonExistentBranchId = UUID.randomUUID();
 
-        assertThrows(NoSuchElementException.class, () -> trainController.getTrainBranch(SBB, trainId, UUID.randomUUID()));
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+            () -> trainController.getTrainBranch(SBB, trainId, nonExistentBranchId));
+        assertThat(exception.getMessage()).isEqualTo("Train or Branch not found");
+    }
+
+    @Test
+    void should_not_get_train_branch_with_nonexistent_train_id() {
+        UUID nonExistentTrainId = UUID.randomUUID();
+        UUID nonExistentBranchId = UUID.randomUUID();
+
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+            () -> trainController.getTrainBranch(SBB, nonExistentTrainId, nonExistentBranchId));
+        assertThat(exception.getMessage()).isEqualTo("Train or Branch not found");
+    }
+
+    @Test
+    void should_not_delete_nonexistent_train_branch() {
+        var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain()).getBody();
+        assert train != null;
+        UUID trainId = train.getTrainId();
+        UUID nonExistentBranchId = UUID.randomUUID();
+
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+            () -> trainController.deleteTrainBranch(SBB, trainId, nonExistentBranchId, "delete non-existent branch"));
+        assertThat(exception.getMessage()).isEqualTo("Train or Branch not found");
+    }
+
+    @Test
+    void should_not_delete_branch_with_nonexistent_train_id() {
+        UUID nonExistentTrainId = UUID.randomUUID();
+        UUID nonExistentBranchId = UUID.randomUUID();
+
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+            () -> trainController.deleteTrainBranch(SBB, nonExistentTrainId, nonExistentBranchId, "delete non-existent train"));
+        assertThat(exception.getMessage()).isEqualTo("Train or Branch not found");
+    }
+
+    @Test
+    void should_not_create_branch_for_nonexistent_train() {
+        UUID nonExistentTrainId = UUID.randomUUID();
+
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+            () -> trainController.createTrainBranch(SBB, nonExistentTrainId, "myBranch", "test", actor.loadSampleTrain()));
+        assertThat(exception.getMessage()).isEqualTo("Train or Branch not found");
+    }
+
+    @Test
+    void should_not_update_nonexistent_train_branch() {
+        var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain()).getBody();
+        assert train != null;
+        UUID trainId = train.getTrainId();
+        UUID nonExistentBranchId = UUID.randomUUID();
+
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+            () -> trainController.updateTrainBranch(SBB, trainId, nonExistentBranchId, "update non-existent branch", actor.loadSampleTrain()));
+        assertThat(exception.getMessage()).isEqualTo("Train or Branch not found");
+    }
+
+    @Test
+    void should_not_update_branch_with_nonexistent_train_id() {
+        UUID nonExistentTrainId = UUID.randomUUID();
+        UUID nonExistentBranchId = UUID.randomUUID();
+
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+            () -> trainController.updateTrainBranch(SBB, nonExistentTrainId, nonExistentBranchId, "update non-existent train", actor.loadSampleTrain()));
+        assertThat(exception.getMessage()).isEqualTo("Train or Branch not found");
     }
 }
