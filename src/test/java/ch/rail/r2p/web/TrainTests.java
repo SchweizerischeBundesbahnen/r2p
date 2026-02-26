@@ -87,7 +87,8 @@ class TrainTests {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> trainController.listTrains(SBB, from, to));
 
-        assertThat(exception.getMessage()).isEqualTo("Parameter 'to' must be after 'from'");
+        assertThat(exception.getMessage())
+            .isEqualTo("Parameter 'operationalDayTo' (to) must not be before 'operationalDayFrom' (from)");
     }
 
     @Test
