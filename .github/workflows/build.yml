@@ -16,10 +16,36 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Run Spectral
-        uses: stoplightio/spectral-action@latest
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          file_glob: 'src/main/resources/openapi/r2p-spec.yaml'
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Validate OpenAPI with Spectral
+        run: |
+          echo "=== Spectral Lint Results ==="
+          npx @stoplight/spectral-cli@6.11.1 lint src/main/resources/openapi/r2p-spec.yaml --ruleset .spectral.yaml --format stylish --output spectral-report.txt && SPECTRAL_EXIT=0 || SPECTRAL_EXIT=$?
+          npx @stoplight/spectral-cli@6.11.1 lint src/main/resources/openapi/r2p-spec.yaml --ruleset .spectral.yaml --format html --output spectral-report.html || true
+          if [ -s spectral-report.txt ]; then
+            cat spectral-report.txt
+          else
+            echo "No issues found"
+          fi
+          if [ $SPECTRAL_EXIT -ne 0 ]; then
+            echo "❌ OpenAPI specification has errors!"
+            exit $SPECTRAL_EXIT
+          fi
+          echo "✅ OpenAPI specification is valid!"
+
+      - name: Upload Spectral Reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: spectral-reports
+          path: |
+            spectral-report.txt
+            spectral-report.html
 
   build:
     needs: validate-openapi
