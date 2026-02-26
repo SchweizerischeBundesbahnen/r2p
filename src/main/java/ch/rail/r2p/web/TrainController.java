@@ -66,7 +66,7 @@ public class TrainController implements V1Api {
     @Override
     public ResponseEntity<List<TrainListElement>> listTrains(PartnerToken token, LocalDate from, LocalDate to) {
         if (from != null && to != null && to.isBefore(from)) {
-            throw new IllegalArgumentException("Parameter 'to' must be after 'from'");
+            throw new IllegalArgumentException("Parameter 'operationalDayTo' (to) must not be before 'operationalDayFrom' (from)");
         }
         Map<UUID, List<TrainVersionEnriched>> trains = trainService.listTrains(token.name(), from, to);
         return ResponseEntity.ok(trains.values().stream().map(trainMapper::toTrainListElement).toList());
