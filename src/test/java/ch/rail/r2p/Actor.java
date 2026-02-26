@@ -8,7 +8,6 @@ import static org.mockito.Mockito.doAnswer;
 import ch.rail.r2p.api.dto.PartnerToken;
 import ch.rail.r2p.api.dto.Train;
 import ch.rail.r2p.domain.TrainVersion;
-import ch.rail.r2p.persistence.ChangelogPersistence;
 import ch.rail.r2p.persistence.TrainPersistence;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashSet;
@@ -25,9 +24,6 @@ public class Actor {
 
     @Autowired
     private TrainPersistence trainPersistence;
-
-    @Autowired
-    private ChangelogPersistence changelogPersistence;
 
     private Train sampleTrain;
 
@@ -63,7 +59,6 @@ public class Actor {
 
     public void cleanup() {
         trainPersistence.deleteTrains(trainIdsForCleanup);
-        changelogPersistence.deleteByTrainId(trainIdsForCleanup);
         trainIdsForCleanup.clear();
     }
 }

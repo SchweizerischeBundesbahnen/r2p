@@ -107,6 +107,8 @@ public class ChangelogTests {
     void should_list_train() {
         UUID trainId1 = UUID.randomUUID();
         UUID trainId2 = UUID.randomUUID();
+        createMinimalTrain(trainId1, MAIN_BRANCH_NAME);
+        createMinimalTrain(trainId2, MAIN_BRANCH_NAME);
         generateChangelog(trainId1, "SBB", MAIN_BRANCH_NAME, 4, OffsetDateTime.parse("2026-01-01T12:00+01:00"), Duration.ofDays(1));
         generateChangelog(trainId2, "SBB", MAIN_BRANCH_NAME, 5, OffsetDateTime.parse("2026-01-01T13:00+01:00"), Duration.ofDays(1));
         trainSpringDataRepository.addPartner(trainId1, "SBB");
@@ -120,6 +122,8 @@ public class ChangelogTests {
     void should_list_train_according_to_interval() {
         UUID trainId1 = UUID.randomUUID();
         UUID trainId2 = UUID.randomUUID();
+        createMinimalTrain(trainId1, MAIN_BRANCH_NAME);
+        createMinimalTrain(trainId2, MAIN_BRANCH_NAME);
         generateChangelog(trainId1, "SBB", MAIN_BRANCH_NAME, 4, OffsetDateTime.parse("2026-01-01T12:00+01:00"), Duration.ofDays(1));
         generateChangelog(trainId2, "SBB", MAIN_BRANCH_NAME, 5, OffsetDateTime.parse("2026-01-01T13:00+01:00"), Duration.ofDays(1));
         trainSpringDataRepository.addPartner(trainId1, "SBB");
@@ -137,6 +141,9 @@ public class ChangelogTests {
     void should_list_train_according_to_sharing() {
         UUID trainId1 = UUID.randomUUID();
         UUID trainId2 = UUID.randomUUID();
+        createMinimalTrain(trainId1, MAIN_BRANCH_NAME);
+        createMinimalTrain(trainId2, MAIN_BRANCH_NAME);
+        createMinimalTrain(trainId2, "SOB_Branch");
         generateChangelog(trainId1, "SBB", MAIN_BRANCH_NAME, 4, OffsetDateTime.parse("2026-01-01T12:00+01:00"), Duration.ofDays(1));
         generateChangelog(trainId2, "SBB", MAIN_BRANCH_NAME, 5, OffsetDateTime.parse("2026-02-01T12:00+01:00"), Duration.ofDays(1));
         generateChangelog(trainId2, "SOB", "SOB_Branch", 3, OffsetDateTime.parse("2026-02-01T13:00+01:00"), Duration.ofDays(1));

@@ -18,7 +18,7 @@ public class TrainMapper {
     TrainListElement toTrainListElement(Collection<TrainVersionEnriched> trains) {
         String trainIdDescription = trains.stream()
             .findAny()
-            .map(train -> train.trainVersion().getTrainId())
+            .map(train -> train.trainVersion().getTrainId().toString())
             .orElse("unknown train (no versions provided)");
 
         TrainVersionEnriched main = trains.stream()

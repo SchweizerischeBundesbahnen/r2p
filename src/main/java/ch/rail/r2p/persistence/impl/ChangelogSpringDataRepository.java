@@ -23,5 +23,10 @@ public interface ChangelogSpringDataRepository extends CrudRepository<Changelog,
         """)
     List<Changelog> find(String partner, OffsetDateTime from, OffsetDateTime to, UUID trainId);
 
+    @Query("""
+        SELECT * FROM changelog WHERE train_id=:trainId
+        """)
+    List<Changelog> findByTrainId(UUID trainId);
+
     void deleteByTrainId(UUID trainId);
 }
