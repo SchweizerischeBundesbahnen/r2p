@@ -42,12 +42,9 @@ public class TrainPersistenceImpl implements TrainPersistence {
     @Override
     public Optional<TrainVersionEnriched> findHeadVersionByTrainIdAndBranchName(UUID trainId, String branchName) {
         Optional<Branch> branch = branchSpringDataRepository.findTrainBranchByTrainIdAndName(trainId, branchName);
-        if (branch.isEmpty()) {
-            return Optional.empty();
-        }
-        TrainVersion version = trainSpringDataRepository.findHeadVersionByTrainIdAndBranchId(trainId, branch.get().getBranchId())
-            .orElseThrow(() -> new NoSuchElementException("No head version found for train %s and branch %s".formatted(trainId, branchName)));
-        return Optional.of(new TrainVersionEnriched(version, branch.get(), trainSpringDataRepository.getPartners(trainId)));
+        return branch.flatMap(value -> trainSpringDataRepository
+            .findHeadVersionByTrainIdAndBranchId(trainId, value.getBranchId())
+            .map(version -> new TrainVersionEnriched(version, value, trainSpringDataRepository.getPartners(trainId))));
     }
 
     @Override
