@@ -119,4 +119,22 @@ class GlobalExceptionHandlerTests {
             .andExpect(jsonPath("$.status").value(403))
             .andExpect(jsonPath("$.detail").value(containsString("Partner is not instance owner")));
     }
+
+    @Test
+    void should_handle_illegal_argument_exception() throws Exception {
+        // Given: invalid date parameters where 'to' is before 'from'
+        String from = "2027-01-01";
+        String to = "2024-01-01";
+
+        // When: requesting train list with invalid date range
+        mockMvc.perform(get("/v1/trains")
+                .header("token", "SBB")
+                .param("operationalDayFrom", from)
+                .param("operationalDayTo", to)
+                .accept(MediaType.APPLICATION_JSON))
+            // Then: should return 400 Bad Request with ProblemDetail
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.detail").value(containsString("Parameter 'to' must be after 'from'")));
+    }
 }
