@@ -135,6 +135,6 @@ class GlobalExceptionHandlerTests {
             // Then: should return 400 Bad Request with ProblemDetail
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.status").value(400))
-            .andExpect(jsonPath("$.detail").value(containsString("Parameter 'to' must be after 'from'")));
+            .andExpect(jsonPath("$.detail").value(containsString("Parameter 'operationalDayTo' (to) must not be before 'operationalDayFrom' (from)")));
     }
 }
