@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R2P - Railway Undertaking Partner Communication</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" x-data="trainApp()" x-init="init()">
+        <!-- Header Section -->
+        <header class="header compact-header">
+            <span class="version-badge">v0.0.16-SNAPSHOT</span>
+            <div class="header-title">
+                <span class="logo">🚂</span>
+                <div>
+                    <h1>R2P - Railway Undertaking Partner Communication</h1>
+                    <p class="subtitle">Prototype for RU-RU-Partner communication and collaboration</p>
+                    <p class="lead-ru-subtitle">Lead RU: Schweizerische Bundesbahnen (SBB)</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Statistics Section with Filter (out of scope – static placeholder) -->
+        <div class="stat-filter">
+            <label for="partner-filter">Filter by Partner:</label>
+            <select id="partner-filter" class="filter-select">
+                <option value="all">All Partners</option>
+            </select>
+        </div>
+
+        <section class="statistics">
+            <div class="stat-card compact-stat-card">
+                <div class="stat-label">Total Trains</div>
+                <div class="stat-value" id="stat-trains">-</div>
+            </div>
+            <div class="stat-card compact-stat-card">
+                <div class="stat-label">Total Branches</div>
+                <div class="stat-value" id="stat-branches">-</div>
+            </div>
+            <div class="stat-card compact-stat-card">
+                <div class="stat-label">Total Versions</div>
+                <div class="stat-value" id="stat-versions">-</div>
+            </div>
+            <div class="stat-card compact-stat-card">
+                <div class="stat-label">Open Branches</div>
+                <div class="stat-value" id="stat-open-branches">-</div>
+            </div>
+            <div class="stat-card compact-stat-card">
+                <div class="stat-label">Open Merge Requests</div>
+                <div class="stat-value" id="stat-merge-requests">-</div>
+            </div>
+        </section>
+
+        <!-- Train List Section -->
+        <h2>Trains</h2>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label for="filter-train-number">Train Number</label>
+                <input type="text" id="filter-train-number" class="filter-input"
+                       placeholder="e.g., IC 1234"
+                       x-model.debounce.300ms="filterTrainNumber"
+                       @input="applyClientFilters()">
+            </div>
+            <div class="filter-group">
+                <label for="filter-date-start">Op. Day From</label>
+                <input type="date" id="filter-date-start" class="filter-input"
+                       x-model="filterDateFrom"
+                       @change="fetchTrains()">
+            </div>
+            <div class="filter-group">
+                <label for="filter-date-end">Op. Day To</label>
+                <input type="date" id="filter-date-end" class="filter-input"
+                       x-model="filterDateTo"
+                       @change="fetchTrains()">
+            </div>
+            <div class="filter-group">
+                <label for="filter-partner">Partner</label>
+                <select id="filter-partner" class="filter-select"
+                        x-model="filterPartner"
+                        @change="applyClientFilters()">
+                    <option value="">All</option>
+                    <template x-for="p in availablePartners" :key="p">
+                        <option :value="p" x-text="p"></option>
+                    </template>
+                </select>
+            </div>
+            <div class="filter-group">
+                <div class="filter-checkbox-group">
+                    <input type="checkbox" id="filter-merge-requests" disabled>
+                    <label for="filter-merge-requests">Has Open MRs</label>
+                </div>
+                <div class="filter-checkbox-group">
+                    <input type="checkbox" id="filter-open-branches"
+                           x-model="filterOpenBranches"
+                           @change="applyClientFilters()">
+                    <label for="filter-open-branches">Has Open Branches</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="trains-table">
+                <thead>
+                    <tr>
+                        <th class="sort-header" tabindex="0" role="columnheader"
+                            :aria-sort="sortColumn === 'trainNumber' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+                            :class="{ 'active-sort': sortColumn === 'trainNumber' }"
+                            @click="sort('trainNumber')" @keydown.enter.prevent="sort('trainNumber')" @keydown.space.prevent="sort('trainNumber')">
+                            Train Number
+                            <span class="sort-indicator" x-text="sortIndicator('trainNumber')"></span>
+                        </th>
+                        <th class="sort-header" tabindex="0" role="columnheader"
+                            :aria-sort="sortColumn === 'operationalDay' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+                            :class="{ 'active-sort': sortColumn === 'operationalDay' }"
+                            @click="sort('operationalDay')" @keydown.enter.prevent="sort('operationalDay')" @keydown.space.prevent="sort('operationalDay')">
+                            Operational Day
+                            <span class="sort-indicator" x-text="sortIndicator('operationalDay')"></span>
+                        </th>
+                        <th>Lead RU</th>
+                        <th>Partners</th>
+                        <th>Status</th>
+                        <th class="sort-header" tabindex="0" role="columnheader"
+                            :aria-sort="sortColumn === 'lastChange' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+                            :class="{ 'active-sort': sortColumn === 'lastChange' }"
+                            @click="sort('lastChange')" @keydown.enter.prevent="sort('lastChange')" @keydown.space.prevent="sort('lastChange')">
+                            Last Change
+                            <span class="sort-indicator" x-text="sortIndicator('lastChange')"></span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Loading state -->
+                    <template x-if="loading">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                Loading trains…
+                            </td>
+                        </tr>
+                    </template>
+
+                    <!-- Error state -->
+                    <template x-if="!loading && !!error">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--action-deleted);">
+                                ⚠ Error loading trains: <span x-text="error"></span>
+                            </td>
+                        </tr>
+                    </template>
+
+                    <!-- Empty state -->
+                    <template x-if="!loading && !error && pagedTrains.length === 0">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                No trains found.
+                            </td>
+                        </tr>
+                    </template>
+
+                    <template x-for="train in pagedTrains" :key="train.trainId">
+                        <tr class="clickable"
+                            :data-train-id="train.trainId"
+                            tabindex="0"
+                            role="button"
+                            :aria-label="'View details for train ' + train.trainNumber"
+                            @click="window.location.href = 'details.html?trainId=' + train.trainId"
+                            @keydown.enter.prevent="window.location.href = 'details.html?trainId=' + train.trainId"
+                            @keydown.space.prevent="window.location.href = 'details.html?trainId=' + train.trainId">
+                            <td><strong x-text="train.trainNumber"></strong></td>
+                            <td x-text="formatDate(train.operationalDay)"></td>
+                            <td>
+                                <span class="partner-badge"
+                                      :class="partnerBadgeClass(train.leadRU)"
+                                      x-text="train.leadRU"></span>
+                            </td>
+                            <td>
+                                <template x-for="p in train.otherPartners" :key="p">
+                                    <span class="partner-badge"
+                                          :class="partnerBadgeClass(p)"
+                                          x-text="p"></span>
+                                </template>
+                                <span x-show="train.otherPartners.length === 0"
+                                      class="text-muted">None</span>
+                            </td>
+                            <td>
+                                <span x-show="train.openBranches > 1"
+                                      class="indicator-icon"
+                                      :title="train.openBranches + ' open branch(es)'">
+                                    🌿 <span x-text="train.openBranches"></span>
+                                </span>
+                                <span x-show="train.openBranches <= 1"
+                                      class="text-muted">-</span>
+                            </td>
+                            <td x-text="formatTimestamp(train.lastChange)"></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info"
+                     x-text="paginationInfo()"></div>
+                <div class="pagination">
+                    <button class="pagination-btn" aria-label="First page"
+                            :disabled="currentPage === 1"
+                            @click="goToPage(1)">« First</button>
+                    <button class="pagination-btn" aria-label="Previous page"
+                            :disabled="currentPage === 1"
+                            @click="goToPage(currentPage - 1)">‹ Previous</button>
+                    <span class="pagination-text"
+                          x-text="'Page ' + currentPage + ' of ' + totalPages"></span>
+                    <button class="pagination-btn" aria-label="Next page"
+                            :disabled="currentPage === totalPages || totalPages === 0"
+                            @click="goToPage(currentPage + 1)">Next ›</button>
+                    <button class="pagination-btn" aria-label="Last page"
+                            :disabled="currentPage === totalPages || totalPages === 0"
+                            @click="goToPage(totalPages)">Last »</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" style="display: none;"></div>
+
+    <!-- Alpine.js (served from WebJar via Spring Boot) -->
+    <script defer src="/webjars/alpinejs/dist/cdn.min.js"></script>
+
+    <script>
+        function trainApp() {
+            return {
+                // ── Raw data from server ──────────────────────────────────────
+                allTrains: [],
+                loading: true,
+                error: null,
+
+                // ── Server-side date filters (trigger new fetch on change) ────
+                filterDateFrom: '',
+                filterDateTo:   '',
+
+                // ── Client-side filters ───────────────────────────────────────
+                filterTrainNumber:  '',
+                filterPartner:      '',
+                filterOpenBranches: false,
+
+                // ── Derived partner list for the dropdown ─────────────────────
+                availablePartners: [],
+
+                // ── Sorting ───────────────────────────────────────────────────
+                sortColumn:    null,
+                sortDirection: 'asc',
+
+                // ── Pagination ────────────────────────────────────────────────
+                currentPage:  1,
+                itemsPerPage: 20,
+
+                // ── Derived: filtered + sorted + paged ────────────────────────
+                get filteredTrains() {
+                    let result = this.allTrains;
+
+                    if (this.filterTrainNumber.trim()) {
+                        const q = this.filterTrainNumber.trim().toLowerCase();
+                        result = result.filter(t => t.trainNumber.toLowerCase().includes(q));
+                    }
+
+                    if (this.filterPartner) {
+                        result = result.filter(t =>
+                            t.leadRU === this.filterPartner ||
+                            t.otherPartners.includes(this.filterPartner)
+                        );
+                    }
+
+                    if (this.filterOpenBranches) {
+                        result = result.filter(t => t.openBranches > 1);
+                    }
+
+                    if (this.sortColumn) {
+                        const dir = this.sortDirection === 'asc' ? 1 : -1;
+                        result = [...result].sort((a, b) => {
+                            let va, vb;
+                            if (this.sortColumn === 'trainNumber') {
+                                va = a.trainNumber.toLowerCase();
+                                vb = b.trainNumber.toLowerCase();
+                            } else if (this.sortColumn === 'operationalDay') {
+                                va = a.operationalDay ?? '';
+                                vb = b.operationalDay ?? '';
+                            } else if (this.sortColumn === 'lastChange') {
+                                va = a.lastChange ?? '';
+                                vb = b.lastChange ?? '';
+                            }
+                            return va < vb ? -dir : va > vb ? dir : 0;
+                        });
+                    }
+
+                    return result;
+                },
+
+                get totalPages() {
+                    return Math.max(1, Math.ceil(this.filteredTrains.length / this.itemsPerPage));
+                },
+
+                get pagedTrains() {
+                    const start = (this.currentPage - 1) * this.itemsPerPage;
+                    return this.filteredTrains.slice(start, start + this.itemsPerPage);
+                },
+
+                // ── Lifecycle ─────────────────────────────────────────────────
+                async init() {
+                    await this.fetchTrains();
+                },
+
+                // ── Server fetch (called on init and when date filters change) ─
+                async fetchTrains() {
+                    this.loading = true;
+                    this.error   = null;
+                    try {
+                        const params = new URLSearchParams();
+                        if (this.filterDateFrom) params.set('operationalDayFrom', this.filterDateFrom);
+                        if (this.filterDateTo)   params.set('operationalDayTo',   this.filterDateTo);
+
+                        const url = '/v1/trains' + (params.toString() ? '?' + params.toString() : '');
+                        const response = await fetch(url, {
+                            headers: { 'token': 'SBB' }  // TODO: replace with real auth token when security is re-enabled
+                        });
+                        if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
+
+                        const data = await response.json();
+                        this.allTrains = data.map(t => this.mapTrain(t));
+                        this.rebuildPartnerList();
+                        this.currentPage = 1;
+                    } catch (e) {
+                        this.error = e.message;
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                // ── Called by client-side filter controls ─────────────────────
+                applyClientFilters() {
+                    this.currentPage = 1;
+                },
+
+                // ── Rebuild the partner dropdown from current allTrains ────────
+                rebuildPartnerList() {
+                    const partners = new Set();
+                    this.allTrains.forEach(t => {
+                        partners.add(t.leadRU);
+                        t.otherPartners.forEach(p => partners.add(p));
+                    });
+                    this.availablePartners = Array.from(partners).sort();
+                },
+
+                // ── Sorting ───────────────────────────────────────────────────
+                sort(column) {
+                    if (this.sortColumn === column) {
+                        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        this.sortColumn    = column;
+                        this.sortDirection = 'asc';
+                    }
+                    this.currentPage = 1;
+                },
+
+                sortIndicator(column) {
+                    if (this.sortColumn !== column) return '';
+                    return this.sortDirection === 'asc' ? '▲' : '▼';
+                },
+
+                // ── Pagination ────────────────────────────────────────────────
+                goToPage(page) {
+                    if (page < 1 || page > this.totalPages) return;
+                    this.currentPage = page;
+                },
+
+                paginationInfo() {
+                    const total = this.filteredTrains.length;
+                    if (total === 0) return 'No trains found';
+                    const start = (this.currentPage - 1) * this.itemsPerPage + 1;
+                    const end   = Math.min(this.currentPage * this.itemsPerPage, total);
+                    return `Showing ${start}–${end} of ${total} trains`;
+                },
+
+                // ── Data mapping ──────────────────────────────────────────────
+                mapTrain(t) {
+                    const mainBranch = t.branches.find(b => b.branchName.endsWith('-main'))
+                                       ?? t.branches[0];
+                    const leadRU = (t.partners && t.partners.length > 0)
+                        ? t.partners[0]
+                        : (mainBranch?.technical?.owner ?? '?');
+                    const otherPartners = (t.partners ?? []).filter(p => p !== leadRU);
+                    const openBranches  = t.branches.filter(
+                        b => b.technical && b.technical.branchState === 'open'
+                    ).length;
+                    return {
+                        trainId:       t.trainId,
+                        trainNumber:   mainBranch?.business?.trainNumber ?? '-',
+                        operationalDay: mainBranch?.business?.operationalDay ?? null,
+                        leadRU,
+                        otherPartners,
+                        openBranches,
+                        lastChange: t.mainTimestamp ?? null
+                    };
+                },
+
+                // ── Formatting helpers ────────────────────────────────────────
+                formatDate(dateString) {
+                    if (!dateString) return '-';
+                    const [year, month, day] = dateString.split('-');
+                    return `${day}.${month}.${year}`;
+                },
+
+                formatTimestamp(dateString) {
+                    if (!dateString) return '-';
+                    const date    = new Date(dateString);
+                    const day     = String(date.getDate()).padStart(2, '0');
+                    const month   = String(date.getMonth() + 1).padStart(2, '0');
+                    const year    = date.getFullYear();
+                    const hours   = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    const seconds = String(date.getSeconds()).padStart(2, '0');
+                    return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+                },
+
+                partnerBadgeClass(partner) {
+                    const mapping = {
+                        'SBB': 'partner-badge-SBB',
+                        'BLS': 'partner-badge-BLS',
+                        'SOB': 'partner-badge-SOB'
+                    };
+                    return mapping[partner] ?? 'partner-badge-default';
+                }
+            };
+        }
+    </script>
+</body>
+</html>
+

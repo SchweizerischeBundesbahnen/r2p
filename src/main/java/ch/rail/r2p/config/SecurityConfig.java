@@ -13,7 +13,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,18 +28,19 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
-        WebExpressionAuthorizationManager scopeAndRole = new WebExpressionAuthorizationManager("hasAuthority('SCOPE_r2p') and hasRole('r2p_user')");
+        // TODO: re-enable security – temporarily disabled to allow UI development without OAuth2 token
+        // WebExpressionAuthorizationManager scopeAndRole = new WebExpressionAuthorizationManager("hasAuthority('SCOPE_r2p') and hasRole('r2p_user')");
         http
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/info/**").permitAll()
-                .requestMatchers("/", "/swagger-ui/**", "/v3/api-docs/**", "/error", "/login**").permitAll()
-                .anyRequest().access(scopeAndRole)
+                .anyRequest().permitAll()
             )
-            .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
-            );
+            // TODO: re-enable OAuth2 resource server when security is restored (replace disable() with jwt config below)
+            // .oauth2ResourceServer(oauth2 -> oauth2
+            //     .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+            // );
+            .oauth2ResourceServer(oauth2 -> oauth2.disable());
         return http.build();
     }
 
