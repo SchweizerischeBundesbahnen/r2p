@@ -459,13 +459,17 @@
                     try {
                         const [trainRes, changesRes] = await Promise.all([
                             fetch(`/v1/trains/${this.trainId}`, {
-                                headers: { 'token': 'SBB' }  // TODO: replace with real auth token when security is re-enabled
+                                headers: { 'token': 'SBB' }
                             }),
                             fetch(`/v1/trains/${this.trainId}/changes`, {
-                                headers: { 'token': 'SBB' }  // TODO: replace with real auth token when security is re-enabled
+                                headers: { 'token': 'SBB' }
                             })
                         ]);
 
+                        if (trainRes.status === 401 || changesRes.status === 401) {
+                            window.location.href = '/oauth2/authorization/azure';
+                            return;
+                        }
                         if (trainRes.status === 404) {
                             this.error = `Train with ID ${this.trainId} was not found.`;
                             return;

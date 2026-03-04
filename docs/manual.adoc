@@ -15,6 +15,9 @@ the prototype uses Java and H2 (no need for a dedicated database server).
 == Quick Start
 
 === Test and execute the prototype
+
+Define the environment variable `R2P_AZURE_CLIENT_SECRET`
+
 [source,bash]
 ----
 mvn clean verify
@@ -25,7 +28,7 @@ Visit: http://localhost:8080/
 
 **Interactive API Testing:**
 
-- Swagger UI: http://localhost:8080/swagger-ui.html
+- Swagger UI: http://localhost:8080/swagger-ui/index.html
 - OpenAPI Spec: http://localhost:8080/v3/api-docs
 
 **Documentation:** Available in `target/docs/` after building:
@@ -52,7 +55,7 @@ FLYWAY_CLEAN_ON_VALIDATION_ERROR=true
 
 The Docker image is available at `ghcr-private.docker.bin.sbb.ch/schweizerischebundesbahnen/r2p:latest`.
 
-Check the deployment.yaml file and adjust the values in the ConfigMap.
+Check the deployment.yaml file and adjust the values in the ConfigMap and in the Secret.
 
 [source,bash]
 ----

@@ -323,8 +323,12 @@
 
                         const url = '/v1/trains' + (params.toString() ? '?' + params.toString() : '');
                         const response = await fetch(url, {
-                            headers: { 'token': 'SBB' }  // TODO: replace with real auth token when security is re-enabled
+                            headers: { 'token': 'SBB' }
                         });
+                        if (response.status === 401) {
+                            window.location.href = '/oauth2/authorization/azure';
+                            return;
+                        }
                         if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
 
                         const data = await response.json();
