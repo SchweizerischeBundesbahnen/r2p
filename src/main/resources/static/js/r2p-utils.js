@@ -1,0 +1,219 @@
+/**
+ * r2p-utils.js — Shared pure utility functions for the R2P frontend.
+ * No Alpine.js or framework dependency; can be loaded before Alpine initialises.
+ */
+
+// ── Formatting ────────────────────────────────────────────────────────────────
+
+/**
+ * Formats an ISO date string (YYYY-MM-DD) as DD.MM.YYYY.
+ * @param {string|null} dateString
+ * @returns {string}
+ */
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const [year, month, day] = dateString.split('-');
+    return `${day}.${month}.${year}`;
+}
+
+/**
+ * Formats an ISO timestamp string as DD.MM.YYYY HH:MM:SS (local time).
+ * @param {string|null} dateString
+ * @returns {string}
+ */
+function formatTimestamp(dateString) {
+    if (!dateString) return '-';
+    const date    = new Date(dateString);
+    const day     = String(date.getDate()).padStart(2, '0');
+    const month   = String(date.getMonth() + 1).padStart(2, '0');
+    const year    = date.getFullYear();
+    const hours   = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+}
+
+/**
+ * Truncates a UUID/ID to the first 8 characters followed by an ellipsis.
+ * @param {string|null} id
+ * @returns {string}
+ */
+function truncateId(id) {
+    if (!id) return '-';
+    return id.substring(0, 8) + '…';
+}
+
+// ── CSS class helpers ─────────────────────────────────────────────────────────
+
+/**
+ * Returns the CSS class for a partner badge.
+ * @param {string} partner
+ * @returns {string}
+ */
+function partnerBadgeClass(partner) {
+    const mapping = {
+        'SBB': 'partner-badge-SBB',
+        'BLS': 'partner-badge-BLS',
+        'SOB': 'partner-badge-SOB'
+    };
+    return mapping[partner] ?? 'partner-badge-default';
+}
+
+/**
+ * Returns the CSS class for a branch-state badge.
+ * @param {string} state
+ * @returns {string}
+ */
+function branchStateBadgeClass(state) {
+    const mapping = {
+        'open':    'badge-open',
+        'merged':  'badge-merged',
+        'deleted': 'badge-deleted'
+    };
+    return mapping[state] ?? 'badge-open';
+}
+
+/**
+ * Returns the CSS class for a changelog-action badge.
+ * @param {string} action
+ * @returns {string}
+ */
+function actionBadgeClass(action) {
+    const mapping = {
+        'created':  'badge-created',
+        'updated':  'badge-updated',
+        'merged':   'badge-merged-action',
+        'deleted':  'badge-deleted-action',
+        'shared':   'badge-shared',
+        'unshared': 'badge-unshared'
+    };
+    return mapping[action] ?? 'badge-created';
+}
+
+// ── Sort factory ──────────────────────────────────────────────────────────────
+
+/**
+ * Creates a composable sorter object for use inside an Alpine.js component.
+ * Eliminates duplicated sort boilerplate when a page has multiple sortable tables.
+ *
+ * Usage (inside an Alpine component's return object):
+ *   branchSorter: makeSorter(),
+ *   clSorter:     makeSorter('timestamp', 'desc'),
+ *
+ * Then in the template:
+ *   @click="branchSorter.sort('name')"
+ *   x-text="branchSorter.indicator('name')"
+ *   :aria-sort="branchSorter.ariaSort('name')"
+ *   :class="{ 'active-sort': branchSorter.col === 'name' }"
+ *
+ * @param {string|null} defaultCol
+ * @param {'asc'|'desc'} defaultDir
+ * @returns {{ col: string|null, dir: string, sort(col:string):void, indicator(col:string):string, ariaSort(col:string):string }}
+ */
+function makeSorter(defaultCol = null, defaultDir = 'asc') {
+    return {
+        col: defaultCol,
+        dir: defaultDir,
+
+        sort(col) {
+            if (this.col === col) {
+                this.dir = this.dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                this.col = col;
+                this.dir = 'asc';
+            }
+        },
+
+        indicator(col) {
+            if (this.col !== col) return '';
+            return this.dir === 'asc' ? '▲' : '▼';
+        },
+
+        ariaSort(col) {
+            if (this.col !== col) return 'none';
+            return this.dir === 'asc' ? 'ascending' : 'descending';
+        }
+    };
+}
+
+/**
+ * Applies a sorter's current state to an array, returning a new sorted array.
+ * @template T
+ * @param {T[]} items
+ * @param {{ col: string|null, dir: string }} sorter
+ * @returns {T[]}
+ */
+function applySorter(items, sorter) {
+    if (!sorter.col) return items;
+    const dir = sorter.dir === 'asc' ? 1 : -1;
+    return [...items].sort((a, b) => {
+        const va = (a[sorter.col] ?? '').toString().toLowerCase();
+        const vb = (b[sorter.col] ?? '').toString().toLowerCase();
+        return va < vb ? -dir : va > vb ? dir : 0;
+    });
+}
+
+// ── Pagination helper ─────────────────────────────────────────────────────────
+
+/**
+ * Builds a human-readable pagination info string.
+ * @param {number} total        Total number of (filtered) items
+ * @param {number} page         Current page (1-based)
+ * @param {number} itemsPerPage
+ * @param {string} label        Plural label, e.g. "trains", "branches"
+ * @returns {string}
+ */
+function paginationInfo(total, page, itemsPerPage, label) {
+    if (total === 0) return `No ${label} found`;
+    const start = (page - 1) * itemsPerPage + 1;
+    const end   = Math.min(page * itemsPerPage, total);
+    return `Showing ${start}–${end} of ${total} ${label}`;
+}
+
+// ── Toast / Clipboard ─────────────────────────────────────────────────────────
+
+/**
+ * Shows a transient toast message using the #toast element.
+ * @param {string} message
+ * @param {number} [duration=2000]
+ */
+function showToast(message, duration = 2000) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, duration);
+}
+
+/**
+ * Copies text to the clipboard and shows a toast feedback message.
+ * @param {string} text
+ */
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => showToast('Copied to clipboard!'))
+        .catch(() => showToast('Failed to copy'));
+}
+
+// ── Data mapping ──────────────────────────────────────────────────────────────
+
+/**
+ * Maps a raw API train object to the view model used by both pages.
+ * @param {object} t  Raw train object from the API
+ * @returns {{ trainId, trainNumber, operationalDay, leadRU, otherPartners }}
+ */
+function mapTrainBase(t) {
+    const mainBranch = (t.branches ?? []).find(b => b.branchName.endsWith('-main'))
+                       ?? (t.branches ?? [])[0];
+    const leadRU = (t.partners && t.partners.length > 0)
+        ? t.partners[0]
+        : (mainBranch?.technical?.owner ?? '?');
+    return {
+        trainId:        t.trainId,
+        trainNumber:    mainBranch?.business?.trainNumber ?? '-',
+        operationalDay: mainBranch?.business?.operationalDay ?? null,
+        leadRU,
+        otherPartners:  (t.partners ?? []).filter(p => p !== leadRU)
+    };
+}
+

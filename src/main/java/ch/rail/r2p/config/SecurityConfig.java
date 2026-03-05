@@ -71,6 +71,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Static frontend resources – always public
                 .requestMatchers("/", "/index.html", "/details.html", "/style.css", "/favicon.ico").permitAll()
+                .requestMatchers("/js/**").permitAll()
                 // Spring Boot / WebJars resources
                 .requestMatchers("/webjars/**", "/actuator/health").permitAll()
                 // Swagger UI & OpenAPI spec – secured by their own OAuth2 flow inside the browser

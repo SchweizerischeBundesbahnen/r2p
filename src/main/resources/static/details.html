@@ -130,22 +130,22 @@
                             <tr>
                                 <th>Branch ID</th>
                                 <th class="sort-header" tabindex="0" role="columnheader"
-                                    :aria-sort="branchSortCol === 'name' ? (branchSortDir === 'asc' ? 'ascending' : 'descending') : 'none'"
-                                    :class="{ 'active-sort': branchSortCol === 'name' }"
+                                    :aria-sort="branchSortAriaSort('name')"
+                                    :class="{ 'active-sort': branchSorter.col === 'name' }"
                                     @click="branchSort('name')" @keydown.enter.prevent="branchSort('name')" @keydown.space.prevent="branchSort('name')">
                                     Name
                                     <span class="sort-indicator" x-text="branchSortIndicator('name')"></span>
                                 </th>
                                 <th class="sort-header" tabindex="0" role="columnheader"
-                                    :aria-sort="branchSortCol === 'owner' ? (branchSortDir === 'asc' ? 'ascending' : 'descending') : 'none'"
-                                    :class="{ 'active-sort': branchSortCol === 'owner' }"
+                                    :aria-sort="branchSortAriaSort('owner')"
+                                    :class="{ 'active-sort': branchSorter.col === 'owner' }"
                                     @click="branchSort('owner')" @keydown.enter.prevent="branchSort('owner')" @keydown.space.prevent="branchSort('owner')">
                                     Owner
                                     <span class="sort-indicator" x-text="branchSortIndicator('owner')"></span>
                                 </th>
                                 <th class="sort-header" tabindex="0" role="columnheader"
-                                    :aria-sort="branchSortCol === 'timestamp' ? (branchSortDir === 'asc' ? 'ascending' : 'descending') : 'none'"
-                                    :class="{ 'active-sort': branchSortCol === 'timestamp' }"
+                                    :aria-sort="branchSortAriaSort('timestamp')"
+                                    :class="{ 'active-sort': branchSorter.col === 'timestamp' }"
                                     @click="branchSort('timestamp')" @keydown.enter.prevent="branchSort('timestamp')" @keydown.space.prevent="branchSort('timestamp')">
                                     Creation Date
                                     <span class="sort-indicator" x-text="branchSortIndicator('timestamp')"></span>
@@ -249,30 +249,30 @@
                         <thead>
                             <tr>
                                 <th class="sort-header" tabindex="0" role="columnheader"
-                                    :aria-sort="clSortCol === 'action' ? (clSortDir === 'asc' ? 'ascending' : 'descending') : 'none'"
-                                    :class="{ 'active-sort': clSortCol === 'action' }"
+                                    :aria-sort="clSortAriaSort('action')"
+                                    :class="{ 'active-sort': clSorter.col === 'action' }"
                                     @click="clSort('action')" @keydown.enter.prevent="clSort('action')" @keydown.space.prevent="clSort('action')">
                                     Action
                                     <span class="sort-indicator" x-text="clSortIndicator('action')"></span>
                                 </th>
                                 <th class="sort-header" tabindex="0" role="columnheader"
-                                    :aria-sort="clSortCol === 'timestamp' ? (clSortDir === 'asc' ? 'ascending' : 'descending') : 'none'"
-                                    :class="{ 'active-sort': clSortCol === 'timestamp' }"
+                                    :aria-sort="clSortAriaSort('timestamp')"
+                                    :class="{ 'active-sort': clSorter.col === 'timestamp' }"
                                     @click="clSort('timestamp')" @keydown.enter.prevent="clSort('timestamp')" @keydown.space.prevent="clSort('timestamp')">
                                     Timestamp
                                     <span class="sort-indicator" x-text="clSortIndicator('timestamp')"></span>
                                 </th>
                                 <th class="sort-header" tabindex="0" role="columnheader"
-                                    :aria-sort="clSortCol === 'branchName' ? (clSortDir === 'asc' ? 'ascending' : 'descending') : 'none'"
-                                    :class="{ 'active-sort': clSortCol === 'branchName' }"
+                                    :aria-sort="clSortAriaSort('branchName')"
+                                    :class="{ 'active-sort': clSorter.col === 'branchName' }"
                                     @click="clSort('branchName')" @keydown.enter.prevent="clSort('branchName')" @keydown.space.prevent="clSort('branchName')">
                                     Branch Name
                                     <span class="sort-indicator" x-text="clSortIndicator('branchName')"></span>
                                 </th>
                                 <th>Version ID</th>
                                 <th class="sort-header" tabindex="0" role="columnheader"
-                                    :aria-sort="clSortCol === 'partner' ? (clSortDir === 'asc' ? 'ascending' : 'descending') : 'none'"
-                                    :class="{ 'active-sort': clSortCol === 'partner' }"
+                                    :aria-sort="clSortAriaSort('partner')"
+                                    :class="{ 'active-sort': clSorter.col === 'partner' }"
                                     @click="clSort('partner')" @keydown.enter.prevent="clSort('partner')" @keydown.space.prevent="clSort('partner')">
                                     Partner
                                     <span class="sort-indicator" x-text="clSortIndicator('partner')"></span>
@@ -347,285 +347,9 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <!-- Alpine.js (served from WebJar via Spring Boot) -->
+    <script src="/js/r2p-utils.js"></script>
+    <script src="/js/r2p-api.js"></script>
+    <script src="/js/app-details.js"></script>
     <script defer src="/webjars/alpinejs/dist/cdn.min.js"></script>
-
-    <script>
-        function detailsApp() {
-            return {
-                // ── Core state ────────────────────────────────────────────────
-                trainId:   null,
-                loading:   true,
-                error:     null,
-                train:     null,
-
-                // ── Raw data ──────────────────────────────────────────────────
-                allBranches:  [],
-                allChangelog: [],
-
-                // ── Items per page (shared) ───────────────────────────────────
-                itemsPerPage: 20,
-
-                // ── Branch filter / sort / page ───────────────────────────────
-                branchFilterStatus: '',
-                branchFilterOwner:  '',
-                branchSortCol:      null,
-                branchSortDir:      'asc',
-                branchPage:         1,
-
-                // ── Changelog filter / sort / page ────────────────────────────
-                clFilterAction:  '',
-                clFilterPartner: '',
-                clFilterComment: '',
-                clSortCol:       'timestamp',
-                clSortDir:       'desc',    // newest first by default
-                clPage:          1,
-
-                // ── Derived: branch owners dropdown ───────────────────────────
-                get branchOwners() {
-                    return [...new Set(this.allBranches.map(b => b.owner))].sort();
-                },
-
-                // ── Derived: changelog partners dropdown ──────────────────────
-                get clPartners() {
-                    return [...new Set(this.allChangelog.map(e => e.partner))].sort();
-                },
-
-                // ── Derived: filtered + sorted branches ───────────────────────
-                get filteredBranches() {
-                    let r = this.allBranches;
-                    if (this.branchFilterStatus)
-                        r = r.filter(b => b.state === this.branchFilterStatus);
-                    if (this.branchFilterOwner)
-                        r = r.filter(b => b.owner === this.branchFilterOwner);
-                    if (this.branchSortCol) {
-                        const dir = this.branchSortDir === 'asc' ? 1 : -1;
-                        r = [...r].sort((a, b) => {
-                            const va = (a[this.branchSortCol] ?? '').toLowerCase?.() ?? (a[this.branchSortCol] ?? '');
-                            const vb = (b[this.branchSortCol] ?? '').toLowerCase?.() ?? (b[this.branchSortCol] ?? '');
-                            return va < vb ? -dir : va > vb ? dir : 0;
-                        });
-                    }
-                    return r;
-                },
-
-                get branchTotalPages() {
-                    return Math.max(1, Math.ceil(this.filteredBranches.length / this.itemsPerPage));
-                },
-
-                get pagedBranches() {
-                    const start = (this.branchPage - 1) * this.itemsPerPage;
-                    return this.filteredBranches.slice(start, start + this.itemsPerPage);
-                },
-
-                // ── Derived: filtered + sorted changelog ──────────────────────
-                get filteredChangelog() {
-                    let r = this.allChangelog;
-                    if (this.clFilterAction)
-                        r = r.filter(e => e.action === this.clFilterAction);
-                    if (this.clFilterPartner)
-                        r = r.filter(e => e.partner === this.clFilterPartner);
-                    if (this.clFilterComment.trim()) {
-                        const q = this.clFilterComment.trim().toLowerCase();
-                        r = r.filter(e => (e.comment ?? '').toLowerCase().includes(q));
-                    }
-                    if (this.clSortCol) {
-                        const dir = this.clSortDir === 'asc' ? 1 : -1;
-                        r = [...r].sort((a, b) => {
-                            const va = a[this.clSortCol] ?? '';
-                            const vb = b[this.clSortCol] ?? '';
-                            return va < vb ? -dir : va > vb ? dir : 0;
-                        });
-                    }
-                    return r;
-                },
-
-                get clTotalPages() {
-                    return Math.max(1, Math.ceil(this.filteredChangelog.length / this.itemsPerPage));
-                },
-
-                get pagedChangelog() {
-                    const start = (this.clPage - 1) * this.itemsPerPage;
-                    return this.filteredChangelog.slice(start, start + this.itemsPerPage);
-                },
-
-                // ── Lifecycle ─────────────────────────────────────────────────
-                async init() {
-                    this.trainId = new URLSearchParams(window.location.search).get('trainId');
-                    if (!this.trainId) {
-                        this.error = 'No trainId provided in URL. Please return to the overview and select a train.';
-                        this.loading = false;
-                        return;
-                    }
-                    try {
-                        const [trainRes, changesRes] = await Promise.all([
-                            fetch(`/v1/trains/${this.trainId}`, {
-                                headers: { 'token': 'SBB' }
-                            }),
-                            fetch(`/v1/trains/${this.trainId}/changes`, {
-                                headers: { 'token': 'SBB' }
-                            })
-                        ]);
-
-                        if (trainRes.status === 401 || changesRes.status === 401) {
-                            window.location.href = '/oauth2/authorization/azure';
-                            return;
-                        }
-                        if (trainRes.status === 404) {
-                            this.error = `Train with ID ${this.trainId} was not found.`;
-                            return;
-                        }
-                        if (!trainRes.ok)
-                            throw new Error(`Train API returned HTTP ${trainRes.status} ${trainRes.statusText}`);
-                        if (!changesRes.ok)
-                            throw new Error(`Changes API returned HTTP ${changesRes.status} ${changesRes.statusText}`);
-
-                        const trainData   = await trainRes.json();
-                        const changesData = await changesRes.json();
-
-                        this.train        = this.mapTrain(trainData);
-                        this.allBranches  = this.mapBranches(trainData.branches ?? []);
-                        this.allChangelog = changesData;
-
-                        document.title = `Train Details - ${this.train.trainNumber} - R2P`;
-                    } catch (e) {
-                        this.error = e.message;
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                // ── Branch sort helpers ───────────────────────────────────────
-                branchSort(col) {
-                    if (this.branchSortCol === col) {
-                        this.branchSortDir = this.branchSortDir === 'asc' ? 'desc' : 'asc';
-                    } else {
-                        this.branchSortCol = col;
-                        this.branchSortDir = 'asc';
-                    }
-                    this.branchPage = 1;
-                },
-
-                branchSortIndicator(col) {
-                    if (this.branchSortCol !== col) return '';
-                    return this.branchSortDir === 'asc' ? '▲' : '▼';
-                },
-
-                branchPaginationInfo() {
-                    const total = this.filteredBranches.length;
-                    if (total === 0) return 'No branches found';
-                    const start = (this.branchPage - 1) * this.itemsPerPage + 1;
-                    const end   = Math.min(this.branchPage * this.itemsPerPage, total);
-                    return `Showing ${start}–${end} of ${total} branches`;
-                },
-
-                // ── Changelog sort helpers ────────────────────────────────────
-                clSort(col) {
-                    if (this.clSortCol === col) {
-                        this.clSortDir = this.clSortDir === 'asc' ? 'desc' : 'asc';
-                    } else {
-                        this.clSortCol = col;
-                        this.clSortDir = 'asc';
-                    }
-                    this.clPage = 1;
-                },
-
-                clSortIndicator(col) {
-                    if (this.clSortCol !== col) return '';
-                    return this.clSortDir === 'asc' ? '▲' : '▼';
-                },
-
-                clPaginationInfo() {
-                    const total = this.filteredChangelog.length;
-                    if (total === 0) return 'No changelog entries found';
-                    const start = (this.clPage - 1) * this.itemsPerPage + 1;
-                    const end   = Math.min(this.clPage * this.itemsPerPage, total);
-                    return `Showing ${start}–${end} of ${total} entries`;
-                },
-
-                // ── Data mapping ──────────────────────────────────────────────
-                mapTrain(t) {
-                    const mainBranch = (t.branches ?? []).find(b => b.branchName.endsWith('-main'))
-                                       ?? t.branches?.[0];
-                    const leadRU = (t.partners && t.partners.length > 0)
-                        ? t.partners[0]
-                        : (mainBranch?.technical?.owner ?? '?');
-                    return {
-                        trainId:        t.trainId,
-                        trainNumber:    mainBranch?.business?.trainNumber ?? '-',
-                        operationalDay: mainBranch?.business?.operationalDay ?? null,
-                        leadRU,
-                        otherPartners: (t.partners ?? []).filter(p => p !== leadRU)
-                    };
-                },
-
-                mapBranches(branches) {
-                    return branches.map(b => ({
-                        branchId:  b.branchId,
-                        name:      b.branchName,
-                        owner:     b.technical?.owner ?? '-',
-                        timestamp: b.technical?.timestamp ?? null,
-                        state:     b.technical?.branchState ?? '-'
-                    }));
-                },
-
-                // ── Formatting helpers ────────────────────────────────────────
-                formatDate(dateString) {
-                    if (!dateString) return '-';
-                    const [year, month, day] = dateString.split('-');
-                    return `${day}.${month}.${year}`;
-                },
-
-                formatTimestamp(dateString) {
-                    if (!dateString) return '-';
-                    const date    = new Date(dateString);
-                    const day     = String(date.getDate()).padStart(2, '0');
-                    const month   = String(date.getMonth() + 1).padStart(2, '0');
-                    const year    = date.getFullYear();
-                    const hours   = String(date.getHours()).padStart(2, '0');
-                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                    const seconds = String(date.getSeconds()).padStart(2, '0');
-                    return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
-                },
-
-                truncateId(id) {
-                    if (!id) return '-';
-                    return id.substring(0, 8) + '…';
-                },
-
-                partnerBadgeClass(partner) {
-                    const m = { 'SBB': 'partner-badge-SBB', 'BLS': 'partner-badge-BLS', 'SOB': 'partner-badge-SOB' };
-                    return m[partner] ?? 'partner-badge-default';
-                },
-
-                branchStateBadgeClass(state) {
-                    const m = { 'open': 'badge-open', 'merged': 'badge-merged', 'deleted': 'badge-deleted' };
-                    return m[state] ?? 'badge-open';
-                },
-
-                actionBadgeClass(action) {
-                    const m = {
-                        'created': 'badge-created', 'updated': 'badge-updated',
-                        'merged': 'badge-merged-action', 'deleted': 'badge-deleted-action',
-                        'shared': 'badge-shared', 'unshared': 'badge-unshared'
-                    };
-                    return m[action] ?? 'badge-created';
-                },
-
-                copyToClipboard(text) {
-                    navigator.clipboard.writeText(text)
-                        .then(() => this.showToast('Copied to clipboard!'))
-                        .catch(() => this.showToast('Failed to copy'));
-                },
-
-                showToast(message) {
-                    const toast = document.getElementById('toast');
-                    toast.textContent = message;
-                    toast.style.display = 'block';
-                    setTimeout(() => { toast.style.display = 'none'; }, 2000);
-                }
-            };
-        }
-    </script>
 </body>
 </html>
-
