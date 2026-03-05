@@ -5,6 +5,8 @@ r2p:
     issuer-uri: https://login.microsoftonline.com/2cda5d11-f0ac-46b3-967d-af1b2e1bd01a
   instance-owner: "${R2P_INSTANCE_OWNER:SBB}"
   flyway-clean-on-validation-error: "${FLYWAY_CLEAN_ON_VALIDATION_ERROR:false}"
+  test-data:
+    enabled: "${R2P_TEST_DATA_ENABLED:false}"
 spring:
   application:
     name: r2p
