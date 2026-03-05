@@ -66,13 +66,13 @@ jobs:
         run: gh release upload ${{ needs.release-please.outputs.tag_name }} dist-archives/r2p-linux.tar.gz
 
       - name: Upload documentation
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: documentation
           path: target/docs/
 
       - name: Upload test results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-linux
           path: target/surefire-reports/
@@ -108,7 +108,7 @@ jobs:
         run: gh release upload ${{ needs.release-please.outputs.tag_name }} dist-archives/r2p-windows.zip
 
       - name: Upload test results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-windows
           path: target/surefire-reports/
@@ -148,7 +148,7 @@ jobs:
         run: gh release upload ${{ needs.release-please.outputs.tag_name }} dist-archives/r2p-macos.tar.gz
 
       - name: Upload test results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-macos
           path: target/surefire-reports/
