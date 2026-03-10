@@ -298,11 +298,9 @@ function getTimetableYearOptions() {
  * @returns {{ trainId, trainNumber, operationalDay, leadRU, otherPartners }}
  */
 function mapTrainBase(t) {
-    const mainBranch = (t.branches ?? []).find(b => b.branchName.endsWith('-main'))
+    const mainBranch = (t.branches ?? []).find(b => b.technical?.mainBranch === true)
                        ?? (t.branches ?? [])[0];
-    const leadRU = (t.partners && t.partners.length > 0)
-        ? t.partners[0]
-        : (mainBranch?.technical?.owner ?? '?');
+    const leadRU = mainBranch?.technical?.owner ?? '?';
     return {
         trainId:        t.trainId,
         trainNumber:    mainBranch?.business?.trainNumber ?? '-',
