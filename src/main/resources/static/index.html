@@ -133,7 +133,6 @@
                             Operational Day
                             <span class="sort-indicator" x-text="sortIndicator('operationalDay')"></span>
                         </th>
-                        <th>Lead RU</th>
                         <th>Partners</th>
                         <th>Status</th>
                         <th class="sort-header" tabindex="0" role="columnheader"
@@ -149,7 +148,7 @@
                     <!-- Loading state -->
                     <template x-if="loading">
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
                                 Loading trains…
                             </td>
                         </tr>
@@ -158,7 +157,7 @@
                     <!-- Error state -->
                     <template x-if="!loading && !!error">
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--action-deleted);">
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--action-deleted);">
                                 ⚠ Error loading trains: <span x-text="error"></span>
                             </td>
                         </tr>
@@ -167,7 +166,7 @@
                     <!-- Empty state -->
                     <template x-if="!loading && !error && pagedTrains.length === 0">
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
                                 No trains found.
                             </td>
                         </tr>
@@ -184,11 +183,6 @@
                             @keydown.space.prevent="window.location.href = 'details.html?trainId=' + train.trainId">
                             <td><strong x-text="train.trainNumber"></strong></td>
                             <td x-text="formatDate(train.operationalDay)"></td>
-                            <td>
-                                <span class="partner-badge"
-                                      :class="partnerBadgeClass(train.leadRU)"
-                                      x-text="train.leadRU"></span>
-                            </td>
                             <td>
                                 <template x-for="p in train.otherPartners" :key="p">
                                     <span class="partner-badge"
