@@ -63,3 +63,22 @@ async function fetchTrainChanges(trainId) {
     return apiFetch(`/v1/trains/${trainId}/changes`);
 }
 
+/**
+ * Fetches a specific train version by version ID (getTrainVersion).
+ * @param {string} version  UUID of the version
+ * @returns {Promise<Response>}
+ */
+async function fetchTrainVersion(version) {
+    return apiFetch(`/v1/trains/versions/${version}`);
+}
+
+/**
+ * Fetches the branch details (including latest version ID) for a specific branch.
+ * @param {string} trainId
+ * @param {string} branchId
+ * @returns {Promise<Response>}
+ */
+async function fetchTrainBranch(trainId, branchId) {
+    return apiFetch(`/v1/trains/${trainId}/branches/${branchId}`);
+}
+

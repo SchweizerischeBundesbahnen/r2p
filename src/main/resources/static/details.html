@@ -161,11 +161,17 @@
                                 <tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted);">No branches found.</td></tr>
                             </template>
                             <template x-for="branch in pagedBranches" :key="branch.branchId">
-                                <tr>
-                                    <td class="id-cell">
+                                <tr class="clickable"
+                                    tabindex="0"
+                                    role="button"
+                                    :aria-label="'View latest version of branch ' + branch.name"
+                                    @click="openBranchVersion(branch)"
+                                    @keydown.enter.prevent="openBranchVersion(branch)"
+                                    @keydown.space.prevent="openBranchVersion(branch)">
+                                    <td class="id-cell" @click.stop>
                                         <span class="id-truncated" :title="branch.branchId"
                                               x-text="truncateId(branch.branchId)"></span>
-                                        <button class="clipboard-btn" @click="copyToClipboard(branch.branchId)"
+                                        <button class="clipboard-btn" @click.stop="copyToClipboard(branch.branchId)"
                                                 aria-label="Copy branch ID" title="Copy full ID">📋</button>
                                     </td>
                                     <td><strong x-text="branch.name"></strong></td>
@@ -303,6 +309,10 @@
                                                 <button class="clipboard-btn"
                                                         @click="copyToClipboard(entry.version)"
                                                         title="Copy full ID" aria-label="Copy version ID">📋</button>
+                                                <button class="clipboard-btn"
+                                                        @click="openVersionViewer(entry.version, entry)"
+                                                        title="View train data for this version"
+                                                        aria-label="View version">🔍</button>
                                             </span>
                                         </template>
                                         <span x-show="!entry.version" class="text-muted">-</span>

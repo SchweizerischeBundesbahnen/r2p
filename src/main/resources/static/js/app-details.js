@@ -182,6 +182,39 @@ function detailsApp() {
             }));
         },
 
+        // ── Navigation helpers ────────────────────────────────────────────
+        /**
+         * Opens the train-version page showing the latest version of a branch.
+         * @param {{ branchId: string, name: string }} branch
+         */
+        openBranchVersion(branch) {
+            const p = {
+                trainId:        this.trainId,
+                branchId:       branch.branchId,
+                branchName:     branch.name,
+            };
+            if (this.train?.trainNumber)    p.trainNumber    = this.train.trainNumber;
+            if (this.train?.operationalDay) p.operationalDay = this.train.operationalDay;
+            window.location.href = `train-version.html?${new URLSearchParams(p).toString()}`;
+        },
+
+        /**
+         * Opens the train-version page for a specific version UUID (called from changelog).
+         * @param {string} versionId
+         * @param {object} entry  changelog entry (has branchName, branchId)
+         */
+        openVersionViewer(versionId, entry) {
+            const p = {
+                version: versionId,
+                trainId: this.trainId,
+            };
+            if (entry?.branchName)          p.branchName     = entry.branchName;
+            if (entry?.branchId)            p.branchId       = entry.branchId;
+            if (this.train?.trainNumber)    p.trainNumber    = this.train.trainNumber;
+            if (this.train?.operationalDay) p.operationalDay = this.train.operationalDay;
+            window.location.href = `train-version.html?${new URLSearchParams(p).toString()}`;
+        },
+
         // ── Formatting / badge helpers (delegated to r2p-utils.js) ───────────
         formatDate:           (d) => formatDate(d),
         formatTimestamp:      (d) => formatTimestamp(d),
