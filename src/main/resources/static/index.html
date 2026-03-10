@@ -65,15 +65,29 @@
                        @input="applyClientFilters()">
             </div>
             <div class="filter-group">
+                <label for="filter-timetable-year">Timetable Year</label>
+                <select id="filter-timetable-year" class="filter-select"
+                        x-model="filterTimetableYear"
+                        @change="onTimetableYearChange()">
+                    <template x-for="opt in timetableYearOptions" :key="opt.value">
+                        <option :value="opt.label" :selected="opt.label === filterTimetableYear" x-text="opt.label"></option>
+                    </template>
+                </select>
+            </div>
+            <div class="filter-group">
                 <label for="filter-date-start">Op. Day From</label>
                 <input type="date" id="filter-date-start" class="filter-input"
                        x-model="filterDateFrom"
+                       :min="timetableYearBounds.start"
+                       :max="timetableYearBounds.end"
                        @change="fetchTrains()">
             </div>
             <div class="filter-group">
                 <label for="filter-date-end">Op. Day To</label>
                 <input type="date" id="filter-date-end" class="filter-input"
                        x-model="filterDateTo"
+                       :min="timetableYearBounds.start"
+                       :max="timetableYearBounds.end"
                        @change="fetchTrains()">
             </div>
             <div class="filter-group">

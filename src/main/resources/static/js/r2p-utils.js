@@ -195,6 +195,101 @@ function copyToClipboard(text) {
         .catch(() => showToast('Failed to copy'));
 }
 
+// ── Timetable Year ────────────────────────────────────────────────────────────
+
+/**
+ * Computes the start date (inclusive) and end date (inclusive) for a given
+ * timetable year.
+ *
+ * A timetable year starts on the Sunday after the second Saturday of December
+ * of the *preceding* calendar year and is named after the *subsequent* year.
+ * E.g. timetable year 2026 starts on the Sunday after the second Saturday of
+ * December 2025.
+ *
+ * @param {number} year  The timetable year (e.g. 2026)
+ * @returns {{ start: string, end: string }}  ISO dates 'YYYY-MM-DD'
+ */
+function getTimetableYearBounds(year) {
+    return {
+        start: _timetableYearStart(year),
+        end:   _timetableYearEnd(year)
+    };
+}
+
+/**
+ * Formats a Date object as 'YYYY-MM-DD' using local (wall-clock) date parts,
+ * avoiding UTC-offset issues that arise with toISOString().
+ * @param {Date} d
+ * @returns {string}
+ */
+function _localDateString(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
+/**
+ * Returns the ISO start date of a timetable year (non-recursive helper).
+ * @param {number} year
+ * @returns {string} 'YYYY-MM-DD'
+ */
+function _timetableYearStart(year) {
+    // Find the second Saturday of December in (year - 1)
+    const dec1 = new Date(year - 1, 11, 1); // December 1st of preceding year
+    // Day-of-week: 0=Sun … 6=Sat
+    const dayOfWeek = dec1.getDay();
+    // Days until first Saturday
+    const daysToFirstSat = (6 - dayOfWeek + 7) % 7;
+    const secondSatDay = 1 + daysToFirstSat + 7; // 1-based day of month
+    // Start = Sunday after second Saturday
+    const start = new Date(year - 1, 11, secondSatDay + 1);
+    return _localDateString(start);
+}
+
+/**
+ * Returns the ISO end date (inclusive) of a timetable year (non-recursive helper).
+ * End = day before the start of the next timetable year.
+ * @param {number} year
+ * @returns {string} 'YYYY-MM-DD'
+ */
+function _timetableYearEnd(year) {
+    const nextStartStr = _timetableYearStart(year + 1);
+    const [ny, nm, nd] = nextStartStr.split('-').map(Number);
+    const nextStart = new Date(ny, nm - 1, nd);
+    nextStart.setDate(nextStart.getDate() - 1);
+    return _localDateString(nextStart);
+}
+
+/**
+ * Returns the integer timetable year that contains today's date.
+ * @returns {number}
+ */
+function getCurrentTimetableYear() {
+    const today = _localDateString(new Date());
+    const calYear = new Date().getFullYear();
+    // Check whether today falls within TY named after current calendar year
+    const bounds = getTimetableYearBounds(calYear);
+    if (today >= bounds.start) {
+        return calYear;
+    }
+    return calYear - 1;
+}
+
+/**
+ * Returns an array of timetable year option objects for a dropdown,
+ * covering currentTY - 2 through currentTY + 2.
+ * @returns {{ value: number, label: string }[]}
+ */
+function getTimetableYearOptions() {
+    const current = getCurrentTimetableYear();
+    const options = [];
+    for (let y = current - 2; y <= current + 2; y++) {
+        options.push({ value: y, label: String(y) });
+    }
+    return options;
+}
+
 // ── Data mapping ──────────────────────────────────────────────────────────────
 
 /**

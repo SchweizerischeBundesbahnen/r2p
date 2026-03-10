@@ -10,6 +10,10 @@ function trainApp() {
         loading:   true,
         error:     null,
 
+        // ── Timetable year filter (mandatory; drives date range) ──────────────
+        filterTimetableYear: String(getCurrentTimetableYear()),
+        timetableYearOptions: getTimetableYearOptions(),
+
         // ── Server-side date filters (trigger new fetch on change) ────────────
         filterDateFrom: '',
         filterDateTo:   '',
@@ -28,6 +32,11 @@ function trainApp() {
         // ── Pagination ────────────────────────────────────────────────────────
         currentPage:  1,
         itemsPerPage: 20,
+
+        // ── Derived: bounds of the selected timetable year ────────────────────
+        get timetableYearBounds() {
+            return getTimetableYearBounds(Number(this.filterTimetableYear));
+        },
 
         // ── Derived: filtered + sorted + paged ───────────────────────────────
         get filteredTrains() {
@@ -63,6 +72,10 @@ function trainApp() {
 
         // ── Lifecycle ─────────────────────────────────────────────────────────
         async init() {
+            // Initialise date range to the current timetable year bounds
+            const bounds = this.timetableYearBounds;
+            this.filterDateFrom = bounds.start;
+            this.filterDateTo   = bounds.end;
             await this.fetchTrains();
         },
 
@@ -71,9 +84,10 @@ function trainApp() {
             this.loading = true;
             this.error   = null;
             try {
+                const bounds = this.timetableYearBounds;
                 const response = await fetchTrainList({
-                    operationalDayFrom: this.filterDateFrom || undefined,
-                    operationalDayTo:   this.filterDateTo   || undefined
+                    operationalDayFrom: this.filterDateFrom || bounds.start,
+                    operationalDayTo:   this.filterDateTo   || bounds.end
                 });
                 if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
 
@@ -86,6 +100,14 @@ function trainApp() {
             } finally {
                 this.loading = false;
             }
+        },
+
+        // ── Called when timetable year selector changes ────────────────────────
+        onTimetableYearChange() {
+            const bounds = this.timetableYearBounds;
+            this.filterDateFrom = bounds.start;
+            this.filterDateTo   = bounds.end;
+            this.fetchTrains();
         },
 
         // ── Called by client-side filter controls ──────────────────────────────
