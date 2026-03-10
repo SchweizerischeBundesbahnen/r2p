@@ -82,3 +82,11 @@ async function fetchTrainBranch(trainId, branchId) {
     return apiFetch(`/v1/trains/${trainId}/branches/${branchId}`);
 }
 
+/**
+ * Fetches partner statistics from the backend.
+ * Returns a list with one entry per partner plus a totals row (partner === null).
+ * @returns {Promise<Response>}
+ */
+async function fetchStats() {
+    return apiFetch('/v1/stats');
+}

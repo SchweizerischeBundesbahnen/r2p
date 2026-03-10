@@ -16,35 +16,32 @@
                 <div>
                     <h1>R2P - Railway Undertaking Partner Communication</h1>
                     <p class="subtitle">Prototype for RU-RU-Partner communication and collaboration</p>
-                    <p class="lead-ru-subtitle">Lead RU: Schweizerische Bundesbahnen (SBB)</p>
+                    <p class="lead-ru-subtitle" x-text="'Lead RU: ' + leadRUName">Lead RU: …</p>
                 </div>
             </div>
         </header>
 
-        <!-- Statistics Section with Filter (out of scope – static placeholder) -->
+        <!-- Statistics Section with Filter -->
         <div class="stat-filter">
             <label for="partner-filter">Filter by Partner:</label>
-            <select id="partner-filter" class="filter-select">
-                <option value="all">All Partners</option>
+            <select id="partner-filter" class="filter-select"
+                    x-model="selectedStatPartner">
+                <option value="">All Partners (totals)</option>
+                <template x-for="s in statsPartners" :key="s.partner">
+                    <option :value="s.partner"
+                            x-text="s.partner + (s.leadRU ? ' (Lead RU)' : '')"></option>
+                </template>
             </select>
         </div>
 
         <section class="statistics">
             <div class="stat-card compact-stat-card">
                 <div class="stat-label">Total Trains</div>
-                <div class="stat-value" id="stat-trains">-</div>
-            </div>
-            <div class="stat-card compact-stat-card">
-                <div class="stat-label">Total Branches</div>
-                <div class="stat-value" id="stat-branches">-</div>
-            </div>
-            <div class="stat-card compact-stat-card">
-                <div class="stat-label">Total Versions</div>
-                <div class="stat-value" id="stat-versions">-</div>
+                <div class="stat-value" id="stat-trains" x-text="activeStats.trains ?? '-'">-</div>
             </div>
             <div class="stat-card compact-stat-card">
                 <div class="stat-label">Open Branches</div>
-                <div class="stat-value" id="stat-open-branches">-</div>
+                <div class="stat-value" id="stat-open-branches" x-text="activeStats.openBranches ?? '-'">-</div>
             </div>
             <div class="stat-card compact-stat-card">
                 <div class="stat-label">Open Merge Requests</div>

@@ -10,6 +10,10 @@ function trainApp() {
         loading:   true,
         error:     null,
 
+        // ── Statistics data from server ───────────────────────────────────────
+        stats: [],          // array from /v1/stats; first element is totals (partner === null)
+        statsError: null,
+
         // ── Timetable year filter (mandatory; drives date range) ──────────────
         filterTimetableYear: String(getCurrentTimetableYear()),
         timetableYearOptions: getTimetableYearOptions(),
@@ -22,6 +26,9 @@ function trainApp() {
         filterTrainNumber:  '',
         filterPartner:      '',
         filterOpenBranches: false,
+
+        // ── Statistics partner selection (drives stat cards) ──────────────────
+        selectedStatPartner: '',   // '' = show totals row
 
         // ── Derived partner list for the dropdown ─────────────────────────────
         availablePartners: [],
@@ -36,6 +43,24 @@ function trainApp() {
         // ── Derived: bounds of the selected timetable year ────────────────────
         get timetableYearBounds() {
             return getTimetableYearBounds(Number(this.filterTimetableYear));
+        },
+
+        // ── Derived: stats row matching the selected stat partner ─────────────
+        get activeStats() {
+            if (!this.selectedStatPartner)
+                return this.stats.find(s => s.partner === null) ?? {};
+            return this.stats.find(s => s.partner === this.selectedStatPartner) ?? {};
+        },
+
+        // ── Derived: name of the Lead RU ─────────────────────────────────────
+        get leadRUName() {
+            const row = this.stats.find(s => s.leadRU === true);
+            return row ? row.partner : '…';
+        },
+
+        // ── Derived: partner list for the stats dropdown (excluding totals) ───
+        get statsPartners() {
+            return this.stats.filter(s => s.partner !== null);
         },
 
         // ── Derived: filtered + sorted + paged ───────────────────────────────
@@ -76,7 +101,7 @@ function trainApp() {
             const bounds = this.timetableYearBounds;
             this.filterDateFrom = bounds.start;
             this.filterDateTo   = bounds.end;
-            await this.fetchTrains();
+            await Promise.all([this.fetchTrains(), this.fetchStatsData()]);
         },
 
         // ── Server fetch (called on init and when date filters change) ─────────
@@ -99,6 +124,18 @@ function trainApp() {
                 this.error = e.message;
             } finally {
                 this.loading = false;
+            }
+        },
+
+        // ── Stats fetch (called on init) ───────────────────────────────────────
+        async fetchStatsData() {
+            this.statsError = null;
+            try {
+                const response = await fetchStats();
+                if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
+                this.stats = await response.json();
+            } catch (e) {
+                this.statsError = e.message;
             }
         },
 
