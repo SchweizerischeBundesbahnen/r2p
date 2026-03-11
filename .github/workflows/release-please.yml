@@ -163,25 +163,25 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Download documentation artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: documentation
           path: artifacts/documentation
 
       - name: Download test results (Linux)
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: test-results-linux
           path: artifacts/test-results-linux
 
       - name: Download test results (Windows)
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: test-results-windows
           path: artifacts/test-results-windows
 
       - name: Download test results (macOS)
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: test-results-macos
           path: artifacts/test-results-macos
