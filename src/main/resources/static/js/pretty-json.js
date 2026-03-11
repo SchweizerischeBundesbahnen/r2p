@@ -193,6 +193,16 @@ class PrettyJSON extends HTMLElement {
     .row > span {
       display: inline-block;
     }
+    .row.search-highlight {
+      background-color: #fff3cd;
+      outline: 2px solid #ffc107;
+      border-radius: 3px;
+    }
+    :host(.search-highlight) {
+      outline: 2px solid #ffc107;
+      border-radius: 3px;
+      display: inline-block;
+    }
   `;
     }
 
@@ -507,6 +517,120 @@ class PrettyJSON extends HTMLElement {
             throw new PrettyJSONError(message);
         }
         this.#render();
+    }
+
+    // ── Public search API ─────────────────────────────────────────────────────
+
+    /**
+     * Clears any highlight previously applied by scrollToPath().
+     */
+    clearHighlight() {
+        // Clear highlighted primitive rows in all shadow roots
+        this.querySelectorAll('pretty-json').forEach(el => {
+            el.classList.remove('search-highlight');
+            if (el.shadowRoot) {
+                el.shadowRoot.querySelectorAll('.row.search-highlight').forEach(row => {
+                    row.classList.remove('search-highlight');
+                });
+            }
+        });
+        this.classList.remove('search-highlight');
+        if (this.shadowRoot) {
+            this.shadowRoot.querySelectorAll('.row.search-highlight').forEach(row => {
+                row.classList.remove('search-highlight');
+            });
+        }
+    }
+
+    /**
+     * Expands the tree along the given key path, scrolls to the target node,
+     * and highlights it.  Only the nodes on the path are expanded; all sibling
+     * nodes remain collapsed.  All shadow-DOM knowledge is encapsulated here.
+     *
+     * @param {string[]} path - Array of keys/indices leading to the target node.
+     */
+    scrollToPath(path) {
+        if (!path || path.length === 0) return;
+
+        /**
+         * Open `el` just enough to render its direct children (expand=1), then
+         * collapse every sibling <pretty-json> child that is NOT `keepKey`.
+         * Returns the child element matching `keepKey`, or null.
+         */
+        function openOnlyChild(el, keepKey) {
+            // expand=1 renders the immediate children of this node.
+            // We always set it to exactly 1 so that #createObjectOrArray stamps
+            // expand=0 on every child – then we selectively re-open only keepKey.
+            // If the node was already open at a higher level the children already
+            // exist in the DOM; re-setting to 1 re-renders with all children at 0.
+            el.setAttribute('expand', '1');
+
+            if (!el.shadowRoot) return null;
+
+            const container = el.shadowRoot.querySelector('.container');
+            if (!container) return null;
+
+            let found = null;
+            for (const child of container.children) {
+                if (child.tagName !== 'PRETTY-JSON') continue;
+                const childKey = child.getAttribute('key');
+                if (childKey === keepKey) {
+                    found = child;
+                }
+                // All children came out with expand=0 from the re-render above,
+                // so no explicit collapse needed – but be defensive:
+                else {
+                    child.setAttribute('expand', '0');
+                }
+            }
+            return found;
+        }
+
+        /** Find a primitive .row whose .key-name matches key inside a shadow root. */
+        function findPrimitiveRow(el, key) {
+            if (!el.shadowRoot) return null;
+            const container = el.shadowRoot.querySelector('.container');
+            if (!container) return null;
+            for (const row of container.children) {
+                if (!row.classList.contains('row')) continue;
+                const keySpan = row.querySelector('.key-name');
+                if (keySpan && keySpan.textContent === JSON.stringify(key)) return row;
+            }
+            return null;
+        }
+
+        // Walk down every ancestor segment, expanding only the node on the path
+        let current = this;
+        for (let i = 0; i < path.length - 1; i++) {
+            const seg = path[i];
+            const child = openOnlyChild(current, seg);
+            if (!child) break;
+            current = child;
+        }
+
+        // Handle the final segment
+        const lastKey = path[path.length - 1];
+
+        // Case A: target is a nested object/array → <pretty-json key=lastKey>
+        const childEl = openOnlyChild(current, lastKey);
+        if (childEl) {
+            childEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            childEl.classList.add('search-highlight');
+            return;
+        }
+
+        // Case B: target is a primitive .row → highlight via shadow-DOM class
+        // The parent must be open to show the row; openOnlyChild already did that.
+        const rowEl = findPrimitiveRow(current, lastKey);
+        if (rowEl) {
+            rowEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            rowEl.classList.add('search-highlight');
+            return;
+        }
+
+        // Fallback: highlight the parent element
+        current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        current.classList.add('search-highlight');
     }
 }
 

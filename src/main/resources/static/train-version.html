@@ -168,13 +168,6 @@
             }
         }
 
-        /* Highlight matched pretty-json elements */
-        pretty-json.json-search-highlight {
-            outline: 2px solid #ffc107;
-            outline-offset: 2px;
-            border-radius: 3px;
-            background-color: #fff3cd;
-        }
 
         /* Version meta info bar */
         .version-meta {
@@ -301,7 +294,7 @@
                                class="search-input"
                                placeholder="Search in JSON…"
                                x-model="searchQuery"
-                               @keydown.enter.prevent="doSearch()"
+                               @keydown.enter.prevent="searchResults.length ? searchNext() : doSearch()"
                                @input.debounce.400ms="doSearch()"
                                aria-label="Search in JSON">
                         <button class="toolbar-btn" @click="doSearch()"

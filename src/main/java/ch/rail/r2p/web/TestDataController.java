@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/test-data")
+@RequestMapping("/v1/test-data")
 @ConditionalOnProperty(name = "r2p.test-data.enabled", havingValue = "true")
 public class TestDataController {
 

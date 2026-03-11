@@ -51,6 +51,15 @@ In order to automatically clean the database in case of a validation error encou
 FLYWAY_CLEAN_ON_VALIDATION_ERROR=true
 ----
 
+==== Test Data Generation
+
+It is possible to activate an endpoint for generating test data, which can be used to quickly populate the database
+with sample trains (including different branches) for testing purposes.
+
+In order to activate it, define the environment variable `R2P_TEST_DATA_ENABLED=true`.
+
+The endpoint is accessible at `/v1/test-data/generate` and can be invoked e.g. from Swagger UI.
+
 === Deploy on OpenShift
 
 The Docker image is available at `ghcr-private.docker.bin.sbb.ch/schweizerischebundesbahnen/r2p:latest`.
