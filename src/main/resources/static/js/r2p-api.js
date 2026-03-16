@@ -1,17 +1,24 @@
 /**
  * r2p-api.js — Centralised API fetch helpers for the R2P frontend.
- * Depends on: r2p-utils.js (for handleUnauthorized is inlined here)
+ * Depends on: r2p-utils.js (getSelectedToken, handleUnauthorized)
  */
 
 // ── Shared request options ────────────────────────────────────────────────────
-
-const API_HEADERS = { 'token': 'SBB' };
 
 /**
  * Redirects the browser to the Azure OAuth2 login page.
  */
 function handleUnauthorized() {
     window.location.href = '/oauth2/authorization/azure';
+}
+
+/**
+ * Returns the current API request headers, reading the selected partner token
+ * from localStorage on every call so changes take effect immediately.
+ * @returns {{ token: string }}
+ */
+function apiHeaders() {
+    return { 'token': getSelectedToken() };
 }
 
 // ── Fetch helpers ─────────────────────────────────────────────────────────────
@@ -23,7 +30,7 @@ function handleUnauthorized() {
  * @returns {Promise<Response>}  Resolves to the Response (may not be ok — caller must check)
  */
 async function apiFetch(url) {
-    const response = await fetch(url, { headers: API_HEADERS });
+    const response = await fetch(url, { headers: apiHeaders() });
     if (response.status === 401) {
         handleUnauthorized();
         // Return a never-resolving promise so callers don't continue after redirect

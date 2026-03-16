@@ -290,6 +290,34 @@ function getTimetableYearOptions() {
     return options;
 }
 
+// ── Partner token (simulated authentication) ─────────────────────────────────
+
+/**
+ * All available partner tokens, matching the PartnerToken enum in the OpenAPI spec.
+ * This is a temporary front-end-only simulation until real auth is in place.
+ * @type {string[]}
+ */
+const PARTNER_TOKENS = ['SBB', 'BLS', 'SOB'];
+
+const _TOKEN_STORAGE_KEY = 'r2p_selected_token';
+
+/**
+ * Returns the currently selected partner token.
+ * Falls back to 'SBB' if nothing is stored.
+ * @returns {string}
+ */
+function getSelectedToken() {
+    return localStorage.getItem(_TOKEN_STORAGE_KEY) ?? 'SBB';
+}
+
+/**
+ * Persists the selected partner token.
+ * @param {string} token  Must be one of PARTNER_TOKENS
+ */
+function setSelectedToken(token) {
+    localStorage.setItem(_TOKEN_STORAGE_KEY, token);
+}
+
 // ── Data mapping ──────────────────────────────────────────────────────────────
 
 /**

@@ -154,6 +154,31 @@ p {
     margin-top: var(--spacing-xs);
 }
 
+/* ── Partner token selector (temporary PoC feature) ────────────────────── */
+.token-selector {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-left: auto;          /* push to the right inside a flex row */
+    flex-shrink: 0;
+}
+
+.token-selector label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.token-selector .token-select {
+    font-size: 0.85rem;
+    padding: 3px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--background-color);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
 .version-badge {
     position: absolute;
     top: var(--spacing-md);

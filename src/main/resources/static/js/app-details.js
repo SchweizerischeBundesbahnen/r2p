@@ -15,6 +15,10 @@ function detailsApp() {
         allBranches:  [],
         allChangelog: [],
 
+        // ── Partner token selector ────────────────────────────────────────────
+        selectedToken: getSelectedToken(),
+        partnerTokens: PARTNER_TOKENS,
+
         // ── Items per page (shared across both tables) ────────────────────────
         itemsPerPage: 20,
 
@@ -119,6 +123,15 @@ function detailsApp() {
             } finally {
                 this.loading = false;
             }
+        },
+
+        // ── Called when token selector changes ────────────────────────────────
+        onTokenChange() {
+            setSelectedToken(this.selectedToken);
+            this.loading = true;
+            this.error   = null;
+            this.train   = null;
+            this.init();
         },
 
         // ── Branch sort helpers (delegated to branchSorter) ───────────────────

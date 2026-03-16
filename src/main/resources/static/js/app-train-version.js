@@ -26,6 +26,10 @@ function trainVersionApp() {
         operationalDay: null,
         backUrl:        'index.html',   // fallback
 
+        // ── Partner token selector ────────────────────────────────────────────
+        selectedToken: getSelectedToken(),
+        partnerTokens: PARTNER_TOKENS,
+
         // ── Search ────────────────────────────────────────────────────────────
         searchQuery:    '',
         searchResults:  [],   // [{path, label, value, nodeEl}]
@@ -96,6 +100,15 @@ function trainVersionApp() {
             // Step 2: fetch the actual train data for that version
             await this._loadVersion(latestVersion);
             document.title = `Branch ${this.branchName ?? branchId.substring(0, 8)} - R2P`;
+        },
+
+        // ── Called when token selector changes ────────────────────────────────
+        onTokenChange() {
+            setSelectedToken(this.selectedToken);
+            this.loading   = true;
+            this.error     = null;
+            this.trainData = null;
+            this.init();
         },
 
         // ── Computed title helpers ────────────────────────────────────────────

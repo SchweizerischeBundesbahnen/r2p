@@ -33,6 +33,10 @@ function trainApp() {
         // ── Derived partner list for the dropdown ─────────────────────────────
         availablePartners: [],
 
+        // ── Partner token selector ────────────────────────────────────────────
+        selectedToken: getSelectedToken(),
+        partnerTokens: PARTNER_TOKENS,
+
         // ── Sorting (single sorter for the trains table) ──────────────────────
         sorter: makeSorter(),
 
@@ -137,6 +141,13 @@ function trainApp() {
             } catch (e) {
                 this.statsError = e.message;
             }
+        },
+
+        // ── Called when token selector changes ────────────────────────────────
+        onTokenChange() {
+            setSelectedToken(this.selectedToken);
+            this.fetchTrains();
+            this.fetchStatsData();
         },
 
         // ── Called when timetable year selector changes ────────────────────────

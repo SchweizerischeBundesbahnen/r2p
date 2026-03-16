@@ -9,15 +9,26 @@
 <body>
     <div class="container" x-data="trainApp()" x-init="init()">
         <!-- Header Section -->
-        <header class="header compact-header">
+        <header class="header compact-header" style="display:flex; align-items:center; gap:var(--spacing-md);">
             <span class="version-badge">v0.0.16-SNAPSHOT</span>
-            <div class="header-title">
+            <div class="header-title" style="flex:1;">
                 <span class="logo">🚂</span>
                 <div>
                     <h1>R2P - Railway Undertaking Partner Communication</h1>
                     <p class="subtitle">Prototype for RU-RU-Partner communication and collaboration</p>
                     <p class="lead-ru-subtitle" x-text="'Lead RU: ' + leadRUName">Lead RU: …</p>
                 </div>
+            </div>
+            <!-- Temporary partner/token switcher (PoC only) -->
+            <div class="token-selector">
+                <label for="token-select">Acting as:</label>
+                <select id="token-select" class="token-select"
+                        x-model="selectedToken"
+                        @change="onTokenChange()">
+                    <template x-for="t in partnerTokens" :key="t">
+                        <option :value="t" :selected="t === selectedToken" x-text="t"></option>
+                    </template>
+                </select>
             </div>
         </header>
 

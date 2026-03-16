@@ -12,8 +12,20 @@
         <a href="index.html" class="back-link" tabindex="0">Back to Overview</a>
 
         <!-- Header -->
-        <header class="header compact-header">
-            <h1 id="page-title" x-text="train ? 'Train Details - ' + train.trainNumber : 'Train Details'">Train Details</h1>
+        <header class="header compact-header" style="display:flex; align-items:center; gap:var(--spacing-md);">
+            <h1 id="page-title" style="flex:1; margin:0;"
+                x-text="train ? 'Train Details - ' + train.trainNumber : 'Train Details'">Train Details</h1>
+            <!-- Temporary partner/token switcher (PoC only) -->
+            <div class="token-selector">
+                <label for="token-select">Acting as:</label>
+                <select id="token-select" class="token-select"
+                        x-model="selectedToken"
+                        @change="onTokenChange()">
+                    <template x-for="t in partnerTokens" :key="t">
+                        <option :value="t" :selected="t === selectedToken" x-text="t"></option>
+                    </template>
+                </select>
+            </div>
         </header>
 
         <!-- Loading State -->
