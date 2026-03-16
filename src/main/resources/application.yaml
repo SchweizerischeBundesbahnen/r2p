@@ -1,7 +1,7 @@
 r2p:
   azure:
     client-id: "${R2P_AZURE_CLIENT_ID:f5b54c65-e0b1-4233-bc60-bf4c59f399bd}"
-    client-secretx: "${R2P_AZURE_CLIENT_SECRET}"
+    client-secret: "${R2P_AZURE_CLIENT_SECRET}"
     issuer-uri: https://login.microsoftonline.com/2cda5d11-f0ac-46b3-967d-af1b2e1bd01a
   instance-owner: "${R2P_INSTANCE_OWNER:SBB}"
   flyway-clean-on-validation-error: "${FLYWAY_CLEAN_ON_VALIDATION_ERROR:false}"
@@ -24,7 +24,7 @@ spring:
             # in Azure AD (not SPA), because the code exchange happens server-side.
             # PKCE is still used automatically by Spring Security for additional security.
             client-id: "${r2p.azure.client-id}"
-            client-secret: "${r2p.azure.client-secretx}"
+            client-secret: "${r2p.azure.client-secret}"
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
