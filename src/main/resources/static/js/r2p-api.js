@@ -88,5 +88,5 @@ async function fetchTrainBranch(trainId, branchId) {
  * @returns {Promise<Response>}
  */
 async function fetchStats() {
-    return apiFetch('/v1/stats');
+    return apiFetch('/internal/stats');
 }

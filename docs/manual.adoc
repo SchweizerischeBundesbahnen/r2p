@@ -58,7 +58,7 @@ with sample trains (including different branches) for testing purposes.
 
 In order to activate it, define the environment variable `R2P_TEST_DATA_ENABLED=true`.
 
-The endpoint is accessible at `/v1/test-data/generate` and can be invoked e.g. from Swagger UI.
+The endpoint is accessible at `/internal/test-data/generate` and can be invoked e.g. from Swagger UI.
 
 === Deploy on OpenShift
 

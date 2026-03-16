@@ -62,6 +62,9 @@ public class TestDataService {
         long rangeDays = request.dateFrom().toEpochDay();
         long rangeEnd = request.dateTo().toEpochDay();
         long rangeLength = rangeEnd - rangeDays + 1;
+        if (rangeLength <= 0) {
+            throw new IllegalArgumentException("dateTo must be on or after dateFrom");
+        }
 
         for (int i = 0; i < request.numberOfTrains(); i++) {
             // 1a. Pick a random operational day in the range
@@ -71,7 +74,7 @@ public class TestDataService {
             Set<String> usedForDay = usedTrainNumbers.computeIfAbsent(operationalDay, _ -> new HashSet<>());
             String trainNumber;
             do {
-                trainNumber = "TN" + (1000 + random.nextInt(9000));
+                trainNumber = String.valueOf((1000 + random.nextInt(9000)));
             } while (!usedForDay.add(trainNumber));
 
             // 1c. Build the train payload from the sample

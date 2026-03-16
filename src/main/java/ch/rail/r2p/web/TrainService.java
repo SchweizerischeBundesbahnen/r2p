@@ -20,12 +20,14 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class TrainService {
 
     @Autowired
@@ -110,6 +112,10 @@ public class TrainService {
         TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkSharing(partner, main);
+        if (main.partners().contains(shareWith)) {
+            log.warn("Train {} is already shared with partner '{}' - doing nothing", trainId, shareWith);
+            return;
+        }
         trainPersistence.addPartner(trainId, shareWith);
         Changelog changelog = Changelog.forSharing(partner, shareWith, main.trainVersion(), "Train shared");
         changelogPersistence.insert(changelog);

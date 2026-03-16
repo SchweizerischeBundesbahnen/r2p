@@ -15,6 +15,8 @@ public class OpenApiSecurityConfig {
 
     @Value("${r2p.azure.issuer-uri}")
     private String issuerUri;
+    @Value("${r2p.azure.client-secret}")
+    private String clientSecret; // not used in this config, but present to make sure an error is raised at startup if the environment variable is missing
 
     @Bean
     public OpenAPI openAPI() {

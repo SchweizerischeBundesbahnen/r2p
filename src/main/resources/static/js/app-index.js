@@ -11,7 +11,7 @@ function trainApp() {
         error:     null,
 
         // ── Statistics data from server ───────────────────────────────────────
-        stats: [],          // array from /v1/stats; first element is totals (partner === null)
+        stats: [],          // array from /internal/stats; first element is totals (partner === null)
         statsError: null,
 
         // ── Timetable year filter (mandatory; drives date range) ──────────────
