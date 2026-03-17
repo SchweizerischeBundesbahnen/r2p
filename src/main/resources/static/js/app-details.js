@@ -1,6 +1,6 @@
 /**
  * app-details.js — Alpine.js component for details.html (train detail page).
- * Depends on: r2p-utils.js, r2p-api.js
+ * Depends on: r2p-utils.js, r2p-api.js, router.js
  */
 
 function detailsApp() {
@@ -201,14 +201,13 @@ function detailsApp() {
          * @param {{ branchId: string, name: string }} branch
          */
         openBranchVersion(branch) {
-            const p = {
-                trainId:        this.trainId,
-                branchId:       branch.branchId,
-                branchName:     branch.name,
-            };
-            if (this.train?.trainNumber)    p.trainNumber    = this.train.trainNumber;
-            if (this.train?.operationalDay) p.operationalDay = this.train.operationalDay;
-            window.location.href = `train-version.html?${new URLSearchParams(p).toString()}`;
+            Router.goToBranchVersion(
+                this.trainId,
+                branch.branchId,
+                branch.name,
+                this.train?.trainNumber    ?? null,
+                this.train?.operationalDay ?? null
+            );
         },
 
         /**
@@ -217,15 +216,14 @@ function detailsApp() {
          * @param {object} entry  changelog entry (has branchName, branchId)
          */
         openVersionViewer(versionId, entry) {
-            const p = {
-                version: versionId,
-                trainId: this.trainId,
-            };
-            if (entry?.branchName)          p.branchName     = entry.branchName;
-            if (entry?.branchId)            p.branchId       = entry.branchId;
-            if (this.train?.trainNumber)    p.trainNumber    = this.train.trainNumber;
-            if (this.train?.operationalDay) p.operationalDay = this.train.operationalDay;
-            window.location.href = `train-version.html?${new URLSearchParams(p).toString()}`;
+            Router.goToVersion(
+                versionId,
+                this.trainId,
+                entry?.branchName          ?? null,
+                entry?.branchId            ?? null,
+                this.train?.trainNumber    ?? null,
+                this.train?.operationalDay ?? null
+            );
         },
 
         // ── Formatting / badge helpers (delegated to r2p-utils.js) ───────────

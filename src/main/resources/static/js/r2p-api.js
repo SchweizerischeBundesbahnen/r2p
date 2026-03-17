@@ -1,6 +1,6 @@
 /**
  * r2p-api.js — Centralised API fetch helpers for the R2P frontend.
- * Depends on: r2p-utils.js (getSelectedToken, handleUnauthorized)
+ * Depends on: r2p-utils.js (getSelectedToken), router.js (Router)
  */
 
 // ── Shared request options ────────────────────────────────────────────────────
@@ -9,7 +9,7 @@
  * Redirects the browser to the Azure OAuth2 login page.
  */
 function handleUnauthorized() {
-    window.location.href = '/oauth2/authorization/azure';
+    Router.goToLogin();
 }
 
 /**

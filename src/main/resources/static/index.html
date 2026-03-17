@@ -186,9 +186,9 @@
                             tabindex="0"
                             role="button"
                             :aria-label="'View details for train ' + train.trainNumber"
-                            @click="window.location.href = 'details.html?trainId=' + train.trainId"
-                            @keydown.enter.prevent="window.location.href = 'details.html?trainId=' + train.trainId"
-                            @keydown.space.prevent="window.location.href = 'details.html?trainId=' + train.trainId">
+                            @click="Router.goToDetails(train.trainId)"
+                            @keydown.enter.prevent="Router.goToDetails(train.trainId)"
+                            @keydown.space.prevent="Router.goToDetails(train.trainId)">
                             <td><strong x-text="train.trainNumber"></strong></td>
                             <td x-text="formatDate(train.operationalDay)"></td>
                             <td>
@@ -245,6 +245,7 @@
     <!-- Alpine.js (served from WebJar via Spring Boot) -->
     <script src="/js/r2p-utils.js"></script>
     <script src="/js/r2p-api.js"></script>
+    <script src="/js/router.js"></script>
     <script src="/js/app-index.js"></script>
     <script defer src="/webjars/alpinejs/dist/cdn.min.js"></script>
 </body>

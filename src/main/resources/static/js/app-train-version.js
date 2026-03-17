@@ -1,7 +1,7 @@
 /**
  * app-train-version.js — Alpine.js component for train-version.html.
  * Displays the train JSON for a specific version or the latest version of a branch.
- * Depends on: r2p-utils.js, r2p-api.js
+ * Depends on: r2p-utils.js, r2p-api.js, router.js
  *
  * URL parameters (one of the following combinations is required):
  *   ?version=<uuid>                           → show a specific version
@@ -48,7 +48,7 @@ function trainVersionApp() {
 
             // Build "back" URL restoring the details page for this train
             if (this.trainId) {
-                this.backUrl = `details.html?trainId=${encodeURIComponent(this.trainId)}`;
+                this.backUrl = Router.detailsUrl(this.trainId);
             }
 
             try {
