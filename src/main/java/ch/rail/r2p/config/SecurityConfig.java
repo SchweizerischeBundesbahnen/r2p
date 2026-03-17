@@ -1,5 +1,6 @@
 package ch.rail.r2p.config;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,7 +17,6 @@ import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -55,25 +55,27 @@ public class SecurityConfig {
                 .collect(Collectors.toSet());
             boolean hasRole = authorities.contains("ROLE_r2p_user");
             // Bearer token requests must also carry the API scope
-            String authHeader = ctx.getRequest().getHeader("Authorization");
-            boolean isBearerRequest = authHeader != null
-                && authHeader.regionMatches(true, 0, "bearer ", 0, 7);
+            boolean isBearerRequest = isBearerRequest(ctx.getRequest());
             boolean granted = isBearerRequest
                 ? hasRole && authorities.contains("SCOPE_r2p")
                 : hasRole;
             return new AuthorizationDecision(granted);
         };
         http
-            .csrf(AbstractHttpConfigurer::disable)
+            .csrf(csrf -> csrf
+                // CSRF protection is enforced for session-authenticated (browser) requests,
+                // but ignored for stateless Bearer token API calls.
+                .ignoringRequestMatchers(SecurityConfig::isBearerRequest)
+            )
             // Sessions are needed for the browser-based OAuth2 login flow.
             // REST API clients (e.g. Swagger-UI) authenticate stateless via JWT Bearer token.
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(auth -> auth
                 // Static frontend resources – always public
-                .requestMatchers("/", "/index.html", "/details.html", "/style.css", "/favicon.ico").permitAll()
+                .requestMatchers("/", "/*.html", "/style.css", "/favicon.ico").permitAll()
                 .requestMatchers("/js/**").permitAll()
                 // Spring Boot / WebJars resources
-                .requestMatchers("/webjars/**", "/actuator/health").permitAll()
+                .requestMatchers("/webjars/**", "/actuator/health/**").permitAll()
                 // Swagger UI & OpenAPI spec – secured by their own OAuth2 flow inside the browser
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 // OAuth2 / OIDC login endpoints (Spring Security)
@@ -94,6 +96,12 @@ public class SecurityConfig {
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
             );
         return http.build();
+    }
+
+    private static boolean isBearerRequest(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        return authHeader != null
+            && authHeader.regionMatches(true, 0, "bearer ", 0, 7);
     }
 
     /**

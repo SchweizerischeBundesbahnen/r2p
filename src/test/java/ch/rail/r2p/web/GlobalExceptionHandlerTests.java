@@ -1,6 +1,7 @@
 package ch.rail.r2p.web;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -62,6 +63,7 @@ class GlobalExceptionHandlerTests {
 
         // When: attempting to create a train with invalid data
         mockMvc.perform(post("/v1/trains")
+                .with(csrf())
                 .header("token", "SBB")
                 .param("comment", "test comment")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -109,6 +111,7 @@ class GlobalExceptionHandlerTests {
 
         // When: a non-instance owner tries to create a train
         mockMvc.perform(post("/v1/trains")
+                .with(csrf())
                 .header("token", "SOB")  // SOB is not the instance owner (SBB is)
                 .param("comment", "test comment")
                 .contentType(MediaType.APPLICATION_JSON)
