@@ -669,6 +669,7 @@ components:
         - version
         - branchState
         - timestamp
+        - mainBranch
       properties:
         owner:
           type: string
@@ -684,6 +685,10 @@ components:
         comment:
           type: string
           example: a useful comment
+        mainBranch:
+          type: boolean
+          description: 'Indicates whether this branch is the main branch of the train'
+          example: true
     PartnerToken:
       description: Represents an authentication token of a partner in the context of the PoC (to be replaced by a real authentication token later)
       type: string

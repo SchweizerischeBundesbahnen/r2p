@@ -29,7 +29,17 @@ data:
   R2P_INSTANCE_OWNER: "REPLACE_ME"
   TZ: "Europe/Zurich"
   R2P_AZURE_ISSUER_URI: "REPLACE_ME"
-  R2P_AZURE_CLIENT_ID: "REPLACE_ME"
+
+---
+# Secret for Azure Client
+kind: Secret
+apiVersion: v1
+metadata:
+  name: r2p-azure-client
+stringData:
+  clientId: "REPLACE_ME"
+  clientSecret: "REPLACE_ME"
+type: Opaque
 
 ---
 # PersistentVolumeClaim for H2 Database
@@ -107,9 +117,14 @@ spec:
                   key: TZ
             - name: R2P_AZURE_CLIENT_ID
               valueFrom:
-                configMapKeyRef:
-                  name: r2p-config
-                  key: R2P_AZURE_CLIENT_ID
+                secretKeyRef:
+                  name: r2p-azure-client
+                  key: clientId
+            - name: R2P_AZURE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: r2p-azure-client
+                  key: clientSecret
             - name: R2P_AZURE_ISSUER_URI
               valueFrom:
                 configMapKeyRef:

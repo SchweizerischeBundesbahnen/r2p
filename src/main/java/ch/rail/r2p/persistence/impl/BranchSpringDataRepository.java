@@ -21,4 +21,15 @@ public interface BranchSpringDataRepository extends CrudRepository<Branch, UUID>
         """)
     @Modifying
     void deleteBranchesByTrainId(UUID trainId);
+
+    @Query("""
+        SELECT owner, COUNT(*) AS cnt
+        FROM branch
+        WHERE state = 'OPEN'
+        GROUP BY owner
+        """)
+    List<OwnerCount> countOpenBranchesByOwner();
+
+    record OwnerCount(String owner, int cnt) {
+    }
 }

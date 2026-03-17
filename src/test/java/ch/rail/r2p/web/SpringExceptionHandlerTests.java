@@ -1,5 +1,6 @@
 package ch.rail.r2p.web;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -25,6 +26,7 @@ class SpringExceptionHandlerTests {
         // When: attempting to use POST on an existing endpoint that does not allow POST
         // note: this is handled by Spring's default handler, not GlobalExceptionHandler
         mockMvc.perform(post("/v1/trains/" + UUID.randomUUID() + "/branches/" + UUID.randomUUID())
+                .with(csrf())
                 .header("token", "SBB")
                 .param("comment", "test comment")
                 .contentType(MediaType.APPLICATION_JSON)

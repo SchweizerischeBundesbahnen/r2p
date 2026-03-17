@@ -1,0 +1,7 @@
+spring:
+  config:
+    import: file:src/main/resources/application.yaml
+---
+r2p:
+  azure:
+    client-secret: "DummySecretForTests"

@@ -15,6 +15,9 @@ the prototype uses Java and H2 (no need for a dedicated database server).
 == Quick Start
 
 === Test and execute the prototype
+
+Define the environment variable `R2P_AZURE_CLIENT_SECRET`
+
 [source,bash]
 ----
 mvn clean verify
@@ -25,7 +28,7 @@ Visit: http://localhost:8080/
 
 **Interactive API Testing:**
 
-- Swagger UI: http://localhost:8080/swagger-ui.html
+- Swagger UI: http://localhost:8080/swagger-ui/index.html
 - OpenAPI Spec: http://localhost:8080/v3/api-docs
 
 **Documentation:** Available in `target/docs/` after building:
@@ -48,11 +51,20 @@ In order to automatically clean the database in case of a validation error encou
 FLYWAY_CLEAN_ON_VALIDATION_ERROR=true
 ----
 
+==== Test Data Generation
+
+It is possible to activate an endpoint for generating test data, which can be used to quickly populate the database
+with sample trains (including different branches) for testing purposes.
+
+In order to activate it, define the environment variable `R2P_TEST_DATA_ENABLED=true`.
+
+The endpoint is accessible at `/internal/test-data/generate` and can be invoked e.g. from Swagger UI.
+
 === Deploy on OpenShift
 
 The Docker image is available at `ghcr-private.docker.bin.sbb.ch/schweizerischebundesbahnen/r2p:latest`.
 
-Check the deployment.yaml file and adjust the values in the ConfigMap.
+Check the deployment.yaml file and adjust the values in the ConfigMap and in the Secret.
 
 [source,bash]
 ----

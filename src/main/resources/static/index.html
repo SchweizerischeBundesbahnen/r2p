@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R2P - Railway Undertaking Partner Communication</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" x-data="trainApp()" x-init="init()">
+        <!-- Header Section -->
+        <header class="header compact-header" style="display:flex; align-items:center; gap:var(--spacing-md);">
+            <span class="version-badge">v0.0.16-SNAPSHOT</span>
+            <div class="header-title" style="flex:1;">
+                <span class="logo">🚂</span>
+                <div>
+                    <h1>R2P - Railway Undertaking Partner Communication</h1>
+                    <p class="subtitle">Prototype for RU-RU-Partner communication and collaboration</p>
+                    <p class="lead-ru-subtitle" x-text="'Lead RU: ' + leadRUName">Lead RU: …</p>
+                </div>
+            </div>
+            <!-- Temporary partner/token switcher (PoC only) -->
+            <div class="token-selector">
+                <label for="token-select">Acting as:</label>
+                <select id="token-select" class="token-select"
+                        x-model="selectedToken"
+                        @change="onTokenChange()">
+                    <template x-for="t in partnerTokens" :key="t">
+                        <option :value="t" :selected="t === selectedToken" x-text="t"></option>
+                    </template>
+                </select>
+            </div>
+        </header>
+
+        <!-- Statistics Section with Filter -->
+        <div class="stat-filter">
+            <label for="partner-filter">Filter by Partner:</label>
+            <select id="partner-filter" class="filter-select"
+                    x-model="selectedStatPartner">
+                <option value="">All Partners (totals)</option>
+                <template x-for="s in statsPartners" :key="s.partner">
+                    <option :value="s.partner"
+                            x-text="s.partner + (s.leadRU ? ' (Lead RU)' : '')"></option>
+                </template>
+            </select>
+        </div>
+
+        <section class="statistics">
+            <div class="stat-card compact-stat-card">
+                <div class="stat-label">Total Trains</div>
+                <div class="stat-value" id="stat-trains" x-text="activeStats.trains ?? '-'">-</div>
+            </div>
+            <div class="stat-card compact-stat-card">
+                <div class="stat-label">Open Branches</div>
+                <div class="stat-value" id="stat-open-branches" x-text="activeStats.openBranches ?? '-'">-</div>
+            </div>
+            <div class="stat-card compact-stat-card">
+                <div class="stat-label">Open Merge Requests</div>
+                <div class="stat-value" id="stat-merge-requests">0</div>
+            </div>
+        </section>
+
+        <!-- Train List Section -->
+        <h2>Trains</h2>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label for="filter-train-number">Train Number</label>
+                <input type="text" id="filter-train-number" class="filter-input"
+                       placeholder="e.g., IC 1234"
+                       x-model.debounce.300ms="filterTrainNumber"
+                       @input="applyClientFilters()">
+            </div>
+            <div class="filter-group">
+                <label for="filter-timetable-year">Timetable Year</label>
+                <select id="filter-timetable-year" class="filter-select"
+                        x-model="filterTimetableYear"
+                        @change="onTimetableYearChange()">
+                    <template x-for="opt in timetableYearOptions" :key="opt.value">
+                        <option :value="opt.label" :selected="opt.label === filterTimetableYear" x-text="opt.label"></option>
+                    </template>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filter-date-start">Op. Day From</label>
+                <input type="date" id="filter-date-start" class="filter-input"
+                       x-model="filterDateFrom"
+                       :min="timetableYearBounds.start"
+                       :max="timetableYearBounds.end"
+                       @change="fetchTrains()">
+            </div>
+            <div class="filter-group">
+                <label for="filter-date-end">Op. Day To</label>
+                <input type="date" id="filter-date-end" class="filter-input"
+                       x-model="filterDateTo"
+                       :min="timetableYearBounds.start"
+                       :max="timetableYearBounds.end"
+                       @change="fetchTrains()">
+            </div>
+            <div class="filter-group">
+                <label for="filter-partner">Partner</label>
+                <select id="filter-partner" class="filter-select"
+                        x-model="filterPartner"
+                        @change="applyClientFilters()">
+                    <option value="">All</option>
+                    <template x-for="p in availablePartners" :key="p">
+                        <option :value="p" x-text="p"></option>
+                    </template>
+                </select>
+            </div>
+            <div class="filter-group">
+                <div class="filter-checkbox-group">
+                    <input type="checkbox" id="filter-merge-requests" disabled>
+                    <label for="filter-merge-requests">Has Open MRs</label>
+                </div>
+                <div class="filter-checkbox-group">
+                    <input type="checkbox" id="filter-open-branches"
+                           x-model="filterOpenBranches"
+                           @change="applyClientFilters()">
+                    <label for="filter-open-branches">Has Open Branches</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="trains-table">
+                <thead>
+                    <tr>
+                        <th class="sort-header" tabindex="0" role="columnheader"
+                            :aria-sort="sortAriaSort('trainNumber')"
+                            :class="{ 'active-sort': sorter.col === 'trainNumber' }"
+                            @click="sort('trainNumber')" @keydown.enter.prevent="sort('trainNumber')" @keydown.space.prevent="sort('trainNumber')">
+                            Train Number
+                            <span class="sort-indicator" x-text="sortIndicator('trainNumber')"></span>
+                        </th>
+                        <th class="sort-header" tabindex="0" role="columnheader"
+                            :aria-sort="sortAriaSort('operationalDay')"
+                            :class="{ 'active-sort': sorter.col === 'operationalDay' }"
+                            @click="sort('operationalDay')" @keydown.enter.prevent="sort('operationalDay')" @keydown.space.prevent="sort('operationalDay')">
+                            Operational Day
+                            <span class="sort-indicator" x-text="sortIndicator('operationalDay')"></span>
+                        </th>
+                        <th>Partners</th>
+                        <th>Status</th>
+                        <th class="sort-header" tabindex="0" role="columnheader"
+                            :aria-sort="sortAriaSort('lastChange')"
+                            :class="{ 'active-sort': sorter.col === 'lastChange' }"
+                            @click="sort('lastChange')" @keydown.enter.prevent="sort('lastChange')" @keydown.space.prevent="sort('lastChange')">
+                            Last Change
+                            <span class="sort-indicator" x-text="sortIndicator('lastChange')"></span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Loading state -->
+                    <template x-if="loading">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                Loading trains…
+                            </td>
+                        </tr>
+                    </template>
+
+                    <!-- Error state -->
+                    <template x-if="!loading && !!error">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--action-deleted);">
+                                ⚠ Error loading trains: <span x-text="error"></span>
+                            </td>
+                        </tr>
+                    </template>
+
+                    <!-- Empty state -->
+                    <template x-if="!loading && !error && pagedTrains.length === 0">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                No trains found.
+                            </td>
+                        </tr>
+                    </template>
+
+                    <template x-for="train in pagedTrains" :key="train.trainId">
+                        <tr class="clickable"
+                            :data-train-id="train.trainId"
+                            tabindex="0"
+                            role="button"
+                            :aria-label="'View details for train ' + train.trainNumber"
+                            @click="Router.goToDetails(train.trainId)"
+                            @keydown.enter.prevent="Router.goToDetails(train.trainId)"
+                            @keydown.space.prevent="Router.goToDetails(train.trainId)">
+                            <td><strong x-text="train.trainNumber"></strong></td>
+                            <td x-text="formatDate(train.operationalDay)"></td>
+                            <td>
+                                <template x-for="p in train.otherPartners" :key="p">
+                                    <span class="partner-badge"
+                                          :class="partnerBadgeClass(p)"
+                                          x-text="p"></span>
+                                </template>
+                                <span x-show="train.otherPartners.length === 0"
+                                      class="text-muted">None</span>
+                            </td>
+                            <td>
+                                <span x-show="train.openBranches > 1"
+                                      class="indicator-icon"
+                                      :title="train.openBranches + ' open branch(es)'">
+                                    🌿 <span x-text="train.openBranches"></span>
+                                </span>
+                                <span x-show="train.openBranches <= 1"
+                                      class="text-muted">-</span>
+                            </td>
+                            <td x-text="formatTimestamp(train.lastChange)"></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info"
+                     x-text="paginationInfo()"></div>
+                <div class="pagination">
+                    <button class="pagination-btn" aria-label="First page"
+                            :disabled="currentPage === 1"
+                            @click="goToPage(1)">« First</button>
+                    <button class="pagination-btn" aria-label="Previous page"
+                            :disabled="currentPage === 1"
+                            @click="goToPage(currentPage - 1)">‹ Previous</button>
+                    <span class="pagination-text"
+                          x-text="'Page ' + currentPage + ' of ' + totalPages"></span>
+                    <button class="pagination-btn" aria-label="Next page"
+                            :disabled="currentPage === totalPages || totalPages === 0"
+                            @click="goToPage(currentPage + 1)">Next ›</button>
+                    <button class="pagination-btn" aria-label="Last page"
+                            :disabled="currentPage === totalPages || totalPages === 0"
+                            @click="goToPage(totalPages)">Last »</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast" style="display: none;"></div>
+
+    <!-- Alpine.js (served from WebJar via Spring Boot) -->
+    <script src="/js/r2p-utils.js"></script>
+    <script src="/js/r2p-api.js"></script>
+    <script src="/js/router.js"></script>
+    <script src="/js/app-index.js"></script>
+    <script defer src="/webjars/alpinejs/dist/cdn.min.js"></script>
+</body>
+</html>

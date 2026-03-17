@@ -29,6 +29,11 @@ mvn clean verify
 This runs the complete build including code generation, tests, and documentation.
 
 ### Run the Application
+
+Define the environment variable `R2P_AZURE_CLIENT_SECRET` (and `R2P_AZURE_CLIENT_ID` if necessary) for Azure AD authentication.
+
+Then start the application:
+
 ```bash
 mvn spring-boot:run
 ```

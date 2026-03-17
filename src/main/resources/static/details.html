@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Details - R2P</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" x-data="detailsApp()" x-init="init()">
+        <!-- Back Navigation -->
+        <a href="index.html" class="back-link" tabindex="0">Back to Overview</a>
+
+        <!-- Header -->
+        <header class="header compact-header" style="display:flex; align-items:center; gap:var(--spacing-md);">
+            <h1 id="page-title" style="flex:1; margin:0;"
+                x-text="train ? 'Train Details - ' + train.trainNumber : 'Train Details'">Train Details</h1>
+            <!-- Temporary partner/token switcher (PoC only) -->
+            <div class="token-selector">
+                <label for="token-select">Acting as:</label>
+                <select id="token-select" class="token-select"
+                        x-model="selectedToken"
+                        @change="onTokenChange()">
+                    <template x-for="t in partnerTokens" :key="t">
+                        <option :value="t" :selected="t === selectedToken" x-text="t"></option>
+                    </template>
+                </select>
+            </div>
+        </header>
+
+        <!-- Loading State -->
+        <div x-show="loading" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+            Loading train details…
+        </div>
+
+        <!-- Error State -->
+        <div x-show="!loading && !!error" class="empty-state">
+            <div class="empty-state-icon">⚠️</div>
+            <div class="empty-state-text">Train not found</div>
+            <div class="empty-state-subtext" x-text="error">The requested train could not be found. Please return to the overview.</div>
+        </div>
+
+        <!-- Main Content -->
+        <div x-show="!loading && !error && !!train">
+
+            <!-- Section 1: General Information -->
+            <section class="compact-section">
+                <div class="card" style="padding: var(--spacing-md);">
+                    <h2 class="mt-0" style="font-size: 1.25rem; margin-bottom: var(--spacing-sm);">General Information</h2>
+                    <div class="detail-grid-horizontal">
+                        <div class="detail-item">
+                            <div class="detail-label">Train ID</div>
+                            <div class="detail-value id-cell">
+                                <span class="id-truncated" :title="train && train.trainId"
+                                      x-text="train && truncateId(train.trainId)">-</span>
+                                <button class="clipboard-btn" @click="copyToClipboard(train.trainId)"
+                                        aria-label="Copy train ID" title="Copy full ID">📋</button>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Train Number</div>
+                            <div class="detail-value" x-text="train && train.trainNumber">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Operational Day</div>
+                            <div class="detail-value" x-text="train && formatDate(train.operationalDay)">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Lead RU</div>
+                            <div class="detail-value">
+                                <template x-if="train">
+                                    <span class="partner-badge"
+                                          :class="partnerBadgeClass(train.leadRU)"
+                                          x-text="train.leadRU"></span>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Partners</div>
+                            <div class="detail-value">
+                                <template x-if="train && train.otherPartners.length > 0">
+                                    <span>
+                                        <template x-for="p in train.otherPartners" :key="p">
+                                            <span class="partner-badge"
+                                                  :class="partnerBadgeClass(p)"
+                                                  x-text="p"></span>
+                                        </template>
+                                    </span>
+                                </template>
+                                <template x-if="train && train.otherPartners.length === 0">
+                                    <span class="text-muted">None</span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Merge Requests -->
+            <section class="compact-section">
+                <h2 style="font-size: 1.25rem;">Merge Requests</h2>
+                <div class="empty-state empty-state-compact">
+                    <div class="empty-state-icon">🔀</div>
+                    <div class="empty-state-text">No merge requests available</div>
+                    <div class="empty-state-subtext">Merge requests are not yet implemented. This feature will be available in a future release.</div>
+                </div>
+            </section>
+
+            <!-- Section 3: Branches -->
+            <section class="section">
+                <h2 style="font-size: 1.25rem;">Branches</h2>
+
+                <!-- Branch Filter Bar -->
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label for="branch-filter-status">Status</label>
+                        <select id="branch-filter-status" class="filter-select"
+                                x-model="branchFilterStatus"
+                                @change="branchPage = 1">
+                            <option value="">All</option>
+                            <option value="open">Open</option>
+                            <option value="merged">Merged</option>
+                            <option value="deleted">Deleted</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="branch-filter-owner">Owner</label>
+                        <select id="branch-filter-owner" class="filter-select"
+                                x-model="branchFilterOwner"
+                                @change="branchPage = 1">
+                            <option value="">All</option>
+                            <template x-for="o in branchOwners" :key="o">
+                                <option :value="o" x-text="o"></option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="branches-table">
+                        <thead>
+                            <tr>
+                                <th>Branch ID</th>
+                                <th class="sort-header" tabindex="0" role="columnheader"
+                                    :aria-sort="branchSortAriaSort('name')"
+                                    :class="{ 'active-sort': branchSorter.col === 'name' }"
+                                    @click="branchSort('name')" @keydown.enter.prevent="branchSort('name')" @keydown.space.prevent="branchSort('name')">
+                                    Name
+                                    <span class="sort-indicator" x-text="branchSortIndicator('name')"></span>
+                                </th>
+                                <th class="sort-header" tabindex="0" role="columnheader"
+                                    :aria-sort="branchSortAriaSort('owner')"
+                                    :class="{ 'active-sort': branchSorter.col === 'owner' }"
+                                    @click="branchSort('owner')" @keydown.enter.prevent="branchSort('owner')" @keydown.space.prevent="branchSort('owner')">
+                                    Owner
+                                    <span class="sort-indicator" x-text="branchSortIndicator('owner')"></span>
+                                </th>
+                                <th class="sort-header" tabindex="0" role="columnheader"
+                                    :aria-sort="branchSortAriaSort('timestamp')"
+                                    :class="{ 'active-sort': branchSorter.col === 'timestamp' }"
+                                    @click="branchSort('timestamp')" @keydown.enter.prevent="branchSort('timestamp')" @keydown.space.prevent="branchSort('timestamp')">
+                                    Creation Date
+                                    <span class="sort-indicator" x-text="branchSortIndicator('timestamp')"></span>
+                                </th>
+                                <th>State</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-if="loading">
+                                <tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted);">Loading…</td></tr>
+                            </template>
+                            <template x-if="!loading && pagedBranches.length === 0">
+                                <tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted);">No branches found.</td></tr>
+                            </template>
+                            <template x-for="branch in pagedBranches" :key="branch.branchId">
+                                <tr class="clickable"
+                                    tabindex="0"
+                                    role="button"
+                                    :aria-label="'View latest version of branch ' + branch.name"
+                                    @click="openBranchVersion(branch)"
+                                    @keydown.enter.prevent="openBranchVersion(branch)"
+                                    @keydown.space.prevent="openBranchVersion(branch)">
+                                    <td class="id-cell" @click.stop>
+                                        <span class="id-truncated" :title="branch.branchId"
+                                              x-text="truncateId(branch.branchId)"></span>
+                                        <button class="clipboard-btn" @click.stop="copyToClipboard(branch.branchId)"
+                                                aria-label="Copy branch ID" title="Copy full ID">📋</button>
+                                    </td>
+                                    <td><strong x-text="branch.name"></strong></td>
+                                    <td>
+                                        <span class="partner-badge" :class="partnerBadgeClass(branch.owner)"
+                                              x-text="branch.owner"></span>
+                                    </td>
+                                    <td x-text="formatTimestamp(branch.timestamp)"></td>
+                                    <td>
+                                        <span class="badge" :class="branchStateBadgeClass(branch.state)"
+                                              :aria-label="branch.state" x-text="branch.state"></span>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+
+                    <!-- Branch Pagination -->
+                    <div class="pagination-container">
+                        <div class="pagination-info" x-text="branchPaginationInfo()"></div>
+                        <div class="pagination">
+                            <button class="pagination-btn" aria-label="First page"
+                                    :disabled="branchPage === 1" @click="branchPage = 1">« First</button>
+                            <button class="pagination-btn" aria-label="Previous page"
+                                    :disabled="branchPage === 1" @click="branchPage--">‹ Previous</button>
+                            <span class="pagination-text"
+                                  x-text="'Page ' + branchPage + ' of ' + branchTotalPages"></span>
+                            <button class="pagination-btn" aria-label="Next page"
+                                    :disabled="branchPage === branchTotalPages || branchTotalPages === 0"
+                                    @click="branchPage++">Next ›</button>
+                            <button class="pagination-btn" aria-label="Last page"
+                                    :disabled="branchPage === branchTotalPages || branchTotalPages === 0"
+                                    @click="branchPage = branchTotalPages">Last »</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: Changelog -->
+            <section class="section">
+                <h2 style="font-size: 1.25rem;">Changelog</h2>
+
+                <!-- Changelog Filter Bar -->
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label for="changelog-filter-action">Action</label>
+                        <select id="changelog-filter-action" class="filter-select"
+                                x-model="clFilterAction"
+                                @change="clPage = 1">
+                            <option value="">All</option>
+                            <option value="created">Created</option>
+                            <option value="updated">Updated</option>
+                            <option value="merged">Merged</option>
+                            <option value="deleted">Deleted</option>
+                            <option value="shared">Shared</option>
+                            <option value="unshared">Unshared</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="changelog-filter-partner">Partner</label>
+                        <select id="changelog-filter-partner" class="filter-select"
+                                x-model="clFilterPartner"
+                                @change="clPage = 1">
+                            <option value="">All</option>
+                            <template x-for="p in clPartners" :key="p">
+                                <option :value="p" x-text="p"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="changelog-filter-comment">Comment</label>
+                        <input type="text" id="changelog-filter-comment" class="filter-input"
+                               placeholder="Search in comments"
+                               x-model.debounce.300ms="clFilterComment"
+                               @input="clPage = 1">
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="changelog-table">
+                        <thead>
+                            <tr>
+                                <th class="sort-header" tabindex="0" role="columnheader"
+                                    :aria-sort="clSortAriaSort('action')"
+                                    :class="{ 'active-sort': clSorter.col === 'action' }"
+                                    @click="clSort('action')" @keydown.enter.prevent="clSort('action')" @keydown.space.prevent="clSort('action')">
+                                    Action
+                                    <span class="sort-indicator" x-text="clSortIndicator('action')"></span>
+                                </th>
+                                <th class="sort-header" tabindex="0" role="columnheader"
+                                    :aria-sort="clSortAriaSort('timestamp')"
+                                    :class="{ 'active-sort': clSorter.col === 'timestamp' }"
+                                    @click="clSort('timestamp')" @keydown.enter.prevent="clSort('timestamp')" @keydown.space.prevent="clSort('timestamp')">
+                                    Timestamp
+                                    <span class="sort-indicator" x-text="clSortIndicator('timestamp')"></span>
+                                </th>
+                                <th class="sort-header" tabindex="0" role="columnheader"
+                                    :aria-sort="clSortAriaSort('branchName')"
+                                    :class="{ 'active-sort': clSorter.col === 'branchName' }"
+                                    @click="clSort('branchName')" @keydown.enter.prevent="clSort('branchName')" @keydown.space.prevent="clSort('branchName')">
+                                    Branch Name
+                                    <span class="sort-indicator" x-text="clSortIndicator('branchName')"></span>
+                                </th>
+                                <th>Version ID</th>
+                                <th class="sort-header" tabindex="0" role="columnheader"
+                                    :aria-sort="clSortAriaSort('partner')"
+                                    :class="{ 'active-sort': clSorter.col === 'partner' }"
+                                    @click="clSort('partner')" @keydown.enter.prevent="clSort('partner')" @keydown.space.prevent="clSort('partner')">
+                                    Partner
+                                    <span class="sort-indicator" x-text="clSortIndicator('partner')"></span>
+                                </th>
+                                <th>Comment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-if="loading">
+                                <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">Loading…</td></tr>
+                            </template>
+                            <template x-if="!loading && pagedChangelog.length === 0">
+                                <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">No changelog entries found.</td></tr>
+                            </template>
+                            <template x-for="(entry, index) in pagedChangelog" :key="index">
+                                <tr>
+                                    <td>
+                                        <span class="badge" :class="actionBadgeClass(entry.action)"
+                                              :aria-label="entry.action" x-text="entry.action"></span>
+                                    </td>
+                                    <td x-text="formatTimestamp(entry.timestamp)"></td>
+                                    <td x-text="entry.branchName ?? '-'"></td>
+                                    <td class="id-cell">
+                                        <template x-if="entry.version">
+                                            <span>
+                                                <span class="id-truncated" :title="entry.version"
+                                                      x-text="truncateId(entry.version)"></span>
+                                                <button class="clipboard-btn"
+                                                        @click="copyToClipboard(entry.version)"
+                                                        title="Copy full ID" aria-label="Copy version ID">📋</button>
+                                                <button class="clipboard-btn"
+                                                        @click="openVersionViewer(entry.version, entry)"
+                                                        title="View train data for this version"
+                                                        aria-label="View version">🔍</button>
+                                            </span>
+                                        </template>
+                                        <span x-show="!entry.version" class="text-muted">-</span>
+                                    </td>
+                                    <td>
+                                        <span class="partner-badge" :class="partnerBadgeClass(entry.partner)"
+                                              x-text="entry.partner"></span>
+                                    </td>
+                                    <td x-text="entry.affectedPartner
+                                                ? (entry.comment ?? '') + ' (' + entry.affectedPartner + ')'
+                                                : (entry.comment ?? '-')"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+
+                    <!-- Changelog Pagination -->
+                    <div class="pagination-container">
+                        <div class="pagination-info" x-text="clPaginationInfo()"></div>
+                        <div class="pagination">
+                            <button class="pagination-btn" aria-label="First page"
+                                    :disabled="clPage === 1" @click="clPage = 1">« First</button>
+                            <button class="pagination-btn" aria-label="Previous page"
+                                    :disabled="clPage === 1" @click="clPage--">‹ Previous</button>
+                            <span class="pagination-text"
+                                  x-text="'Page ' + clPage + ' of ' + clTotalPages"></span>
+                            <button class="pagination-btn" aria-label="Next page"
+                                    :disabled="clPage === clTotalPages || clTotalPages === 0"
+                                    @click="clPage++">Next ›</button>
+                            <button class="pagination-btn" aria-label="Last page"
+                                    :disabled="clPage === clTotalPages || clTotalPages === 0"
+                                    @click="clPage = clTotalPages">Last »</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast" style="display: none;"></div>
+
+    <!-- Alpine.js (served from WebJar via Spring Boot) -->
+    <script src="/js/r2p-utils.js"></script>
+    <script src="/js/r2p-api.js"></script>
+    <script src="/js/router.js"></script>
+    <script src="/js/app-details.js"></script>
+    <script defer src="/webjars/alpinejs/dist/cdn.min.js"></script>
+</body>
+</html>

@@ -56,6 +56,22 @@ class BranchTests {
     }
 
     @Test
+    void should_flag_main_branch_correctly() {
+        var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain());
+        assert train.getBody() != null;
+        trainController.shareTrain(SBB, train.getBody().getTrainId(), "SOB");
+        trainController.createTrainBranch(SOB, train.getBody().getTrainId(), "myBranch", "test", actor.loadSampleTrain());
+        var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
+        assert result.getBody() != null;
+        var branches = result.getBody().getBranches();
+        assertThat(branches).hasSize(2);
+        assertThat(branches.stream().filter(b -> b.getBranchName().equals(PREFIXED_MAIN_BRANCH_NAME)))
+            .allMatch(b -> Boolean.TRUE.equals(b.getTechnical().getMainBranch()), "main branch has mainBranch=true");
+        assertThat(branches.stream().filter(b -> !b.getBranchName().equals(PREFIXED_MAIN_BRANCH_NAME)))
+            .allMatch(b -> Boolean.FALSE.equals(b.getTechnical().getMainBranch()), "non-main branches have mainBranch=false");
+    }
+
+    @Test
     void should_not_create_branch_with_same_name() {
         String branchName = "myBranch";
         var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain());

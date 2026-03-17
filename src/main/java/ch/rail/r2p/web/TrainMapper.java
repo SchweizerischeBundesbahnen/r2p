@@ -45,7 +45,8 @@ public class TrainMapper {
                 .owner(trainVersionEnriched.branch().getOwner())
                 .version(train.getVersion())
                 .timestamp(train.getTimestamp())
-                .comment(train.getComment()));
+                .comment(train.getComment())
+                .mainBranch(trainVersionEnriched.branch().isMainBranch()));
     }
 
     public Change toChange(Changelog changelog) {
