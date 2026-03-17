@@ -266,9 +266,9 @@ class PrettyJSON extends HTMLElement {
         return typeof input !== "object" || input === null;
     }
 
-    #isValidStringURL() {
+    #isValidStringURL(input) {
         try {
-            new URL(this.#input);
+            new URL(input);
             return true;
         } catch (error) {
             return false;
@@ -284,11 +284,12 @@ class PrettyJSON extends HTMLElement {
         const type = typeof input === "object" ? "null" : typeof input;
         container.className = `primitive value ${type}`;
         if (typeof input === "string") {
-            if (this.#isValidStringURL()) {
+            if (this.#isValidStringURL(input)) {
                 const anchor = document.createElement("a");
                 anchor.className = "url";
-                anchor.href = this.#input;
+                anchor.href = input;
                 anchor.target = "_blank";
+                anchor.rel = "noopener noreferrer";
                 anchor.textContent = input;
                 container.append('"', anchor, '"');
             } else if (input.length > this.#truncateStringAttributeValue) {

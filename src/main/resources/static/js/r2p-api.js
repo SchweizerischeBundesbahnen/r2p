@@ -18,7 +18,7 @@ function handleUnauthorized() {
  * @returns {{ token: string }}
  */
 function apiHeaders() {
-    return { 'token': getSelectedToken() };
+    return { 'token': getSelectedToken(), 'Accept': 'application/json' };
 }
 
 // ── Fetch helpers ─────────────────────────────────────────────────────────────
