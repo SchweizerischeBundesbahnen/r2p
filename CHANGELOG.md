@@ -1,5 +1,51 @@
 # Changelog
 
+## [0.0.16](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.15...r2p-v0.0.16) (2026-03-17)
+
+
+### Features
+
+* add server UI ([5792638](https://github.com/SchweizerischeBundesbahnen/r2p/commit/5792638ff3aeea61047061312ce5e876e68a936f))
+* better error messages when using the api ([#82](https://github.com/SchweizerischeBundesbahnen/r2p/issues/82)) ([e03d065](https://github.com/SchweizerischeBundesbahnen/r2p/commit/e03d065283cf49e93d5beefcbb31e34c4fb7f461))
+
+
+### Bug Fixes
+
+* adr 0001 diagram ([#77](https://github.com/SchweizerischeBundesbahnen/r2p/issues/77)) ([e57c34d](https://github.com/SchweizerischeBundesbahnen/r2p/commit/e57c34d8d3661423ec94070397b41c7ef5d63f53))
+
+
+### Documentation
+
+* decide ADR 0001 ([#71](https://github.com/SchweizerischeBundesbahnen/r2p/issues/71)) ([c0469e4](https://github.com/SchweizerischeBundesbahnen/r2p/commit/c0469e478f824a1c83297b32ebfc7e95d55028cd))
+* update copilot instructions ([#79](https://github.com/SchweizerischeBundesbahnen/r2p/issues/79)) ([fece0e9](https://github.com/SchweizerischeBundesbahnen/r2p/commit/fece0e927bcda9284b627eee91b4f594f25916ad))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.16-SNAPSHOT ([#76](https://github.com/SchweizerischeBundesbahnen/r2p/issues/76)) ([df439fa](https://github.com/SchweizerischeBundesbahnen/r2p/commit/df439fa5f7afb62e413c243538edcce030b45428))
+
+
+### Tests
+
+* improve test coverage ([#80](https://github.com/SchweizerischeBundesbahnen/r2p/issues/80)) ([5876367](https://github.com/SchweizerischeBundesbahnen/r2p/commit/58763672b17d3acffe978bfa432903e6605ce0f9))
+
+
+### Build System
+
+* **deps-dev:** bump the commitlint group with 2 updates ([#88](https://github.com/SchweizerischeBundesbahnen/r2p/issues/88)) ([6a2c690](https://github.com/SchweizerischeBundesbahnen/r2p/commit/6a2c6908d6c1018657e5300217435f5f549a80f3))
+* **deps-dev:** bump the commitlint group with 2 updates ([#90](https://github.com/SchweizerischeBundesbahnen/r2p/issues/90)) ([41d3dd6](https://github.com/SchweizerischeBundesbahnen/r2p/commit/41d3dd6983bd91eae9ecb496920c4d6b51fb3a30))
+* **deps:** bump actions/download-artifact from 7 to 8 ([#85](https://github.com/SchweizerischeBundesbahnen/r2p/issues/85)) ([05414a4](https://github.com/SchweizerischeBundesbahnen/r2p/commit/05414a49c37627c08d67d20a3543fb05eeda8127))
+* **deps:** bump actions/setup-node from 4 to 6 ([#83](https://github.com/SchweizerischeBundesbahnen/r2p/issues/83)) ([a991732](https://github.com/SchweizerischeBundesbahnen/r2p/commit/a99173214aa8a167c67cb24ac5617f1302cadd6c))
+* **deps:** bump actions/upload-artifact from 6 to 7 ([#86](https://github.com/SchweizerischeBundesbahnen/r2p/issues/86)) ([6b38395](https://github.com/SchweizerischeBundesbahnen/r2p/commit/6b38395fd490ae0d9d473070d7492ea34dfda93f))
+* **deps:** bump docker/login-action from 3 to 4 ([#84](https://github.com/SchweizerischeBundesbahnen/r2p/issues/84)) ([ecf6618](https://github.com/SchweizerischeBundesbahnen/r2p/commit/ecf6618e2b1324b2c506d64919aaa296306c06dd))
+* **deps:** bump org.springdoc:springdoc-openapi-starter-webmvc-ui ([#87](https://github.com/SchweizerischeBundesbahnen/r2p/issues/87)) ([e9eaa30](https://github.com/SchweizerischeBundesbahnen/r2p/commit/e9eaa30d7cb2b2b3a624544e163c1933c25c7edf))
+* **deps:** bump org.springframework.boot:spring-boot-starter-parent ([#66](https://github.com/SchweizerischeBundesbahnen/r2p/issues/66)) ([027a038](https://github.com/SchweizerischeBundesbahnen/r2p/commit/027a038412dcb4c3b2d2a63ed15ebd80afc57305))
+
+
+### Continuous Integration
+
+* add spec lint with output and result upload ([#81](https://github.com/SchweizerischeBundesbahnen/r2p/issues/81)) ([182592f](https://github.com/SchweizerischeBundesbahnen/r2p/commit/182592f3081b1e8051f95d56a7a7564cffe28e87))
+
 ## [0.0.15](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.14...r2p-v0.0.15) (2026-02-20)
 
 
