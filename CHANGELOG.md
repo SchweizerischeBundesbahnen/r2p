@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.17](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.16...r2p-v0.0.17) (2026-03-18)
+
+
+### Bug Fixes
+
+* show correct version number, other minor improvements ([e3c91ae](https://github.com/SchweizerischeBundesbahnen/r2p/commit/e3c91aefb8ab7b7d33bb9be5cf7bebd669351d25))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.17-SNAPSHOT ([#91](https://github.com/SchweizerischeBundesbahnen/r2p/issues/91)) ([f60c6bf](https://github.com/SchweizerischeBundesbahnen/r2p/commit/f60c6bfb8f6dfecc9dee6b745ae994a7eddf969a))
+
 ## [0.0.16](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.15...r2p-v0.0.16) (2026-03-17)
 
 
