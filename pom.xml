@@ -121,6 +121,34 @@
 	</dependencies>
 
 	<build>
+		<resources>
+			<!-- Default resources with filtering (application.yaml, etc.) -->
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<excludes>
+					<exclude>static/**</exclude>
+				</excludes>
+			</resource>
+			<!-- Static files: enable filtering only for HTML files -->
+			<resource>
+				<directory>src/main/resources/static</directory>
+				<targetPath>static</targetPath>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/*.html</include>
+				</includes>
+			</resource>
+			<!-- Static files: copy remaining files without filtering (images, fonts, binary) -->
+			<resource>
+				<directory>src/main/resources/static</directory>
+				<targetPath>static</targetPath>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>**/*.html</exclude>
+				</excludes>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

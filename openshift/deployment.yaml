@@ -29,6 +29,7 @@ data:
   R2P_INSTANCE_OWNER: "REPLACE_ME"
   TZ: "Europe/Zurich"
   R2P_AZURE_ISSUER_URI: "REPLACE_ME"
+  R2P_TEST_DATA_ENABLED: "true"
 
 ---
 # Secret for Azure Client
@@ -110,6 +111,11 @@ spec:
                 configMapKeyRef:
                   name: r2p-config
                   key: R2P_INSTANCE_OWNER
+            - name: R2P_TEST_DATA_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: r2p-config
+                  key: R2P_TEST_DATA_ENABLED
             - name: TZ
               valueFrom:
                 configMapKeyRef:

@@ -146,12 +146,11 @@ class StatsTests {
 
         List<PartnerStats> stats = statsController.getStats();
 
-        stats.stream()
+        PartnerStats blsStats = stats.stream()
             .filter(s -> BLS.name().equals(s.partner()))
             .findFirst()
-            .ifPresent(blsStats ->
-                assertThat(blsStats.openBranches()).isZero()
-            );
+            .orElseThrow();
+        assertThat(blsStats.openBranches()).isZero();
     }
 }
 
