@@ -11,7 +11,7 @@
 
 ### Bug Fixes
 
-* adr 0001 diagram ([#77](https://github.com/SchweizerischeBundesbahnen/r2p/issues/77)) ([e57c34d](https://github.com/SchweizerischeBundesbahnen/r2p/commit/e57c34d8d3661423ec94070397b41c7ef5d63f53))
+* ADR 0001 diagram ([#77](https://github.com/SchweizerischeBundesbahnen/r2p/issues/77)) ([e57c34d](https://github.com/SchweizerischeBundesbahnen/r2p/commit/e57c34d8d3661423ec94070397b41c7ef5d63f53))
 
 
 ### Documentation
