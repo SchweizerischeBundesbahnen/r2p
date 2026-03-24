@@ -103,4 +103,22 @@ public class TrainController implements V1Api {
         List<Changelog> changelogs = trainService.getChangelogs(token.name(), from, to, null);
         return ResponseEntity.ok(changelogs.stream().map(trainMapper::toChange).toList());
     }
+
+    @Override
+    public ResponseEntity<Branch> requestMerge(PartnerToken token, UUID trainId, UUID branchId, String comment) {
+        TrainVersionEnriched result = trainService.requestMerge(token.name(), trainId, branchId, comment);
+        return ResponseEntity.ok(trainMapper.toBranch(result));
+    }
+
+    @Override
+    public ResponseEntity<TrainListElement> merge(PartnerToken token, UUID trainId, UUID branchId, UUID reviewedVersion, String comment) {
+        List<TrainVersionEnriched> trains = trainService.merge(token.name(), trainId, branchId, reviewedVersion, comment);
+        return ResponseEntity.ok(trainMapper.toTrainListElement(trains));
+    }
+
+    @Override
+    public ResponseEntity<Branch> rejectMerge(PartnerToken token, UUID trainId, UUID branchId, String comment) {
+        TrainVersionEnriched result = trainService.rejectMerge(token.name(), trainId, branchId, comment);
+        return ResponseEntity.ok(trainMapper.toBranch(result));
+    }
 }

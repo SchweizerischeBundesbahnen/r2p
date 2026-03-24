@@ -66,6 +66,12 @@ public class TrainService {
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkSharing(partner, train);
         checkBranchOwner(partner, train.branch());
+        checkBranchState(train.branch(), BranchState.OPEN, BranchState.MERGE_REQUESTED);
+        // If an open merge request exists, implicitly reject it first so the changelog stays consistent
+        if (train.branch().getState() == BranchState.MERGE_REQUESTED) {
+            changelogPersistence.insert(Changelog.forMergeRejection(partner, train.trainVersion(), train.branch(),
+                "Merge request implicitly rejected due to branch deletion"));
+        }
         var updatedBranch = trainPersistence.updateBranchState(branchId, BranchState.DELETED);
         Changelog changelog = Changelog.forDeletion(partner, train.branch(), comment);
         changelogPersistence.insert(changelog);
@@ -177,6 +183,55 @@ public class TrainService {
             throw new NoSuchElementException("Train not found");
         }
         return changelogPersistence.find(partner, from, to, trainId);
+    }
+
+    public TrainVersionEnriched requestMerge(String partner, UUID trainId, UUID branchId, String comment) {
+        TrainVersionEnriched branch = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
+            .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
+        checkSharing(partner, branch);
+        checkBranchOwner(partner, branch.branch());
+        checkBranchState(branch.branch(), BranchState.OPEN);
+        var updatedBranch = trainPersistence.updateBranchState(branchId, BranchState.MERGE_REQUESTED);
+        Changelog changelog = Changelog.forMergeRequest(partner, branch.trainVersion(), updatedBranch, comment);
+        changelogPersistence.insert(changelog);
+        return new TrainVersionEnriched(branch.trainVersion(), updatedBranch, branch.partners());
+    }
+
+    public List<TrainVersionEnriched> merge(String partner, UUID trainId, UUID branchId, UUID reviewedVersion, String comment) {
+        checkInstanceOwner(partner);
+        TrainVersionEnriched branchEnriched = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
+            .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
+        checkBranchState(branchEnriched.branch(), BranchState.OPEN, BranchState.MERGE_REQUESTED);
+        if (!branchEnriched.trainVersion().getVersion().equals(reviewedVersion)) {
+            throw new MergeConflictException("Reviewed version does not match current head version of the branch");
+        }
+        TrainVersionEnriched mainEnriched = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME)
+            .orElseThrow(() -> new NoSuchElementException("Main branch not found"));
+        // Mark old main head as non-head
+        mainEnriched.trainVersion().setHead(false);
+        trainPersistence.updateVersion(mainEnriched.trainVersion());
+        // Create new main version from branch content
+        TrainVersion newMainVersion = mainEnriched.trainVersion().createNewVersion(branchEnriched.trainVersion().getPayload(),
+            comment != null ? comment : "");
+        newMainVersion.setTrainNumber(branchEnriched.trainVersion().getTrainNumber());
+        newMainVersion.setOperationalDay(branchEnriched.trainVersion().getOperationalDay());
+        trainPersistence.insertVersion(newMainVersion);
+        // Close the merged branch
+        var closedBranch = trainPersistence.updateBranchState(branchId, BranchState.MERGED);
+        // Write changelog entries
+        changelogPersistence.insert(Changelog.forMerge(partner, branchEnriched.trainVersion(), closedBranch, newMainVersion, mainEnriched.branch(), comment));
+        changelogPersistence.insert(Changelog.forDeletion(partner, closedBranch, comment != null ? comment : ""));
+        return trainPersistence.findHeadVersionsByTrainId(trainId);
+    }
+
+    public TrainVersionEnriched rejectMerge(String partner, UUID trainId, UUID branchId, String comment) {
+        checkInstanceOwner(partner);
+        TrainVersionEnriched branch = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
+            .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
+        checkBranchState(branch.branch(), BranchState.MERGE_REQUESTED);
+        var updatedBranch = trainPersistence.updateBranchState(branchId, BranchState.OPEN);
+        changelogPersistence.insert(Changelog.forMergeRejection(partner, branch.trainVersion(), updatedBranch, comment));
+        return new TrainVersionEnriched(branch.trainVersion(), updatedBranch, branch.partners());
     }
 
     // TODO is it possible to implement these checks in a better and safer way (e.g. using Spring Security), making sure they are not forgotten

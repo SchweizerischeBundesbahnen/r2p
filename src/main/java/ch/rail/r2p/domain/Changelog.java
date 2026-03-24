@@ -53,4 +53,19 @@ public class Changelog {
         return new Changelog(UUID.randomUUID(), Action.UNSHARED, partner, affectedPartner, trainVersion.trainId, null, null, trainVersion.version,
             OffsetDateTime.now(), comment);
     }
+
+    public static Changelog forMergeRequest(String partner, TrainVersion trainVersion, Branch branch, String comment) {
+        return new Changelog(UUID.randomUUID(), Action.MERGE_REQUESTED, partner, null, trainVersion.trainId, trainVersion.branchId, branch.getPrefixedName(), trainVersion.version,
+            OffsetDateTime.now(), comment != null ? comment : "");
+    }
+
+    public static Changelog forMerge(String partner, TrainVersion branchVersion, Branch branch, TrainVersion newMainVersion, Branch mainBranch, String comment) {
+        return new Changelog(UUID.randomUUID(), Action.MERGED, partner, null, branchVersion.trainId, branchVersion.branchId, branch.getPrefixedName(), newMainVersion.version,
+            OffsetDateTime.now(), comment != null ? comment : "");
+    }
+
+    public static Changelog forMergeRejection(String partner, TrainVersion trainVersion, Branch branch, String comment) {
+        return new Changelog(UUID.randomUUID(), Action.MERGE_REJECTED, partner, null, trainVersion.trainId, trainVersion.branchId, branch.getPrefixedName(), trainVersion.version,
+            OffsetDateTime.now(), comment != null ? comment : "");
+    }
 }

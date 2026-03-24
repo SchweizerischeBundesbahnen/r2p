@@ -30,6 +30,14 @@ public interface BranchSpringDataRepository extends CrudRepository<Branch, UUID>
         """)
     List<OwnerCount> countOpenBranchesByOwner();
 
+    @Query("""
+        SELECT owner, COUNT(*) AS cnt
+        FROM branch
+        WHERE state = 'MERGE_REQUESTED'
+        GROUP BY owner
+        """)
+    List<OwnerCount> countMergeRequestedBranchesByOwner();
+
     record OwnerCount(String owner, int cnt) {
     }
 }
