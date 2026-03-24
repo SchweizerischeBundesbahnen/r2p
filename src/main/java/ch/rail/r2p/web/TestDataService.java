@@ -58,6 +58,7 @@ public class TestDataService {
         int branchesDeleted = 0;
         int mainBranchesDeleted = 0;
         int versionsCreated = 0;
+        int mergeRequestsCreated = 0;
 
         long rangeDays = request.dateFrom().toEpochDay();
         long rangeEnd = request.dateTo().toEpochDay();
@@ -131,11 +132,15 @@ public class TestDataService {
                 if (random.nextDouble() < 0.1) {
                     trainService.deleteTrainBranch(branchOwner, trainId, branchId, "Test data – deleted");
                     branchesDeleted++;
+                } else if (random.nextDouble() < 0.5) {
+                    // ~50% chance to request a merge on open branches
+                    trainService.requestMerge(branchOwner, trainId, branchId, "Test data – merge request");
+                    mergeRequestsCreated++;
                 }
             }
         }
 
-        return new TestDataResult(trainsCreated, branchesCreated, branchesDeleted, mainBranchesDeleted, versionsCreated);
+        return new TestDataResult(trainsCreated, branchesCreated, branchesDeleted, mainBranchesDeleted, versionsCreated, mergeRequestsCreated);
     }
 
     /**
