@@ -596,7 +596,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
         '409':
-          description: Reviewed version does not match current head version of the branch, or branch is not in a valid state for merging (e.g. already merged or deleted)
+          description: >
+            Reviewed version does not match current head version of the branch;
+            or the source branch is not in a valid state for merging (e.g. already merged or deleted);
+            or the main branch is not in OPEN state (e.g. it has been deleted).
           content:
             application/problem+json:
               schema:

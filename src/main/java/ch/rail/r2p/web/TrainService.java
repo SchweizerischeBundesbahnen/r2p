@@ -209,6 +209,9 @@ public class TrainService {
         }
         // Authorization: partner must have access to this train
         List<TrainVersionEnriched> trains = trainPersistence.findHeadVersionsByTrainId(trainId);
+        if (trains.isEmpty()) {
+            throw new NoSuchElementException("Train not found");
+        }
         checkSharing(partner, trains.getFirst());
         List<Changelog> entries = changelogPersistence.findLatestMergeRelatedPerBranch(partner, trainId);
         if (state != null) {
@@ -255,6 +258,7 @@ public class TrainService {
         }
         TrainVersionEnriched mainEnriched = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME)
             .orElseThrow(() -> new NoSuchElementException("Main branch not found"));
+        checkBranchState(mainEnriched.branch(), BranchState.OPEN);
         // Mark old main head as non-head
         mainEnriched.trainVersion().setHead(false);
         trainPersistence.updateVersion(mainEnriched.trainVersion());

@@ -337,6 +337,23 @@ class MergeTests {
     }
 
     @Test
+    void should_not_merge_into_deleted_main_branch() {
+        // After the main branch is deleted, attempting to merge a feature branch into it
+        // must fail with InvalidBranchStateException (not silently create a new version on the deleted branch).
+        var train = actor.createTrain(SBB, "new train");
+        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
+        UUID reviewedVersion = branch.getTechnical().getVersion();
+
+        // Delete the main branch (and all other branches) as the instance owner
+        UUID mainBranchId = train.getBranches().getFirst().getBranchId();
+        trainController.deleteTrainBranch(SBB, train.getTrainId(), mainBranchId, "deleting main");
+
+        assertThrows(InvalidBranchStateException.class,
+            () -> trainController.merge(SBB, train.getTrainId(), branch.getBranchId(), reviewedVersion, "merge after deletion"));
+    }
+
+    @Test
     void should_implicitly_reject_merge_request_when_main_branch_is_deleted() {
         var train = actor.createTrain(SBB, "new train");
         actor.shareTrain(SBB, train.getTrainId(), SOB);
