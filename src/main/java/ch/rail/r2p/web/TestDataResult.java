@@ -5,6 +5,7 @@ public record TestDataResult(
     int branchesCreated,
     int branchesDeleted,
     int mainBranchesDeleted,
-    int versionsCreated
+    int versionsCreated,
+    int mergeRequestsCreated
 ) {}
 

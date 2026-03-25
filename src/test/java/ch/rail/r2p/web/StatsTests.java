@@ -8,7 +8,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import ch.rail.r2p.Actor;
 import ch.rail.r2p.persistence.TrainPersistence;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,8 +42,7 @@ class StatsTests {
 
     @Test
     void should_return_totals_row_with_null_partner() {
-        var train = trainController.createTrain(SBB, "test", actor.loadSampleTrain());
-        assert train.getBody() != null;
+        actor.createTrain(SBB, "test");
 
         List<PartnerStats> stats = statsController.getStats();
 
@@ -59,7 +57,7 @@ class StatsTests {
 
     @Test
     void should_set_lead_ru_true_only_for_instance_owner() {
-        trainController.createTrain(SBB, "test", actor.loadSampleTrain());
+        actor.createTrain(SBB, "test");
 
         List<PartnerStats> stats = statsController.getStats();
 
@@ -75,10 +73,8 @@ class StatsTests {
 
     @Test
     void should_count_trains_per_partner_after_sharing() {
-        var train = trainController.createTrain(SBB, "test", actor.loadSampleTrain());
-        assert train.getBody() != null;
-        UUID trainId = train.getBody().getTrainId();
-        trainController.shareTrain(SBB, trainId, SOB.name());
+        var train = actor.createTrain(SBB, "test");
+        actor.shareTrain(SBB, train.getTrainId(), SOB);
 
         List<PartnerStats> stats = statsController.getStats();
 
@@ -92,11 +88,9 @@ class StatsTests {
 
     @Test
     void should_count_open_branches_per_partner_after_branch_creation() {
-        var train = trainController.createTrain(SBB, "test", actor.loadSampleTrain());
-        assert train.getBody() != null;
-        UUID trainId = train.getBody().getTrainId();
-        trainController.shareTrain(SBB, trainId, SOB.name());
-        trainController.createTrainBranch(SOB, trainId, "myBranch", "test", actor.loadSampleTrain());
+        var train = actor.createTrain(SBB, "test");
+        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
 
         List<PartnerStats> stats = statsController.getStats();
 
@@ -110,11 +104,9 @@ class StatsTests {
 
     @Test
     void should_include_open_branches_in_totals() {
-        var train = trainController.createTrain(SBB, "test", actor.loadSampleTrain());
-        assert train.getBody() != null;
-        UUID trainId = train.getBody().getTrainId();
-        trainController.shareTrain(SBB, trainId, SOB.name());
-        trainController.createTrainBranch(SOB, trainId, "myBranch", "test", actor.loadSampleTrain());
+        var train = actor.createTrain(SBB, "test");
+        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
 
         List<PartnerStats> stats = statsController.getStats();
 
@@ -133,16 +125,12 @@ class StatsTests {
 
     @Test
     void should_not_include_deleted_branches_in_open_count() {
-        var train = trainController.createTrain(SBB, "test", actor.loadSampleTrain());
-        assert train.getBody() != null;
-        UUID trainId = train.getBody().getTrainId();
-        trainController.shareTrain(SBB, trainId, BLS.name());
-        var branch = trainController.createTrainBranch(BLS, trainId, "myBranch", "test", actor.loadSampleTrain());
-        assert branch.getBody() != null;
-        UUID branchId = branch.getBody().getBranchId();
+        var train = actor.createTrain(SBB, "test");
+        actor.shareTrain(SBB, train.getTrainId(), BLS);
+        var branch = actor.createBranch(BLS, train.getTrainId(), "myBranch", "test");
 
         // Delete the branch
-        trainController.deleteTrainBranch(BLS, trainId, branchId, "cleanup");
+        trainController.deleteTrainBranch(BLS, train.getTrainId(), branch.getBranchId(), "cleanup");
 
         List<PartnerStats> stats = statsController.getStats();
 
@@ -153,6 +141,4 @@ class StatsTests {
         assertThat(blsStats.openBranches()).isZero();
     }
 }
-
-
 

@@ -26,6 +26,7 @@ function trainApp() {
         filterTrainNumber:  '',
         filterPartner:      '',
         filterOpenBranches: false,
+        filterOpenMRs:      false,
 
         // ── Statistics partner selection (drives stat cards) ──────────────────
         selectedStatPartner: '',   // '' = show totals row
@@ -84,7 +85,11 @@ function trainApp() {
             }
 
             if (this.filterOpenBranches) {
-                result = result.filter(t => t.openBranches > 1);
+                result = result.filter(t => t.openBranches > 0);
+            }
+
+            if (this.filterOpenMRs) {
+                result = result.filter(t => t.openMergeRequests > 0);
             }
 
             return applySorter(result, this.sorter);
@@ -206,11 +211,15 @@ function trainApp() {
         mapTrain(t) {
             const base = mapTrainBase(t);
             const openBranches = (t.branches ?? []).filter(
-                b => b.technical && b.technical.branchState === 'open'
+                b => b.technical && b.technical.branchState === 'open' && !b.technical.mainBranch
+            ).length;
+            const openMergeRequests = (t.branches ?? []).filter(
+                b => b.technical && b.technical.branchState === 'merge_requested'
             ).length;
             return {
                 ...base,
                 openBranches,
+                openMergeRequests,
                 lastChange: t.mainTimestamp ?? null
             };
         },

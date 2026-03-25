@@ -58,6 +58,7 @@ public class TestDataService {
         int branchesDeleted = 0;
         int mainBranchesDeleted = 0;
         int versionsCreated = 0;
+        int mergeRequestsCreated = 0;
 
         long rangeDays = request.dateFrom().toEpochDay();
         long rangeEnd = request.dateTo().toEpochDay();
@@ -108,9 +109,13 @@ public class TestDataService {
 
             // 1g. Create 0–2 non-main branches
             int branchCount = random.nextInt(3); // 0, 1 or 2
+            Set<String> usedBranchNames = new HashSet<>();
             for (int b = 0; b < branchCount; b++) {
                 String branchOwner = allPartners.get(random.nextInt(allPartners.size()));
-                String branchName = "branch-" + (100 + random.nextInt(900));
+                String branchName;
+                do {
+                    branchName = "branch-" + (100 + random.nextInt(900));
+                } while (!usedBranchNames.add(branchName));
                 Train branchPayload = cloneTrain(operationalDay, trainNumber);
 
                 TrainVersionEnriched branch = trainService.createTrainBranch(
@@ -127,15 +132,20 @@ public class TestDataService {
                     versionsCreated++;
                 }
 
-                // ~10% chance to delete this branch
-                if (random.nextDouble() < 0.1) {
+                // ~10% chance to delete, ~45% chance to request a merge, ~45% chance to leave open
+                double roll = random.nextDouble();
+                if (roll < 0.1) {
                     trainService.deleteTrainBranch(branchOwner, trainId, branchId, "Test data – deleted");
                     branchesDeleted++;
+                } else if (roll < 0.55) {
+                    // ~45% chance to request a merge on open branches
+                    trainService.requestMerge(branchOwner, trainId, branchId, "Test data – merge request");
+                    mergeRequestsCreated++;
                 }
             }
         }
 
-        return new TestDataResult(trainsCreated, branchesCreated, branchesDeleted, mainBranchesDeleted, versionsCreated);
+        return new TestDataResult(trainsCreated, branchesCreated, branchesDeleted, mainBranchesDeleted, versionsCreated, mergeRequestsCreated);
     }
 
     /**

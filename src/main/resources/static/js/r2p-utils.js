@@ -66,9 +66,10 @@ function partnerBadgeClass(partner) {
  */
 function branchStateBadgeClass(state) {
     const mapping = {
-        'open':    'badge-open',
-        'merged':  'badge-merged',
-        'deleted': 'badge-deleted'
+        'open':             'badge-open',
+        'merge_requested':  'badge-merge-requested',
+        'merged':           'badge-merged',
+        'deleted':          'badge-deleted'
     };
     return mapping[state] ?? 'badge-open';
 }
@@ -80,14 +81,31 @@ function branchStateBadgeClass(state) {
  */
 function actionBadgeClass(action) {
     const mapping = {
-        'created':  'badge-created',
-        'updated':  'badge-updated',
-        'merged':   'badge-merged-action',
-        'deleted':  'badge-deleted-action',
-        'shared':   'badge-shared',
-        'unshared': 'badge-unshared'
+        'created':          'badge-created',
+        'updated':          'badge-updated',
+        'merged':           'badge-merged-action',
+        'deleted':          'badge-deleted-action',
+        'shared':           'badge-shared',
+        'unshared':         'badge-unshared',
+        'merge_requested':  'badge-merge-requested',
+        'merge_rejected':   'badge-deleted-action'
     };
     return mapping[action] ?? 'badge-created';
+}
+
+/**
+ * Returns the CSS class for a merge-request state badge.
+ * Only maps merge-specific actions (merge_requested, merge_rejected, merged).
+ * @param {string} action
+ * @returns {string}
+ */
+function mergeRequestBadgeClass(action) {
+    const mapping = {
+        'merge_requested': 'badge-merge-requested',
+        'merge_rejected':  'badge-deleted-action',
+        'merged':          'badge-merged-action'
+    };
+    return mapping[action] ?? 'badge-open';
 }
 
 // ── Sort factory ──────────────────────────────────────────────────────────────

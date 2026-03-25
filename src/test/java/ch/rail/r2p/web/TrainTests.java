@@ -10,14 +10,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import ch.rail.r2p.Actor;
 import ch.rail.r2p.api.dto.Action;
 import ch.rail.r2p.api.dto.Change;
-import ch.rail.r2p.api.dto.Train;
 import ch.rail.r2p.api.dto.TrainListElement;
 import ch.rail.r2p.persistence.TrainPersistence;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,14 +49,11 @@ class TrainTests {
 
     @Test
     void should_create_train_for_instance_owner() {
-        Train sampleTrain = actor.loadSampleTrain();
-        var train = trainController.createTrain(SBB, "new train", sampleTrain);
-        assertThat(train.getBody()).isNotNull();
-        var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
-        assertThat(result).isNotNull();
+        TrainListElement train = actor.createTrain(SBB, "new train");
+        var result = trainController.getTrainById(SBB, train.getTrainId());
         assertThat(result.getBody()).isNotNull();
         assertThat(result.getBody().getBranches()).hasSize(1);
-        assertThat(result.getBody().getBranches().getFirst().getBusiness().getTrainNumber()).isEqualTo(sampleTrain.getId());
+        assertThat(result.getBody().getBranches().getFirst().getBusiness().getTrainNumber()).isEqualTo(actor.loadSampleTrain().getId());
     }
 
     @Test
@@ -68,7 +63,7 @@ class TrainTests {
 
     @Test
     void should_list_trains_according_to_operating_day() {
-        trainController.createTrain(SBB, "new train", actor.loadSampleTrain());
+        actor.createTrain(SBB, "new train");
         assertThat(trainController.listTrains(SBB, LocalDate.parse("2024-01-01"), LocalDate.parse("2027-01-01")).getBody()).hasSize(1);
         assertThat(trainController.listTrains(SBB, LocalDate.parse("2024-01-01"), null).getBody()).hasSize(1);
         assertThat(trainController.listTrains(SBB, null, LocalDate.parse("2027-01-01")).getBody()).hasSize(1);
@@ -94,11 +89,9 @@ class TrainTests {
     @Test
     void should_get_train_by_id() {
         String comment = "Train creation comment";
-        var train = trainController.createTrain(SBB, comment, actor.loadSampleTrain());
-        assert train.getBody() != null;
-        var result = trainController.getTrainById(SBB, train.getBody().getTrainId());
-        assertThat(result).isNotNull();
-        assert result.getBody() != null;
+        TrainListElement train = actor.createTrain(SBB, comment);
+        var result = trainController.getTrainById(SBB, train.getTrainId());
+        assertThat(result.getBody()).isNotNull();
         assertThat(result.getBody().getBranches()).hasSize(1);
         assertThat(result.getBody().getBranches().getFirst().getBranchName()).isEqualTo(PREFIXED_MAIN_BRANCH_NAME);
         assertThat(result.getBody().getBranches().getFirst().getTechnical().getComment()).isEqualTo(comment);
@@ -115,13 +108,12 @@ class TrainTests {
         String prefixedBranchName = Actor.getPrefixedBranchName(SOB, branchName);
         // truncating timestamps to millis to avoid precision issues when comparing in memory timestamps with database timestamps, which might have different precision
         OffsetDateTime startTime = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
-        TrainListElement train = trainController.createTrain(SBB, "initial creation", actor.loadSampleTrain()).getBody();
-        assert train != null;
+        TrainListElement train = actor.createTrain(SBB, "initial creation");
         UUID trainId = train.getTrainId();
         UUID mainBranchId = train.getBranches().getFirst().getBranchId();
-        trainController.shareTrain(SBB, trainId, "SOB");
+        actor.shareTrain(SBB, trainId, SOB);
         trainController.updateTrainBranch(SBB, trainId, mainBranchId, "update main branch", actor.loadSampleTrain());
-        UUID branchId = Objects.requireNonNull(trainController.createTrainBranch(SOB, trainId, branchName, "create branch", actor.loadSampleTrain()).getBody()).getBranchId();
+        UUID branchId = actor.createBranch(SOB, trainId, branchName, "create branch").getBranchId();
         trainController.updateTrainBranch(SOB, trainId, branchId, "update branch", actor.loadSampleTrain());
         trainController.deleteTrainBranch(SOB, trainId, branchId, "delete branch");
         OffsetDateTime endTime = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
@@ -131,8 +123,7 @@ class TrainTests {
             .as("all timestamps should be within startTime %s and endTime %s".formatted(startTime, endTime))
             .allMatch(timestamp -> !timestamp.isBefore(startTime) && !timestamp.isAfter(endTime));
         assertThat(result.stream().map(Change::getTrainId)).allMatch(trainId::equals);
-        assertThat(result.stream().map(Change::getBranchName)).containsExactly(PREFIXED_MAIN_BRANCH_NAME, null, PREFIXED_MAIN_BRANCH_NAME, prefixedBranchName, prefixedBranchName,
-            prefixedBranchName);
+        assertThat(result.stream().map(Change::getBranchName)).containsExactly(PREFIXED_MAIN_BRANCH_NAME, null, PREFIXED_MAIN_BRANCH_NAME, prefixedBranchName, prefixedBranchName, prefixedBranchName);
         assertThat(result.stream().map(Change::getAction)).containsExactly(Action.CREATED, Action.SHARED, Action.UPDATED, Action.CREATED, Action.UPDATED, Action.DELETED);
         assertThat(result.stream().map(Change::getPartner)).containsExactly("SBB", "SBB", "SBB", "SOB", "SOB", "SOB");
         assertThat(result.stream().map(Change::getComment)).containsExactly("initial creation", "Train shared", "update main branch", "create branch", "update branch", "delete branch");
@@ -140,7 +131,7 @@ class TrainTests {
 
     @Test
     void should_list_shared_trains() {
-        trainController.createTrain(SBB, "new train", actor.loadSampleTrain());
+        actor.createTrain(SBB, "new train");
         var result = trainController.listTrains(SBB, null, null);
         assertThat(result).isNotNull();
         assertThat(result.getBody()).hasSize(1);
@@ -148,7 +139,7 @@ class TrainTests {
 
     @Test
     void should_not_list_not_shared_trains() {
-        trainController.createTrain(SBB, "new train", actor.loadSampleTrain());
+        actor.createTrain(SBB, "new train");
         var result = trainController.listTrains(BLS, null, null);
         assertThat(result).isNotNull();
         assertThat(result.getBody()).isEmpty();
@@ -156,22 +147,17 @@ class TrainTests {
 
     @Test
     void should_not_get_not_shared_train_by_id() {
-        var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain());
-        assertThrows(AuthorizationDeniedException.class, () -> {
-            assert train.getBody() != null;
-            trainController.getTrainById(SOB, train.getBody().getTrainId());
-        });
+        TrainListElement train = actor.createTrain(SBB, "new train");
+        assertThrows(AuthorizationDeniedException.class, () -> trainController.getTrainById(SOB, train.getTrainId()));
     }
 
     @Test
     void should_get_train_branch_by_lead_ru() {
-        var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain()).getBody();
-        assert train != null;
+        TrainListElement train = actor.createTrain(SBB, "new train");
         UUID trainId = train.getTrainId();
         UUID branchId = train.getBranches().getFirst().getBranchId();
 
         var result = trainController.getTrainBranch(SBB, trainId, branchId);
-        assertThat(result).isNotNull();
         assertThat(result.getBody()).isNotNull();
         assertThat(result.getBody().getBranchName()).isEqualTo(PREFIXED_MAIN_BRANCH_NAME);
         assertThat(result.getBody().getTechnical().getOwner()).isEqualTo("SBB");
@@ -180,14 +166,12 @@ class TrainTests {
 
     @Test
     void should_get_train_branch_by_shared_partner() {
-        var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain()).getBody();
-        assert train != null;
+        TrainListElement train = actor.createTrain(SBB, "new train");
         UUID trainId = train.getTrainId();
         UUID branchId = train.getBranches().getFirst().getBranchId();
-        trainController.shareTrain(SBB, trainId, "SOB");
+        actor.shareTrain(SBB, trainId, SOB);
 
         var result = trainController.getTrainBranch(SOB, trainId, branchId);
-        assertThat(result).isNotNull();
         assertThat(result.getBody()).isNotNull();
         assertThat(result.getBody().getBranchName()).isEqualTo(PREFIXED_MAIN_BRANCH_NAME);
         assertThat(result.getBody().getTechnical().getOwner()).isEqualTo("SBB");
@@ -195,8 +179,7 @@ class TrainTests {
 
     @Test
     void should_not_get_train_branch_if_not_shared() {
-        var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain()).getBody();
-        assert train != null;
+        TrainListElement train = actor.createTrain(SBB, "new train");
         UUID trainId = train.getTrainId();
         UUID branchId = train.getBranches().getFirst().getBranchId();
 
@@ -205,33 +188,28 @@ class TrainTests {
 
     @Test
     void should_get_train_version_by_lead_ru() {
-        var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain()).getBody();
-        assert train != null;
+        TrainListElement train = actor.createTrain(SBB, "new train");
         UUID versionId = train.getBranches().getFirst().getTechnical().getVersion();
 
         var result = trainController.getTrainVersion(SBB, versionId);
-        assertThat(result).isNotNull();
         assertThat(result.getBody()).isNotNull();
         assertThat(result.getBody().getId()).isEqualTo(actor.loadSampleTrain().getId());
     }
 
     @Test
     void should_get_train_version_by_shared_partner() {
-        var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain()).getBody();
-        assert train != null;
+        TrainListElement train = actor.createTrain(SBB, "new train");
         UUID versionId = train.getBranches().getFirst().getTechnical().getVersion();
-        trainController.shareTrain(SBB, train.getTrainId(), "SOB");
+        actor.shareTrain(SBB, train.getTrainId(), SOB);
 
         var result = trainController.getTrainVersion(SOB, versionId);
-        assertThat(result).isNotNull();
         assertThat(result.getBody()).isNotNull();
         assertThat(result.getBody().getId()).isEqualTo(actor.loadSampleTrain().getId());
     }
 
     @Test
     void should_get_historical_train_version() {
-        var train = trainController.createTrain(SBB, "initial version", actor.loadSampleTrain()).getBody();
-        assert train != null;
+        TrainListElement train = actor.createTrain(SBB, "initial version");
         UUID trainId = train.getTrainId();
         UUID branchId = train.getBranches().getFirst().getBranchId();
         UUID firstVersionId = train.getBranches().getFirst().getTechnical().getVersion();
@@ -240,14 +218,12 @@ class TrainTests {
         trainController.updateTrainBranch(SBB, trainId, branchId, "third version", actor.loadSampleTrain());
 
         var firstVersionResult = trainController.getTrainVersion(SBB, firstVersionId);
-        assertThat(firstVersionResult).isNotNull();
         assertThat(firstVersionResult.getBody()).isNotNull();
     }
 
     @Test
     void should_not_get_train_version_if_not_shared() {
-        var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain()).getBody();
-        assert train != null;
+        TrainListElement train = actor.createTrain(SBB, "new train");
         UUID versionId = train.getBranches().getFirst().getTechnical().getVersion();
 
         assertThrows(AuthorizationDeniedException.class, () -> trainController.getTrainVersion(SOB, versionId));

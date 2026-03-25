@@ -5,13 +5,16 @@ import static ch.rail.r2p.domain.Branch.MAIN_BRANCH_NAME;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
+import ch.rail.r2p.api.dto.Branch;
 import ch.rail.r2p.api.dto.PartnerToken;
 import ch.rail.r2p.api.dto.Train;
+import ch.rail.r2p.api.dto.TrainListElement;
 import ch.rail.r2p.domain.TrainVersion;
 import ch.rail.r2p.persistence.TrainPersistence;
 import ch.rail.r2p.persistence.impl.BranchSpringDataRepository;
 import ch.rail.r2p.persistence.impl.ChangelogSpringDataRepository;
 import ch.rail.r2p.persistence.impl.TrainSpringDataRepository;
+import ch.rail.r2p.web.TrainController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashSet;
 import java.util.Objects;
@@ -27,6 +30,9 @@ public class Actor {
 
     @Autowired
     private TrainPersistence trainPersistence;
+
+    @Autowired
+    private TrainController trainController;
 
     @Autowired
     private TrainSpringDataRepository trainSpringDataRepository;
@@ -58,6 +64,22 @@ public class Actor {
 
     public static String getPrefixedBranchName(PartnerToken owner, String branchName) {
         return "%s-%s".formatted(owner.name(), branchName);
+    }
+
+    public TrainListElement createTrain(PartnerToken owner, String comment) {
+        TrainListElement train = trainController.createTrain(owner, comment, loadSampleTrain()).getBody();
+        Objects.requireNonNull(train, "createTrain returned null body");
+        return train;
+    }
+
+    public void shareTrain(PartnerToken owner, UUID trainId, PartnerToken partner) {
+        trainController.shareTrain(owner, trainId, partner.name());
+    }
+
+    public Branch createBranch(PartnerToken owner, UUID trainId, String branchName, String comment) {
+        Branch branch = trainController.createTrainBranch(owner, trainId, branchName, comment, loadSampleTrain()).getBody();
+        Objects.requireNonNull(branch, "createTrainBranch returned null body");
+        return branch;
     }
 
     public void setup() {

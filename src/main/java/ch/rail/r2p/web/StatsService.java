@@ -28,7 +28,13 @@ public class StatsService {
                 TrainSpringDataRepository.PartnerCount::partner,
                 TrainSpringDataRepository.PartnerCount::cnt));
 
-        Map<String, Integer> openBranchesByOwner = branchSpringDataRepository.countOpenBranchesByOwner()
+        Map<String, Integer> openBranchesByOwner = branchSpringDataRepository.countOpenNonMainBranchesByOwner()
+            .stream()
+            .collect(Collectors.toMap(
+                BranchSpringDataRepository.OwnerCount::owner,
+                BranchSpringDataRepository.OwnerCount::cnt));
+
+        Map<String, Integer> mergeRequestsByOwner = branchSpringDataRepository.countMergeRequestedBranchesByOwner()
             .stream()
             .collect(Collectors.toMap(
                 BranchSpringDataRepository.OwnerCount::owner,
@@ -38,16 +44,19 @@ public class StatsService {
 
         int totalOpenBranches = openBranchesByOwner.values().stream().mapToInt(Integer::intValue).sum();
 
+        int totalMergeRequests = mergeRequestsByOwner.values().stream().mapToInt(Integer::intValue).sum();
+
         List<PartnerStats> perPartner = trainsByPartner.keySet().stream()
             .sorted(Comparator.naturalOrder())
             .map(partner -> new PartnerStats(
                 partner,
                 partner.equals(instanceOwner),
                 trainsByPartner.getOrDefault(partner, 0),
-                openBranchesByOwner.getOrDefault(partner, 0)))
+                openBranchesByOwner.getOrDefault(partner, 0),
+                mergeRequestsByOwner.getOrDefault(partner, 0)))
             .toList();
 
-        PartnerStats totals = new PartnerStats(null, false, totalTrainsCount, totalOpenBranches);
+        PartnerStats totals = new PartnerStats(null, false, totalTrainsCount, totalOpenBranches, totalMergeRequests);
 
         List<PartnerStats> result = new ArrayList<>();
         result.add(totals);

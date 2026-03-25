@@ -213,6 +213,53 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+  /v1/trains/{trainId}/mergeRequests:
+    get:
+      tags:
+        - R2P
+      summary: List merge requests for a train
+      description: |
+        Returns the latest merge-related changelog entry per branch for the given train.
+        Merge-related actions are MERGE_REQUESTED, MERGE_REJECTED and MERGED. For every branch that has
+        at least one such entry, the most recent entry is returned. Results can optionally be filtered by
+        action (state). Both the Lead RU and shared partners can view the merge requests.
+      operationId: listMergeRequests
+      parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
+        - name: trainId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: state
+          in: query
+          required: false
+          description: >
+            Optional filter: only return entries whose action matches this value.
+          schema:
+            $ref: '#/components/schemas/MergeAction'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Change'
+        '403':
+          description: Not authorized to access train
+        '404':
+          description: Train not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
   /v1/trains/{trainId}/branches:
     post:
       tags:
@@ -265,6 +312,12 @@ paths:
           description: Not authorized to create train branch
         '404':
           description: Train not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: Main branch is not in OPEN state (e.g. deleted)
           content:
             application/problem+json:
               schema:
@@ -370,6 +423,12 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: Branch is not in a valid state for updates (e.g. merged, deleted, or merge already requested)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
     delete:
       tags:
         - R2P
@@ -415,6 +474,186 @@ paths:
           description: Not authorized to delete branch
         '404':
           description: Train or branch not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: Branch is not in a valid state for deletion (e.g. already merged or deleted)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+  /v1/trains/{trainId}/branches/{branchId}/requestMerge:
+    post:
+      tags:
+        - R2P
+      summary: Request a merge of a branch into main
+      description: |
+        Creates a merge request for a branch to be merged into the main branch. **Only the branch owner (creator)
+        can create a merge request.** The merge request is recorded in the change history and becomes visible to
+        the Lead RU and all other partners. The branch state changes to MERGE_REQUESTED.
+      operationId: requestMerge
+      parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
+        - name: trainId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: branchId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: comment
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Merge request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+        '403':
+          description: Not authorized to request merge
+        '404':
+          description: Train or branch not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: Branch is not in OPEN state (merge already requested, merged or deleted)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+  /v1/trains/{trainId}/branches/{branchId}/merge:
+    post:
+      tags:
+        - R2P
+      summary: Merge a branch into main
+      description: |
+        Merges the current state of a branch into the main branch. **Only the Lead RU can perform a merge.**
+        The caller must provide the version ID of the branch head they have reviewed; if the branch has been
+        modified since then, the merge is rejected with an error. The branch is closed (state MERGED) and its
+        data is written to the main branch. Both the branch closure and the main branch update are recorded
+        in the change history.
+      operationId: merge
+      parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
+        - name: trainId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: branchId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: reviewedVersion
+          in: query
+          required: true
+          description: The version ID that the Lead RU has reviewed; must match the current head version of the branch.
+          schema:
+            type: string
+            format: uuid
+        - name: comment
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Branch merged into main
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainListElement'
+        '403':
+          description: Not authorized to merge
+        '404':
+          description: Train or branch not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: >
+            Reviewed version does not match current head version of the branch;
+            or the source branch is not in a valid state for merging (e.g. already merged or deleted);
+            or the main branch is not in OPEN state (e.g. it has been deleted).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+  /v1/trains/{trainId}/branches/{branchId}/rejectMerge:
+    post:
+      tags:
+        - R2P
+      summary: Reject a merge request
+      description: |
+        Rejects an open merge request for a branch. **Only the Lead RU can reject a merge request.**
+        The rejection is recorded in the change history with the provided comment. The branch remains
+        open (state reverts to OPEN) and the main branch is unchanged.
+      operationId: rejectMerge
+      parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
+        - name: trainId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: branchId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: comment
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Merge request rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+        '403':
+          description: Not authorized to reject merge request
+        '404':
+          description: Train or branch not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: Branch is not in MERGE_REQUESTED state
           content:
             application/problem+json:
               schema:
@@ -582,13 +821,25 @@ components:
       type: string
       enum:
         - open
+        - merge_requested
         - merged
         - deleted
+    MergeAction:
+      description: >
+        Actions that are specific to merge-request workflows. Used as a filter parameter
+        for the listMergeRequests endpoint.
+      type: string
+      enum:
+        - merge_requested
+        - merge_rejected
+        - merged
     Action:
       type: string
       enum:
         - created
         - updated
+        - merge_requested
+        - merge_rejected
         - merged
         - deleted
         - shared

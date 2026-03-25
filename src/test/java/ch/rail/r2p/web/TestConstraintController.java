@@ -26,5 +26,15 @@ public class TestConstraintController {
     public ResponseEntity<String> testIllegalState() {
         throw new IllegalStateException("Test illegal state exception - data integrity issue");
     }
+
+    @GetMapping("/test/merge-conflict")
+    public ResponseEntity<String> testMergeConflict() {
+        throw new MergeConflictException("Test merge conflict - reviewed version is stale");
+    }
+
+    @GetMapping("/test/invalid-branch-state")
+    public ResponseEntity<String> testInvalidBranchState() {
+        throw new InvalidBranchStateException("Test invalid branch state - branch already merged");
+    }
 }
 
