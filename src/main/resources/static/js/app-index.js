@@ -85,7 +85,7 @@ function trainApp() {
             }
 
             if (this.filterOpenBranches) {
-                result = result.filter(t => t.openBranches > 1);
+                result = result.filter(t => t.openBranches > 0);
             }
 
             if (this.filterOpenMRs) {
@@ -211,7 +211,7 @@ function trainApp() {
         mapTrain(t) {
             const base = mapTrainBase(t);
             const openBranches = (t.branches ?? []).filter(
-                b => b.technical && b.technical.branchState === 'open'
+                b => b.technical && b.technical.branchState === 'open' && !b.technical.mainBranch
             ).length;
             const openMergeRequests = (t.branches ?? []).filter(
                 b => b.technical && b.technical.branchState === 'merge_requested'

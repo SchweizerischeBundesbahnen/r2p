@@ -203,7 +203,7 @@
                                       class="text-muted">None</span>
                             </td>
                             <td>
-                                <span x-show="train.openBranches > 1"
+                                <span x-show="train.openBranches > 0"
                                       class="indicator-icon"
                                       :title="train.openBranches + ' open branch(es)'">
                                     🌿 <span x-text="train.openBranches"></span>
@@ -213,7 +213,7 @@
                                       :title="train.openMergeRequests + ' open merge request(s)'">
                                     🔀 <span x-text="train.openMergeRequests"></span>
                                 </span>
-                                <span x-show="train.openBranches <= 1 && train.openMergeRequests === 0"
+                                <span x-show="train.openBranches === 0 && train.openMergeRequests === 0"
                                       class="text-muted">-</span>
                             </td>
                             <td x-text="formatTimestamp(train.lastChange)"></td>
