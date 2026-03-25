@@ -69,6 +69,12 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
     void deleteTrainPartnersByTrainId(UUID trainId);
 
     @Query("""
+        DELETE FROM train_partner
+        """)
+    @Modifying
+    void deleteAllTrainPartners();
+
+    @Query("""
         SELECT partner, COUNT(DISTINCT train_id) AS cnt
         FROM train_partner
         GROUP BY partner

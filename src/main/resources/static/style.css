@@ -21,6 +21,9 @@
     --status-merged: #3182ce;
     --status-merged-bg: #bee3f8;
     --status-merged-text: #2c5282;
+    --status-merge-requested: #d69e2e;
+    --status-merge-requested-bg: #fefcbf;
+    --status-merge-requested-text: #744210;
     --status-deleted: #718096;
     --status-deleted-bg: #e2e8f0;
     --status-deleted-text: #2d3748;
@@ -493,6 +496,15 @@ tbody td {
 
 .badge-open::before {
     content: '✓ ';
+}
+
+.badge-merge-requested {
+    background-color: var(--status-merge-requested-bg);
+    color: var(--status-merge-requested-text);
+}
+
+.badge-merge-requested::before {
+    content: '⏳ ';
 }
 
 .badge-merged {

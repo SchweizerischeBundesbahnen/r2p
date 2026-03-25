@@ -3,6 +3,7 @@ package ch.rail.r2p.web;
 import static ch.rail.r2p.domain.Branch.MAIN_BRANCH_NAME;
 import static java.util.stream.Collectors.groupingBy;
 
+import ch.rail.r2p.api.dto.Action;
 import ch.rail.r2p.api.dto.BranchState;
 import ch.rail.r2p.api.dto.Train;
 import ch.rail.r2p.domain.Branch;
@@ -176,6 +177,20 @@ public class TrainService {
         Changelog changelog = Changelog.forUpdate(partner, newVersion, branch.branch(), comment);
         changelogPersistence.insert(changelog);
         return new TrainVersionEnriched(newVersion, branch.branch(), branch.partners());
+    }
+
+    public List<Changelog> listMergeRequests(String partner, UUID trainId, Action state) {
+        if (!trainPersistence.existsByTrainId(trainId)) {
+            throw new NoSuchElementException("Train not found");
+        }
+        // Authorization: partner must have access to this train
+        List<TrainVersionEnriched> trains = trainPersistence.findHeadVersionsByTrainId(trainId);
+        checkSharing(partner, trains.getFirst());
+        List<Changelog> entries = changelogPersistence.findLatestMergeRelatedPerBranch(partner, trainId);
+        if (state != null) {
+            entries = entries.stream().filter(e -> e.getAction() == state).toList();
+        }
+        return entries;
     }
 
     public List<Changelog> getChangelogs(String partner, OffsetDateTime from, OffsetDateTime to, UUID trainId) {

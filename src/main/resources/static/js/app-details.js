@@ -12,8 +12,9 @@ function detailsApp() {
         train:   null,
 
         // ── Raw data ──────────────────────────────────────────────────────────
-        allBranches:  [],
-        allChangelog: [],
+        allBranches:      [],
+        allChangelog:     [],
+        allMergeRequests: [],
 
         // ── Partner token selector ────────────────────────────────────────────
         selectedToken: getSelectedToken(),
@@ -28,6 +29,11 @@ function detailsApp() {
         branchSorter:       makeSorter(),
         branchPage:         1,
 
+        // ── Merge request filter / sorter / page ──────────────────────────────
+        mrFilterAction: '',
+        mrSorter:       makeSorter(),
+        mrPage:         1,
+
         // ── Changelog filter / sorter / page ──────────────────────────────────
         clFilterAction:  '',
         clFilterPartner: '',
@@ -38,6 +44,28 @@ function detailsApp() {
         // ── Derived: branch owners dropdown ───────────────────────────────────
         get branchOwners() {
             return [...new Set(this.allBranches.map(b => b.owner))].sort();
+        },
+
+        // ── Derived: merge request actions dropdown ───────────────────────────
+        get mrActions() {
+            return [...new Set(this.allMergeRequests.map(m => m.action))].sort();
+        },
+
+        // ── Derived: filtered + sorted merge requests ─────────────────────────
+        get filteredMergeRequests() {
+            let r = this.allMergeRequests;
+            if (this.mrFilterAction)
+                r = r.filter(m => m.action === this.mrFilterAction);
+            return applySorter(r, this.mrSorter);
+        },
+
+        get mrTotalPages() {
+            return Math.max(1, Math.ceil(this.filteredMergeRequests.length / this.itemsPerPage));
+        },
+
+        get pagedMergeRequests() {
+            const start = (this.mrPage - 1) * this.itemsPerPage;
+            return this.filteredMergeRequests.slice(start, start + this.itemsPerPage);
         },
 
         // ── Derived: changelog partners dropdown ───────────────────────────────
@@ -96,9 +124,10 @@ function detailsApp() {
                 return;
             }
             try {
-                const [trainRes, changesRes] = await Promise.all([
+                const [trainRes, changesRes, mrRes] = await Promise.all([
                     fetchTrainDetail(this.trainId),
-                    fetchTrainChanges(this.trainId)
+                    fetchTrainChanges(this.trainId),
+                    fetchMergeRequests(this.trainId)
                 ]);
 
                 if (trainRes.status === 404) {
@@ -109,13 +138,17 @@ function detailsApp() {
                     throw new Error(`Train API returned HTTP ${trainRes.status} ${trainRes.statusText}`);
                 if (!changesRes.ok)
                     throw new Error(`Changes API returned HTTP ${changesRes.status} ${changesRes.statusText}`);
+                if (!mrRes.ok)
+                    throw new Error(`Merge requests API returned HTTP ${mrRes.status} ${mrRes.statusText}`);
 
                 const trainData   = await trainRes.json();
                 const changesData = await changesRes.json();
+                const mrData      = await mrRes.json();
 
-                this.train        = this.mapTrain(trainData);
-                this.allBranches  = this.mapBranches(trainData.branches ?? []);
-                this.allChangelog = changesData;
+                this.train            = this.mapTrain(trainData);
+                this.allBranches      = this.mapBranches(trainData.branches ?? []);
+                this.allMergeRequests = this.mapMergeRequests(mrData);
+                this.allChangelog     = changesData;
 
                 document.title = `Train Details - ${this.train.trainNumber} - R2P`;
             } catch (e) {
@@ -128,9 +161,11 @@ function detailsApp() {
         // ── Called when token selector changes ────────────────────────────────
         onTokenChange() {
             setSelectedToken(this.selectedToken);
-            this.loading = true;
-            this.error   = null;
-            this.train   = null;
+            this.loading          = true;
+            this.error            = null;
+            this.train            = null;
+            this.allMergeRequests = [];
+            this.mrPage           = 1;
             this.init();
         },
 
@@ -154,6 +189,29 @@ function detailsApp() {
                 this.branchPage,
                 this.itemsPerPage,
                 'branches'
+            );
+        },
+
+        // ── Merge request sort helpers ────────────────────────────────────────
+        mrSort(col) {
+            this.mrSorter.sort(col);
+            this.mrPage = 1;
+        },
+
+        mrSortIndicator(col) {
+            return this.mrSorter.indicator(col);
+        },
+
+        mrSortAriaSort(col) {
+            return this.mrSorter.ariaSort(col);
+        },
+
+        mrPaginationInfo() {
+            return paginationInfo(
+                this.filteredMergeRequests.length,
+                this.mrPage,
+                this.itemsPerPage,
+                'merge requests'
             );
         },
 
@@ -192,6 +250,18 @@ function detailsApp() {
                 owner:     b.technical?.owner ?? '-',
                 timestamp: b.technical?.timestamp ?? null,
                 state:     b.technical?.branchState ?? '-'
+            }));
+        },
+
+        mapMergeRequests(changes) {
+            return changes.map(c => ({
+                branchId:  c.branchId,
+                branchName: c.branchName,
+                partner:   c.partner,
+                timestamp: c.timestamp,
+                action:    c.action,
+                version:   c.version,
+                comment:   c.comment
             }));
         },
 

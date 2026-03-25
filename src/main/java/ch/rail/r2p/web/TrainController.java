@@ -1,6 +1,7 @@
 package ch.rail.r2p.web;
 
 import ch.rail.r2p.api.V1Api;
+import ch.rail.r2p.api.dto.Action;
 import ch.rail.r2p.api.dto.Branch;
 import ch.rail.r2p.api.dto.Change;
 import ch.rail.r2p.api.dto.PartnerToken;
@@ -102,6 +103,12 @@ public class TrainController implements V1Api {
     public ResponseEntity<List<Change>> listTrainChanges(PartnerToken token, OffsetDateTime from, OffsetDateTime to) {
         List<Changelog> changelogs = trainService.getChangelogs(token.name(), from, to, null);
         return ResponseEntity.ok(changelogs.stream().map(trainMapper::toChange).toList());
+    }
+
+    @Override
+    public ResponseEntity<List<Change>> listMergeRequests(PartnerToken token, UUID trainId, Action state) {
+        List<Changelog> entries = trainService.listMergeRequests(token.name(), trainId, state);
+        return ResponseEntity.ok(entries.stream().map(trainMapper::toChange).toList());
     }
 
     @Override

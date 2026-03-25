@@ -97,12 +97,103 @@
             </section>
 
             <!-- Section 2: Merge Requests -->
-            <section class="compact-section">
+            <section class="section">
                 <h2 style="font-size: 1.25rem;">Merge Requests</h2>
-                <div class="empty-state empty-state-compact">
-                    <div class="empty-state-icon">🔀</div>
-                    <div class="empty-state-text">No merge requests available</div>
-                    <div class="empty-state-subtext">Merge requests are not yet implemented. This feature will be available in a future release.</div>
+
+                <!-- Merge Request Filter Bar -->
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label for="mr-filter-action">State</label>
+                        <select id="mr-filter-action" class="filter-select"
+                                x-model="mrFilterAction"
+                                @change="mrPage = 1">
+                            <option value="">All</option>
+                            <option value="merge_requested">merge_requested</option>
+                            <option value="merge_rejected">merge_rejected</option>
+                            <option value="merged">merged</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="merge-requests-table">
+                        <thead>
+                            <tr>
+                                <th>Branch ID</th>
+                                <th class="sort-header" tabindex="0" role="columnheader"
+                                    :aria-sort="mrSortAriaSort('branchName')"
+                                    :class="{ 'active-sort': mrSorter.col === 'branchName' }"
+                                    @click="mrSort('branchName')" @keydown.enter.prevent="mrSort('branchName')" @keydown.space.prevent="mrSort('branchName')">
+                                    Branch
+                                    <span class="sort-indicator" x-text="mrSortIndicator('branchName')"></span>
+                                </th>
+                                <th class="sort-header" tabindex="0" role="columnheader"
+                                    :aria-sort="mrSortAriaSort('partner')"
+                                    :class="{ 'active-sort': mrSorter.col === 'partner' }"
+                                    @click="mrSort('partner')" @keydown.enter.prevent="mrSort('partner')" @keydown.space.prevent="mrSort('partner')">
+                                    Partner
+                                    <span class="sort-indicator" x-text="mrSortIndicator('partner')"></span>
+                                </th>
+                                <th class="sort-header" tabindex="0" role="columnheader"
+                                    :aria-sort="mrSortAriaSort('timestamp')"
+                                    :class="{ 'active-sort': mrSorter.col === 'timestamp' }"
+                                    @click="mrSort('timestamp')" @keydown.enter.prevent="mrSort('timestamp')" @keydown.space.prevent="mrSort('timestamp')">
+                                    Date
+                                    <span class="sort-indicator" x-text="mrSortIndicator('timestamp')"></span>
+                                </th>
+                                <th>State</th>
+                                <th>Comment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-if="loading">
+                                <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">Loading…</td></tr>
+                            </template>
+                            <template x-if="!loading && pagedMergeRequests.length === 0">
+                                <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">No merge requests found.</td></tr>
+                            </template>
+                            <template x-for="mr in pagedMergeRequests" :key="mr.branchId">
+                                <tr>
+                                    <td class="id-cell">
+                                        <span class="id-truncated" :title="mr.branchId"
+                                              x-text="truncateId(mr.branchId)"></span>
+                                        <button class="clipboard-btn" @click="copyToClipboard(mr.branchId)"
+                                                aria-label="Copy branch ID" title="Copy full ID">📋</button>
+                                    </td>
+                                    <td><strong x-text="mr.branchName"></strong></td>
+                                    <td>
+                                        <span class="partner-badge" :class="partnerBadgeClass(mr.partner)"
+                                              x-text="mr.partner"></span>
+                                    </td>
+                                    <td x-text="formatTimestamp(mr.timestamp)"></td>
+                                    <td>
+                                        <span class="badge" :class="actionBadgeClass(mr.action)"
+                                              :aria-label="mr.action" x-text="mr.action"></span>
+                                    </td>
+                                    <td x-text="mr.comment ?? '-'"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+
+                    <!-- Merge Request Pagination -->
+                    <div class="pagination-container">
+                        <div class="pagination-info" x-text="mrPaginationInfo()"></div>
+                        <div class="pagination">
+                            <button class="pagination-btn" aria-label="First page"
+                                    :disabled="mrPage === 1" @click="mrPage = 1">« First</button>
+                            <button class="pagination-btn" aria-label="Previous page"
+                                    :disabled="mrPage === 1" @click="mrPage--">‹ Previous</button>
+                            <span class="pagination-text"
+                                  x-text="'Page ' + mrPage + ' of ' + mrTotalPages"></span>
+                            <button class="pagination-btn" aria-label="Next page"
+                                    :disabled="mrPage === mrTotalPages || mrTotalPages === 0"
+                                    @click="mrPage++">Next ›</button>
+                            <button class="pagination-btn" aria-label="Last page"
+                                    :disabled="mrPage === mrTotalPages || mrTotalPages === 0"
+                                    @click="mrPage = mrTotalPages">Last »</button>
+                        </div>
+                    </div>
                 </div>
             </section>
 

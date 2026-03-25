@@ -90,6 +90,15 @@ async function fetchTrainBranch(trainId, branchId) {
 }
 
 /**
+ * Fetches all merge requests (branches in MERGE_REQUESTED state) for a train.
+ * @param {string} trainId
+ * @returns {Promise<Response>}
+ */
+async function fetchMergeRequests(trainId) {
+    return apiFetch(`/v1/trains/${trainId}/mergeRequests`);
+}
+
+/**
  * Fetches partner statistics from the backend.
  * Returns a list with one entry per partner plus a totals row (partner === null).
  * @returns {Promise<Response>}

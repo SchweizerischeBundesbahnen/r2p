@@ -66,9 +66,10 @@ function partnerBadgeClass(partner) {
  */
 function branchStateBadgeClass(state) {
     const mapping = {
-        'open':    'badge-open',
-        'merged':  'badge-merged',
-        'deleted': 'badge-deleted'
+        'open':             'badge-open',
+        'merge_requested':  'badge-merge-requested',
+        'merged':           'badge-merged',
+        'deleted':          'badge-deleted'
     };
     return mapping[state] ?? 'badge-open';
 }

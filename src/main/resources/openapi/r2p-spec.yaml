@@ -213,6 +213,52 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+  /v1/trains/{trainId}/mergeRequests:
+    get:
+      tags:
+        - R2P
+      summary: List merge requests for a train
+      description: |
+        Returns the latest merge-related changelog entry per branch for the given train.
+        Merge-related actions are MERGE_REQUESTED, MERGE_REJECTED and MERGED. For every branch that has
+        at least one such entry, the most recent entry is returned. Results can optionally be filtered by
+        action (state). Both the Lead RU and shared partners can view the merge requests.
+      operationId: listMergeRequests
+      parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerToken'
+        - name: trainId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: state
+          in: query
+          required: false
+          description: 'optional filter: only return entries with this action (merge_requested, merge_rejected, merged)'
+          schema:
+            $ref: '#/components/schemas/Action'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Change'
+        '403':
+          description: Not authorized to access train
+        '404':
+          description: Train not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
   /v1/trains/{trainId}/branches:
     post:
       tags:

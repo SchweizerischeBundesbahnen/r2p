@@ -11,6 +11,7 @@ import ch.rail.r2p.persistence.impl.TrainSpringDataRepository;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,14 +33,28 @@ class TestDataServiceTests {
     @Autowired
     private ChangelogSpringDataRepository changelogSpringDataRepository;
 
-    @AfterEach
-    void tearDown() {
-        // train_partner has no cascade, delete first; branches cascade to train_version
+    private void cleanDatabase() {
+        // Delete all train_partner rows first (no cascade), then all other data.
+        // We must query all distinct train_ids from train_partner directly, because
+        // orphaned partner rows can exist after other test classes clean up via cascade delete.
         trainSpringDataRepository.findAll()
             .forEach(tv -> trainSpringDataRepository.deleteTrainPartnersByTrainId(tv.getTrainId()));
+        // Also purge any orphaned train_partner rows whose train_version was removed by cascade
+        // from other test classes (they would otherwise skew countTrainsPerPartner queries).
+        trainSpringDataRepository.deleteAllTrainPartners();
         changelogSpringDataRepository.deleteAll();
         branchSpringDataRepository.deleteAll();  // cascades to train_version via FK
         trainSpringDataRepository.deleteAll();
+    }
+
+    @BeforeEach
+    void setUp() {
+        cleanDatabase();
+    }
+
+    @AfterEach
+    void tearDown() {
+        cleanDatabase();
     }
 
     private TestDataRequest request(int numberOfTrains, List<String> partners) {
@@ -78,9 +93,12 @@ class TestDataServiceTests {
         assertThat(result.branchesDeleted()).isGreaterThanOrEqualTo(result.mainBranchesDeleted());
         // versions >= trains (every train has at least 1 version) + branches created
         assertThat(result.versionsCreated()).isGreaterThanOrEqualTo(result.trainsCreated());
-        // merge requests can only exist on branches that were created and not deleted
+        // merge requests can only exist on non-main branches that were created and not deleted.
+        // Main branch deletions increment branchesDeleted but have no effect on the
+        // non-main branch pool, so they must be excluded from the upper bound.
+        int nonMainBranchesDeleted = result.branchesDeleted() - result.mainBranchesDeleted();
         assertThat(result.mergeRequestsCreated()).isGreaterThanOrEqualTo(0);
-        assertThat(result.mergeRequestsCreated()).isLessThanOrEqualTo(result.branchesCreated() - result.branchesDeleted());
+        assertThat(result.mergeRequestsCreated()).isLessThanOrEqualTo(result.branchesCreated() - nonMainBranchesDeleted);
     }
 
     @Test

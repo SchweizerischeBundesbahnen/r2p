@@ -26,6 +26,11 @@ public class ChangelogPersistenceImpl implements ChangelogPersistence {
     }
 
     @Override
+    public List<Changelog> findLatestMergeRelatedPerBranch(String partner, UUID trainId) {
+        return changelogSpringDataRepository.findLatestMergeRelatedPerBranch(partner, trainId);
+    }
+
+    @Override
     public void deleteByTrainId(Collection<UUID> trainIds) {
         trainIds.forEach(changelogSpringDataRepository::deleteByTrainId);
     }

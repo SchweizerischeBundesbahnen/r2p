@@ -109,9 +109,13 @@ public class TestDataService {
 
             // 1g. Create 0–2 non-main branches
             int branchCount = random.nextInt(3); // 0, 1 or 2
+            Set<String> usedBranchNames = new HashSet<>();
             for (int b = 0; b < branchCount; b++) {
                 String branchOwner = allPartners.get(random.nextInt(allPartners.size()));
-                String branchName = "branch-" + (100 + random.nextInt(900));
+                String branchName;
+                do {
+                    branchName = "branch-" + (100 + random.nextInt(900));
+                } while (!usedBranchNames.add(branchName));
                 Train branchPayload = cloneTrain(operationalDay, trainNumber);
 
                 TrainVersionEnriched branch = trainService.createTrainBranch(

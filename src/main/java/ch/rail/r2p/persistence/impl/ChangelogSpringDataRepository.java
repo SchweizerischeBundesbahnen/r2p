@@ -25,6 +25,23 @@ public interface ChangelogSpringDataRepository extends CrudRepository<Changelog,
     List<Changelog> find(String partner, OffsetDateTime from, OffsetDateTime to, UUID trainId);
 
     @Query("""
+        SELECT c.* FROM changelog c
+        INNER JOIN (
+            SELECT branch_id, MAX(timestamp) AS max_ts
+            FROM changelog
+            WHERE train_id = :trainId
+              AND action IN ('MERGE_REQUESTED', 'MERGE_REJECTED', 'MERGED')
+              AND branch_id IS NOT NULL
+            GROUP BY branch_id
+        ) latest ON c.branch_id = latest.branch_id AND c.timestamp = latest.max_ts
+        WHERE c.train_id = :trainId
+          AND c.action IN ('MERGE_REQUESTED', 'MERGE_REJECTED', 'MERGED')
+          AND EXISTS (SELECT 1 FROM train_partner WHERE train_partner.train_id = c.train_id AND train_partner.partner = :partner)
+        ORDER BY c.timestamp DESC
+        """)
+    List<Changelog> findLatestMergeRelatedPerBranch(String partner, UUID trainId);
+
+    @Query("""
         SELECT * FROM changelog WHERE train_id=:trainId
         """)
     List<Changelog> findByTrainId(UUID trainId);
