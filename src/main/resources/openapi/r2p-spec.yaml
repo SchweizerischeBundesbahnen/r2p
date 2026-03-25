@@ -240,12 +240,9 @@ paths:
           in: query
           required: false
           description: >
-            Optional filter: only return entries whose action matches this value. The parameter is
-            typed as the global Action enum; however, only merge_requested, merge_rejected and merged
-            correspond to merge requests. Other Action values are accepted but will not match any
-            merge requests and therefore yield an empty result list.
+            Optional filter: only return entries whose action matches this value.
           schema:
-            $ref: '#/components/schemas/Action'
+            $ref: '#/components/schemas/MergeAction'
       responses:
         '200':
           description: Successful operation
@@ -794,6 +791,15 @@ components:
         - merge_requested
         - merged
         - deleted
+    MergeAction:
+      description: >
+        Actions that are specific to merge-request workflows. Used as a filter parameter
+        for the listMergeRequests endpoint.
+      type: string
+      enum:
+        - merge_requested
+        - merge_rejected
+        - merged
     Action:
       type: string
       enum:

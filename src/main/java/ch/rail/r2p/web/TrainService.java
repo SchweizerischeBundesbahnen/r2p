@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.groupingBy;
 
 import ch.rail.r2p.api.dto.Action;
 import ch.rail.r2p.api.dto.BranchState;
+import ch.rail.r2p.api.dto.MergeAction;
 import ch.rail.r2p.api.dto.Train;
 import ch.rail.r2p.domain.Branch;
 import ch.rail.r2p.domain.Changelog;
@@ -186,7 +187,7 @@ public class TrainService {
         return new TrainVersionEnriched(newVersion, branch.branch(), branch.partners());
     }
 
-    public List<Changelog> listMergeRequests(String partner, UUID trainId, Action state) {
+    public List<Changelog> listMergeRequests(String partner, UUID trainId, MergeAction state) {
         if (!trainPersistence.existsByTrainId(trainId)) {
             throw new NoSuchElementException("Train not found");
         }
@@ -195,7 +196,8 @@ public class TrainService {
         checkSharing(partner, trains.getFirst());
         List<Changelog> entries = changelogPersistence.findLatestMergeRelatedPerBranch(partner, trainId);
         if (state != null) {
-            entries = entries.stream().filter(e -> e.getAction() == state).toList();
+            Action actionFilter = Action.fromValue(state.getValue());
+            entries = entries.stream().filter(e -> e.getAction() == actionFilter).toList();
         }
         return entries;
     }

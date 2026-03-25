@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import ch.rail.r2p.Actor;
 import ch.rail.r2p.api.dto.Action;
 import ch.rail.r2p.api.dto.Change;
+import ch.rail.r2p.api.dto.MergeAction;
 import ch.rail.r2p.persistence.TrainPersistence;
 import java.util.List;
 import java.util.UUID;
@@ -155,7 +156,7 @@ class MergeRequestsTests {
         // Reject branch2
         trainController.rejectMerge(SBB, train.getTrainId(), branch2.getBranchId(), "not ready");
 
-        var result = trainController.listMergeRequests(SBB, train.getTrainId(), Action.MERGE_REQUESTED).getBody();
+        var result = trainController.listMergeRequests(SBB, train.getTrainId(), MergeAction.MERGE_REQUESTED).getBody();
 
         assertThat(result).isNotNull().hasSize(1);
         assertThat(result.getFirst().getBranchId()).isEqualTo(branch1.getBranchId());
@@ -170,8 +171,8 @@ class MergeRequestsTests {
         trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
         trainController.rejectMerge(SBB, train.getTrainId(), branch.getBranchId(), "not ready");
 
-        var resultRejected = trainController.listMergeRequests(SBB, train.getTrainId(), Action.MERGE_REJECTED).getBody();
-        var resultRequested = trainController.listMergeRequests(SBB, train.getTrainId(), Action.MERGE_REQUESTED).getBody();
+        var resultRejected = trainController.listMergeRequests(SBB, train.getTrainId(), MergeAction.MERGE_REJECTED).getBody();
+        var resultRequested = trainController.listMergeRequests(SBB, train.getTrainId(), MergeAction.MERGE_REQUESTED).getBody();
 
         assertThat(resultRejected).isNotNull().hasSize(1);
         assertThat(resultRejected.getFirst().getAction()).isEqualTo(Action.MERGE_REJECTED);
@@ -187,8 +188,8 @@ class MergeRequestsTests {
         trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
         trainController.merge(SBB, train.getTrainId(), branch.getBranchId(), reviewedVersion, "merging");
 
-        var resultMerged = trainController.listMergeRequests(SBB, train.getTrainId(), Action.MERGED).getBody();
-        var resultRequested = trainController.listMergeRequests(SBB, train.getTrainId(), Action.MERGE_REQUESTED).getBody();
+        var resultMerged = trainController.listMergeRequests(SBB, train.getTrainId(), MergeAction.MERGED).getBody();
+        var resultRequested = trainController.listMergeRequests(SBB, train.getTrainId(), MergeAction.MERGE_REQUESTED).getBody();
 
         assertThat(resultMerged).isNotNull().hasSize(1);
         assertThat(resultMerged.getFirst().getAction()).isEqualTo(Action.MERGED);
