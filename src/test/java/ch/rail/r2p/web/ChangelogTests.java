@@ -13,12 +13,14 @@ import ch.rail.r2p.domain.Branch;
 import ch.rail.r2p.domain.Changelog;
 import ch.rail.r2p.domain.TrainVersion;
 import ch.rail.r2p.persistence.impl.BranchSpringDataRepository;
+import ch.rail.r2p.persistence.impl.ChangelogPersistenceImpl;
 import ch.rail.r2p.persistence.impl.ChangelogSpringDataRepository;
 import ch.rail.r2p.persistence.impl.TrainSpringDataRepository;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -35,6 +37,9 @@ public class ChangelogTests {
 
     @Autowired
     private TrainController trainController;
+
+    @Autowired
+    private ChangelogPersistenceImpl changelogPersistenceImpl;
 
     @Autowired
     private ChangelogSpringDataRepository changelogSpringDataRepository;
@@ -167,6 +172,46 @@ public class ChangelogTests {
         assertThat(trainController.getTrainChangesById(PartnerToken.SBB, trainId2, null, null).getBody()).hasSize(10);
         assertThat(trainController.getTrainChangesById(PartnerToken.SOB, trainId1, null, null).getBody()).hasSize(0);
         assertThat(trainController.getTrainChangesById(PartnerToken.SOB, trainId2, null, null).getBody()).hasSize(10);
+    }
+
+    @Test
+    void should_delete_changelog_entries_by_train_id() {
+        // Given: two trains each with changelog entries
+        UUID trainId1 = UUID.randomUUID();
+        UUID trainId2 = UUID.randomUUID();
+        createMinimalTrain(trainId1, MAIN_BRANCH_NAME);
+        createMinimalTrain(trainId2, MAIN_BRANCH_NAME);
+        generateChangelog(trainId1, "SBB", MAIN_BRANCH_NAME, 2, OffsetDateTime.parse("2026-01-01T12:00+01:00"), Duration.ofDays(1));
+        generateChangelog(trainId2, "SBB", MAIN_BRANCH_NAME, 3, OffsetDateTime.parse("2026-02-01T12:00+01:00"), Duration.ofDays(1));
+        trainSpringDataRepository.addPartner(trainId1, "SBB");
+        trainSpringDataRepository.addPartner(trainId2, "SBB");
+        assertThat(changelogSpringDataRepository.findByTrainId(trainId1)).hasSize(3); // 1 CREATED + 2 UPDATED
+        assertThat(changelogSpringDataRepository.findByTrainId(trainId2)).hasSize(4); // 1 CREATED + 3 UPDATED
+
+        // When: deleting changelog entries for trainId1 only (via the collection overload in ChangelogPersistenceImpl)
+        changelogPersistenceImpl.deleteByTrainId(List.of(trainId1));
+
+        // Then: entries for trainId1 are gone, entries for trainId2 are untouched
+        assertThat(changelogSpringDataRepository.findByTrainId(trainId1)).isEmpty();
+        assertThat(changelogSpringDataRepository.findByTrainId(trainId2)).hasSize(4);
+    }
+
+    @Test
+    void should_delete_changelog_entries_for_multiple_train_ids() {
+        // Given: two trains with changelog entries
+        UUID trainId1 = UUID.randomUUID();
+        UUID trainId2 = UUID.randomUUID();
+        createMinimalTrain(trainId1, MAIN_BRANCH_NAME);
+        createMinimalTrain(trainId2, MAIN_BRANCH_NAME);
+        generateChangelog(trainId1, "SBB", MAIN_BRANCH_NAME, 1, OffsetDateTime.parse("2026-01-01T12:00+01:00"), Duration.ofDays(1));
+        generateChangelog(trainId2, "SBB", MAIN_BRANCH_NAME, 1, OffsetDateTime.parse("2026-02-01T12:00+01:00"), Duration.ofDays(1));
+
+        // When: deleting all entries for both trains at once
+        changelogPersistenceImpl.deleteByTrainId(List.of(trainId1, trainId2));
+
+        // Then: both trains have no changelog entries left
+        assertThat(changelogSpringDataRepository.findByTrainId(trainId1)).isEmpty();
+        assertThat(changelogSpringDataRepository.findByTrainId(trainId2)).isEmpty();
     }
 
     @Test

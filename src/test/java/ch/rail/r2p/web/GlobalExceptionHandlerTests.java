@@ -150,4 +150,16 @@ class GlobalExceptionHandlerTests {
             .andExpect(status().isInternalServerError())
             .andExpect(jsonPath("$.status").value(500));
     }
+
+    @Test
+    void should_handle_merge_conflict_exception() throws Exception {
+        // When: calling an endpoint that throws MergeConflictException
+        mockMvc.perform(get("/test/merge-conflict")
+                .accept(MediaType.APPLICATION_JSON))
+            // Then: should return 409 Conflict with ProblemDetail containing the exception message
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.status").value(409))
+            .andExpect(jsonPath("$.title").value("Conflict"))
+            .andExpect(jsonPath("$.detail").value(containsString("reviewed version is stale")));
+    }
 }
