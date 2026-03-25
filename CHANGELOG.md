@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.0.18](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.17...r2p-v0.0.18) (2026-03-25)
+
+
+### Features
+
+* merge requests and their approval and rejection ([e7086f4](https://github.com/SchweizerischeBundesbahnen/r2p/commit/e7086f4221a868d88337de7c208d31b6f86f8a9c))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.18-SNAPSHOT ([#94](https://github.com/SchweizerischeBundesbahnen/r2p/issues/94)) ([db35c3d](https://github.com/SchweizerischeBundesbahnen/r2p/commit/db35c3d983cf5a7b42b694faab1f4ceeac83d704))
+
+
+### Build System
+
+* **deps-dev:** bump the commitlint group with 2 updates ([#96](https://github.com/SchweizerischeBundesbahnen/r2p/issues/96)) ([6f20b0e](https://github.com/SchweizerischeBundesbahnen/r2p/commit/6f20b0e1421f81e5855f0c3b8debfb3c2878c8ed))
+* **deps:** bump org.springframework.boot:spring-boot-starter-parent ([#97](https://github.com/SchweizerischeBundesbahnen/r2p/issues/97)) ([cb0dd40](https://github.com/SchweizerischeBundesbahnen/r2p/commit/cb0dd401330243b8ca081e316fd17a6b514f667b))
+* **deps:** bump org.webjars.npm:alpinejs from 3.14.9 to 3.15.8 ([#95](https://github.com/SchweizerischeBundesbahnen/r2p/issues/95)) ([a42ee31](https://github.com/SchweizerischeBundesbahnen/r2p/commit/a42ee312292f0e6aa64401a5cf61e63e0d5488a2))
+
 ## [0.0.17](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.16...r2p-v0.0.17) (2026-03-18)
 
 
