@@ -26,14 +26,6 @@ public interface BranchSpringDataRepository extends CrudRepository<Branch, UUID>
         SELECT owner, COUNT(*) AS cnt
         FROM branch
         WHERE state = 'OPEN'
-        GROUP BY owner
-        """)
-    List<OwnerCount> countOpenBranchesByOwner();
-
-    @Query("""
-        SELECT owner, COUNT(*) AS cnt
-        FROM branch
-        WHERE state = 'OPEN'
           AND name != 'main'
         GROUP BY owner
         """)

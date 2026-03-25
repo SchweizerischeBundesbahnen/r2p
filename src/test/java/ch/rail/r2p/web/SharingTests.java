@@ -12,6 +12,7 @@ import ch.rail.r2p.api.dto.BranchState;
 import ch.rail.r2p.api.dto.Change;
 import ch.rail.r2p.api.dto.TrainListElement;
 import ch.rail.r2p.persistence.TrainPersistence;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -146,5 +147,25 @@ class SharingTests {
         var exception = assertThrows(NoSuchElementException.class,
             () -> trainController.unshareTrain(SBB, nonExistentTrainId, "SOB"));
         assertThat(exception.getMessage()).isEqualTo("Train or Branch not found");
+    }
+
+    @Test
+    void should_implicitly_reject_merge_request_when_unsharing_train() {
+        TrainListElement train = actor.createTrain(SBB, "new train");
+        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
+        trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
+
+        // Unsharing should implicitly reject the open merge request before deleting the branch
+        trainController.unshareTrain(SBB, train.getTrainId(), SOB.toString());
+
+        var changes = trainController.getTrainChangesById(SBB, train.getTrainId(), null, null).getBody();
+        assertThat(changes).isNotNull();
+        List<Action> actions = changes.stream().map(Change::getAction).toList();
+        assertThat(actions).contains(Action.MERGE_REJECTED);
+        assertThat(actions).contains(Action.DELETED);
+        int rejectedIdx = actions.indexOf(Action.MERGE_REJECTED);
+        int deletedIdx  = actions.lastIndexOf(Action.DELETED);
+        assertThat(rejectedIdx).isLessThan(deletedIdx);
     }
 }

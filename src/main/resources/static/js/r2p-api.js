@@ -90,7 +90,9 @@ async function fetchTrainBranch(trainId, branchId) {
 }
 
 /**
- * Fetches all merge requests (branches in MERGE_REQUESTED state) for a train.
+ * Fetches the latest merge-related changelog entry per branch for a train.
+ * Each entry has an action of MERGE_REQUESTED, MERGE_REJECTED, or MERGED.
+ * The result can be filtered by action on the backend via a query parameter.
  * @param {string} trainId
  * @returns {Promise<Response>}
  */

@@ -151,8 +151,14 @@ class MergeTests {
         var changes = trainController.getTrainChangesById(SBB, train.getTrainId(), null, null).getBody();
         assertThat(changes).isNotNull();
         List<Action> actions = changes.stream().map(Change::getAction).toList();
+        // MERGED is recorded against the source branch
         assertThat(actions).contains(Action.MERGED);
-        assertThat(actions).contains(Action.DELETED);
+        // UPDATED is recorded against the main branch to show why its content changed
+        long updatedCount = changes.stream()
+            .filter(c -> c.getAction() == Action.UPDATED && c.getBranchName().equals(PREFIXED_MAIN_BRANCH_NAME))
+            .count();
+        assertThat(updatedCount).isGreaterThanOrEqualTo(1);
+        assertThat(actions).doesNotContain(Action.DELETED);
     }
 
     @Test
@@ -328,6 +334,28 @@ class MergeTests {
 
         assertThrows(IllegalArgumentException.class,
             () -> trainController.merge(SBB, train.getTrainId(), mainBranch.getBranchId(), version, "merge main"));
+    }
+
+    @Test
+    void should_implicitly_reject_merge_request_when_main_branch_is_deleted() {
+        var train = actor.createTrain(SBB, "new train");
+        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
+        trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
+
+        // Deleting the main branch should cascade-delete all branches and implicitly reject open merge requests
+        UUID mainBranchId = train.getBranches().getFirst().getBranchId();
+        trainController.deleteTrainBranch(SBB, train.getTrainId(), mainBranchId, "deleting main");
+
+        var changes = trainController.getTrainChangesById(SBB, train.getTrainId(), null, null).getBody();
+        assertThat(changes).isNotNull();
+        List<Action> actions = changes.stream().map(Change::getAction).toList();
+        // The cascade-deleted branch with a merge request must have a MERGE_REJECTED entry
+        assertThat(actions).contains(Action.MERGE_REJECTED);
+        assertThat(actions).contains(Action.DELETED);
+        int rejectedIdx = actions.indexOf(Action.MERGE_REJECTED);
+        int deletedIdx  = actions.lastIndexOf(Action.DELETED);
+        assertThat(rejectedIdx).isLessThan(deletedIdx);
     }
 }
 

@@ -59,8 +59,13 @@ public class Changelog {
             OffsetDateTime.now(), comment != null ? comment : "");
     }
 
-    public static Changelog forMerge(String partner, TrainVersion branchVersion, Branch branch, TrainVersion newMainVersion, Branch mainBranch, String comment) {
-        return new Changelog(UUID.randomUUID(), Action.MERGED, partner, null, branchVersion.trainId, branchVersion.branchId, branch.getPrefixedName(), newMainVersion.version,
+    public static Changelog forMerge(String partner, Branch sourceBranch, TrainVersion newMainVersion, String comment) {
+        return new Changelog(UUID.randomUUID(), Action.MERGED, partner, null, newMainVersion.trainId, sourceBranch.branchId, sourceBranch.getPrefixedName(), newMainVersion.version,
+            OffsetDateTime.now(), comment != null ? comment : "");
+    }
+
+    public static Changelog forMergeToMain(String partner, Branch mainBranch, TrainVersion newMainVersion, String comment) {
+        return new Changelog(UUID.randomUUID(), Action.UPDATED, partner, null, newMainVersion.trainId, mainBranch.branchId, mainBranch.getPrefixedName(), newMainVersion.version,
             OffsetDateTime.now(), comment != null ? comment : "");
     }
 

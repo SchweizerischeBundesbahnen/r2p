@@ -85,6 +85,13 @@ public class TrainService {
             List<Branch> branches = trainPersistence.findBranchesByTrainId(trainId);
             for (Branch branch : branches) {
                 if (branch.getState() != BranchState.DELETED) {
+                    // If the branch has an open merge request, implicitly reject it first
+                    if (branch.getState() == BranchState.MERGE_REQUESTED) {
+                        TrainVersionEnriched branchHead = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branch.getBranchId())
+                            .orElseThrow();
+                        changelogPersistence.insert(Changelog.forMergeRejection(partner, branchHead.trainVersion(), branch,
+                            "Merge request implicitly rejected due to branch deletion"));
+                    }
                     trainPersistence.updateBranchState(branch.getBranchId(), BranchState.DELETED);
                     changelogPersistence.insert(Changelog.forDeletion(partner, branch, comment));
                 }
@@ -144,6 +151,13 @@ public class TrainService {
         List<Branch> branches = trainPersistence.findBranchesByTrainId(trainId);
         for (Branch branch : branches) {
             if (branch.getOwner().equals(unshareWith) && branch.getState() != BranchState.DELETED) {
+                // If the branch has an open merge request, implicitly reject it first
+                if (branch.getState() == BranchState.MERGE_REQUESTED) {
+                    TrainVersionEnriched branchHead = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branch.getBranchId())
+                        .orElseThrow();
+                    changelogPersistence.insert(Changelog.forMergeRejection(partner, branchHead.trainVersion(), branch,
+                        "Merge request implicitly rejected due to unsharing of train"));
+                }
                 trainPersistence.updateBranchState(branch.getBranchId(), BranchState.DELETED);
                 changelogPersistence.insert(Changelog.forDeletion(partner, branch, "Branch deleted due to unsharing of train"));
             }
@@ -250,9 +264,10 @@ public class TrainService {
         trainPersistence.insertVersion(newMainVersion);
         // Close the merged branch
         var closedBranch = trainPersistence.updateBranchState(branchId, BranchState.MERGED);
-        // Write changelog entries
-        changelogPersistence.insert(Changelog.forMerge(partner, branchEnriched.trainVersion(), closedBranch, newMainVersion, mainEnriched.branch(), comment));
-        changelogPersistence.insert(Changelog.forDeletion(partner, closedBranch, comment != null ? comment : ""));
+        // Two changelog entries: one on the source branch (MERGED) for merge-request tracking,
+        // and one on the main branch (UPDATED) to record why its content changed.
+        changelogPersistence.insert(Changelog.forMerge(partner, closedBranch, newMainVersion, comment));
+        changelogPersistence.insert(Changelog.forMergeToMain(partner, mainEnriched.branch(), newMainVersion, comment));
         return trainPersistence.findHeadVersionsByTrainId(trainId);
     }
 
