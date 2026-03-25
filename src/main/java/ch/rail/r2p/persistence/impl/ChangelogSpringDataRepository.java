@@ -20,7 +20,7 @@ public interface ChangelogSpringDataRepository extends CrudRepository<Changelog,
           AND (EXISTS (SELECT 1 FROM train_partner WHERE train_partner.train_id=changelog.train_id AND train_partner.partner=:partner)
               OR affected_partner=:partner
               )
-          ORDER BY timestamp
+          ORDER BY timestamp, id
         """)
     List<Changelog> find(String partner, OffsetDateTime from, OffsetDateTime to, UUID trainId);
 

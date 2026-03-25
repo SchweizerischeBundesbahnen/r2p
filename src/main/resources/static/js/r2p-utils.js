@@ -81,12 +81,14 @@ function branchStateBadgeClass(state) {
  */
 function actionBadgeClass(action) {
     const mapping = {
-        'created':  'badge-created',
-        'updated':  'badge-updated',
-        'merged':   'badge-merged-action',
-        'deleted':  'badge-deleted-action',
-        'shared':   'badge-shared',
-        'unshared': 'badge-unshared'
+        'created':          'badge-created',
+        'updated':          'badge-updated',
+        'merged':           'badge-merged-action',
+        'deleted':          'badge-deleted-action',
+        'shared':           'badge-shared',
+        'unshared':         'badge-unshared',
+        'merge_requested':  'badge-merge-requested',
+        'merge_rejected':   'badge-deleted-action'
     };
     return mapping[action] ?? 'badge-created';
 }

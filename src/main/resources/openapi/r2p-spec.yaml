@@ -514,6 +514,12 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: Branch is not in OPEN state (merge already requested, merged or deleted)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
   /v1/trains/{trainId}/branches/{branchId}/merge:
     post:
       tags:
@@ -621,6 +627,12 @@ paths:
           description: Not authorized to reject merge request
         '404':
           description: Train or branch not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: Branch is not in MERGE_REQUESTED state
           content:
             application/problem+json:
               schema:

@@ -132,12 +132,13 @@ public class TestDataService {
                     versionsCreated++;
                 }
 
-                // ~10% chance to delete this branch
-                if (random.nextDouble() < 0.1) {
+                // ~10% chance to delete, ~45% chance to request a merge, ~45% chance to leave open
+                double roll = random.nextDouble();
+                if (roll < 0.1) {
                     trainService.deleteTrainBranch(branchOwner, trainId, branchId, "Test data – deleted");
                     branchesDeleted++;
-                } else if (random.nextDouble() < 0.5) {
-                    // ~50% chance to request a merge on open branches
+                } else if (roll < 0.55) {
+                    // ~45% chance to request a merge on open branches
                     trainService.requestMerge(branchOwner, trainId, branchId, "Test data – merge request");
                     mergeRequestsCreated++;
                 }
