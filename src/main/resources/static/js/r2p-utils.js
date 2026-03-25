@@ -91,6 +91,21 @@ function actionBadgeClass(action) {
     return mapping[action] ?? 'badge-created';
 }
 
+/**
+ * Returns the CSS class for a merge-request state badge.
+ * Only maps merge-specific actions (merge_requested, merge_rejected, merged).
+ * @param {string} action
+ * @returns {string}
+ */
+function mergeRequestBadgeClass(action) {
+    const mapping = {
+        'merge_requested': 'badge-merge-requested',
+        'merge_rejected':  'badge-deleted-action',
+        'merged':          'badge-merged-action'
+    };
+    return mapping[action] ?? 'badge-open';
+}
+
 // ── Sort factory ──────────────────────────────────────────────────────────────
 
 /**

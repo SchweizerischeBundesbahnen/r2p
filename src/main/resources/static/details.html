@@ -167,7 +167,7 @@
                                     </td>
                                     <td x-text="formatTimestamp(mr.timestamp)"></td>
                                     <td>
-                                        <span class="badge" :class="actionBadgeClass(mr.action)"
+                                        <span class="badge" :class="mergeRequestBadgeClass(mr.action)"
                                               :aria-label="mr.action" x-text="mr.action"></span>
                                     </td>
                                     <td x-text="mr.comment ?? '-'"></td>

@@ -28,7 +28,7 @@ public class StatsService {
                 TrainSpringDataRepository.PartnerCount::partner,
                 TrainSpringDataRepository.PartnerCount::cnt));
 
-        Map<String, Integer> openBranchesByOwner = branchSpringDataRepository.countOpenBranchesByOwner()
+        Map<String, Integer> openBranchesByOwner = branchSpringDataRepository.countOpenNonMainBranchesByOwner()
             .stream()
             .collect(Collectors.toMap(
                 BranchSpringDataRepository.OwnerCount::owner,

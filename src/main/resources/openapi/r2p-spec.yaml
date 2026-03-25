@@ -239,7 +239,11 @@ paths:
         - name: state
           in: query
           required: false
-          description: 'optional filter: only return entries with this action (merge_requested, merge_rejected, merged)'
+          description: >
+            Optional filter: only return entries whose action matches this value. The parameter is
+            typed as the global Action enum; however, only merge_requested, merge_rejected and merged
+            correspond to merge requests. Other Action values are accepted but will not match any
+            merge requests and therefore yield an empty result list.
           schema:
             $ref: '#/components/schemas/Action'
       responses:

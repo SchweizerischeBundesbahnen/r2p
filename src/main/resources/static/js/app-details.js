@@ -300,10 +300,11 @@ function detailsApp() {
         formatDate:           (d) => formatDate(d),
         formatTimestamp:      (d) => formatTimestamp(d),
         truncateId:           (id) => truncateId(id),
-        partnerBadgeClass:    (p)  => partnerBadgeClass(p),
-        branchStateBadgeClass:(s)  => branchStateBadgeClass(s),
-        actionBadgeClass:     (a)  => actionBadgeClass(a),
-        copyToClipboard:      (t)  => copyToClipboard(t)
+        partnerBadgeClass:      (p)  => partnerBadgeClass(p),
+        branchStateBadgeClass:  (s)  => branchStateBadgeClass(s),
+        actionBadgeClass:       (a)  => actionBadgeClass(a),
+        mergeRequestBadgeClass: (a)  => mergeRequestBadgeClass(a),
+        copyToClipboard:        (t)  => copyToClipboard(t)
     };
 }
 

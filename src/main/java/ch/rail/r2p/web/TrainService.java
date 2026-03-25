@@ -205,6 +205,9 @@ public class TrainService {
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkSharing(partner, branch);
         checkBranchOwner(partner, branch.branch());
+        if (branch.branch().isMainBranch()) {
+            throw new IllegalArgumentException("Cannot request a merge on the main branch");
+        }
         checkBranchState(branch.branch(), BranchState.OPEN);
         var updatedBranch = trainPersistence.updateBranchState(branchId, BranchState.MERGE_REQUESTED);
         Changelog changelog = Changelog.forMergeRequest(partner, branch.trainVersion(), updatedBranch, comment);
@@ -216,6 +219,9 @@ public class TrainService {
         checkInstanceOwner(partner);
         TrainVersionEnriched branchEnriched = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
+        if (branchEnriched.branch().isMainBranch()) {
+            throw new IllegalArgumentException("Cannot merge the main branch into itself");
+        }
         checkBranchState(branchEnriched.branch(), BranchState.OPEN, BranchState.MERGE_REQUESTED);
         if (!branchEnriched.trainVersion().getVersion().equals(reviewedVersion)) {
             throw new MergeConflictException("Reviewed version does not match current head version of the branch");

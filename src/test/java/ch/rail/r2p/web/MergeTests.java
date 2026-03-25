@@ -306,5 +306,28 @@ class MergeTests {
         assertThrows(IllegalStateException.class,
             () -> trainController.deleteTrainBranch(SOB, train.getTrainId(), branch.getBranchId(), "delete merged"));
     }
+
+    @Test
+    void should_not_request_merge_on_main_branch() {
+        var train = actor.createTrain(SBB, "new train");
+        var mainBranch = train.getBranches().stream()
+            .filter(b -> Boolean.TRUE.equals(b.getTechnical().getMainBranch()))
+            .findFirst().orElseThrow();
+
+        assertThrows(IllegalArgumentException.class,
+            () -> trainController.requestMerge(SBB, train.getTrainId(), mainBranch.getBranchId(), "merge main"));
+    }
+
+    @Test
+    void should_not_merge_main_branch() {
+        var train = actor.createTrain(SBB, "new train");
+        var mainBranch = train.getBranches().stream()
+            .filter(b -> Boolean.TRUE.equals(b.getTechnical().getMainBranch()))
+            .findFirst().orElseThrow();
+        UUID version = mainBranch.getTechnical().getVersion();
+
+        assertThrows(IllegalArgumentException.class,
+            () -> trainController.merge(SBB, train.getTrainId(), mainBranch.getBranchId(), version, "merge main"));
+    }
 }
 
