@@ -124,7 +124,7 @@ class BranchTests {
         TrainListElement train = actor.createTrain(SBB, "new train");
         Branch branch = actor.createBranch(SBB, train.getTrainId(), branchName, "test");
         trainController.deleteTrainBranch(SBB, train.getTrainId(), branch.getBranchId(), "delete branch");
-        assertThrows(IllegalStateException.class, () -> trainController.updateTrainBranch(SBB, train.getTrainId(), branch.getBranchId(), "update after delete", actor.loadSampleTrain()));
+        assertThrows(InvalidBranchStateException.class, () -> trainController.updateTrainBranch(SBB, train.getTrainId(), branch.getBranchId(), "update after delete", actor.loadSampleTrain()));
     }
 
     @Test
@@ -132,7 +132,7 @@ class BranchTests {
         String branchName = "myBranch";
         TrainListElement train = actor.createTrain(SBB, "new train");
         trainController.deleteTrainBranch(SBB, train.getTrainId(), train.getBranches().getFirst().getBranchId(), "delete main branch");
-        assertThrows(IllegalStateException.class, () -> trainController.createTrainBranch(SBB, train.getTrainId(), branchName, "test", actor.loadSampleTrain()));
+        assertThrows(InvalidBranchStateException.class, () -> trainController.createTrainBranch(SBB, train.getTrainId(), branchName, "test", actor.loadSampleTrain()));
     }
 
     @Test

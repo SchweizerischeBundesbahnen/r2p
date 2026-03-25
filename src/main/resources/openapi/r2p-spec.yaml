@@ -525,9 +525,9 @@ paths:
       description: |
         Merges the current state of a branch into the main branch. **Only the Lead RU can perform a merge.**
         The caller must provide the version ID of the branch head they have reviewed; if the branch has been
-        modified since then, the merge is rejected with an error. An optional reference to an open merge request
-        can be provided. The branch is closed (state MERGED) and its data is written to the main branch.
-        Both the branch closure and the main branch update are recorded in the change history.
+        modified since then, the merge is rejected with an error. The branch is closed (state MERGED) and its
+        data is written to the main branch. Both the branch closure and the main branch update are recorded
+        in the change history.
       operationId: merge
       parameters:
         - name: token

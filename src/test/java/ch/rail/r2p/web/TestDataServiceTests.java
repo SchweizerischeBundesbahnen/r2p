@@ -34,10 +34,11 @@ class TestDataServiceTests {
     private ChangelogSpringDataRepository changelogSpringDataRepository;
 
     private void cleanDatabase() {
-        // Delete train_partner first (no FK cascade), then branches (cascades to train_version
-        // and changelog via ON DELETE CASCADE), then any remaining train_version rows.
+        // Delete changelog first (including entries with NULL branch_id such as SHARED/UNSHARED
+        // that are not cascade-deleted when branches are removed), then partners and branches.
+        changelogSpringDataRepository.deleteAll();
         trainSpringDataRepository.deleteAllTrainPartners();
-        branchSpringDataRepository.deleteAll(); // cascades to train_version and changelog via FK ON DELETE CASCADE
+        branchSpringDataRepository.deleteAll(); // cascades to train_version via FK ON DELETE CASCADE
         trainSpringDataRepository.deleteAll();
     }
 

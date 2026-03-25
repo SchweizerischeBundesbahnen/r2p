@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -38,6 +39,7 @@ public class TrainService {
     @Value("${r2p.instance-owner}")
     private String instanceOwner;
 
+    @Transactional
     public TrainVersionEnriched createTrain(String owner, String comment, Train train) {
         UUID trainId = UUID.randomUUID();
         checkInstanceOwner(owner);
@@ -62,6 +64,7 @@ public class TrainService {
         return new TrainVersionEnriched(createdTrain, branch, List.of(owner));
     }
 
+    @Transactional
     public TrainVersionEnriched deleteTrainBranch(String partner, UUID trainId, UUID branchId, String comment) {
         var train = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
@@ -115,6 +118,7 @@ public class TrainService {
         return trainVersions.stream().collect(groupingBy(t -> t.trainVersion().getTrainId()));
     }
 
+    @Transactional
     public void shareTrain(String partner, UUID trainId, String shareWith) {
         TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
@@ -128,6 +132,7 @@ public class TrainService {
         changelogPersistence.insert(changelog);
     }
 
+    @Transactional
     public void unshareTrain(String partner, UUID trainId, String unshareWith) {
         TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
@@ -144,6 +149,7 @@ public class TrainService {
         }
     }
 
+    @Transactional
     public TrainVersionEnriched createTrainBranch(String partner, UUID trainId, String branchName, String comment, Train train) {
         TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
@@ -159,6 +165,7 @@ public class TrainService {
         return new TrainVersionEnriched(newVersion, newBranch, main.partners());
     }
 
+    @Transactional
     public TrainVersionEnriched updateTrainBranch(String partner, UUID trainId, UUID branchId, String comment, Train train) {
         TrainVersionEnriched branch = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
@@ -200,6 +207,7 @@ public class TrainService {
         return changelogPersistence.find(partner, from, to, trainId);
     }
 
+    @Transactional
     public TrainVersionEnriched requestMerge(String partner, UUID trainId, UUID branchId, String comment) {
         TrainVersionEnriched branch = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
@@ -215,6 +223,7 @@ public class TrainService {
         return new TrainVersionEnriched(branch.trainVersion(), updatedBranch, branch.partners());
     }
 
+    @Transactional
     public List<TrainVersionEnriched> merge(String partner, UUID trainId, UUID branchId, UUID reviewedVersion, String comment) {
         checkInstanceOwner(partner);
         TrainVersionEnriched branchEnriched = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
@@ -245,6 +254,7 @@ public class TrainService {
         return trainPersistence.findHeadVersionsByTrainId(trainId);
     }
 
+    @Transactional
     public TrainVersionEnriched rejectMerge(String partner, UUID trainId, UUID branchId, String comment) {
         checkInstanceOwner(partner);
         TrainVersionEnriched branch = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
@@ -287,7 +297,7 @@ public class TrainService {
     private void checkBranchState(Branch branch, BranchState... allowedStates) {
         Set<BranchState> allowedStateSet = Arrays.stream(allowedStates).collect(Collectors.toSet());
         if (!allowedStateSet.contains(branch.getState())) {
-            throw new IllegalStateException("Branch state not allowed: " + branch.getState());
+            throw new InvalidBranchStateException("Branch state not allowed: " + branch.getState());
         }
     }
 }

@@ -87,7 +87,7 @@ class MergeTests {
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
 
-        assertThrows(IllegalStateException.class,
+        assertThrows(InvalidBranchStateException.class,
             () -> trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge again"));
     }
 
@@ -185,7 +185,7 @@ class MergeTests {
         UUID reviewedVersion = branch.getTechnical().getVersion();
         trainController.merge(SBB, train.getTrainId(), branch.getBranchId(), reviewedVersion, "first merge");
 
-        assertThrows(IllegalStateException.class,
+        assertThrows(InvalidBranchStateException.class,
             () -> trainController.merge(SBB, train.getTrainId(), branch.getBranchId(), reviewedVersion, "second merge"));
     }
 
@@ -235,7 +235,7 @@ class MergeTests {
         actor.shareTrain(SBB, train.getTrainId(), SOB);
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
 
-        assertThrows(IllegalStateException.class,
+        assertThrows(InvalidBranchStateException.class,
             () -> trainController.rejectMerge(SBB, train.getTrainId(), branch.getBranchId(), "no request to reject"));
     }
 
@@ -279,7 +279,7 @@ class MergeTests {
         UUID reviewedVersion = branch.getTechnical().getVersion();
         trainController.merge(SBB, train.getTrainId(), branch.getBranchId(), reviewedVersion, "merging");
 
-        assertThrows(IllegalStateException.class,
+        assertThrows(InvalidBranchStateException.class,
             () -> trainController.updateTrainBranch(SOB, train.getTrainId(), branch.getBranchId(), "update on merged", actor.loadSampleTrain()));
     }
 
@@ -291,7 +291,7 @@ class MergeTests {
         UUID reviewedVersion = branch.getTechnical().getVersion();
         trainController.merge(SBB, train.getTrainId(), branch.getBranchId(), reviewedVersion, "merging");
 
-        assertThrows(IllegalStateException.class,
+        assertThrows(InvalidBranchStateException.class,
             () -> trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "merge already done"));
     }
 
@@ -303,7 +303,7 @@ class MergeTests {
         UUID reviewedVersion = branch.getTechnical().getVersion();
         trainController.merge(SBB, train.getTrainId(), branch.getBranchId(), reviewedVersion, "merging");
 
-        assertThrows(IllegalStateException.class,
+        assertThrows(InvalidBranchStateException.class,
             () -> trainController.deleteTrainBranch(SOB, train.getTrainId(), branch.getBranchId(), "delete merged"));
     }
 

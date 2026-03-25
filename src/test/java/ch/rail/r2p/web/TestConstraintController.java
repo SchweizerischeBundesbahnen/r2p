@@ -31,5 +31,10 @@ public class TestConstraintController {
     public ResponseEntity<String> testMergeConflict() {
         throw new MergeConflictException("Test merge conflict - reviewed version is stale");
     }
+
+    @GetMapping("/test/invalid-branch-state")
+    public ResponseEntity<String> testInvalidBranchState() {
+        throw new InvalidBranchStateException("Test invalid branch state - branch already merged");
+    }
 }
 
