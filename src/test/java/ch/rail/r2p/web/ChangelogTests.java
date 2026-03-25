@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,10 +43,21 @@ public class ChangelogTests {
     @Autowired
     private BranchSpringDataRepository branchSpringDataRepository;
 
+    @BeforeEach
+    void setUp() {
+        cleanAll();
+    }
+
     @AfterEach
     void tearDown() {
+        cleanAll();
+    }
+
+    private void cleanAll() {
+        // Delete changelog first, including entries with null branch_id (SHARED/UNSHARED) that are not cascade-deleted with branch
+        changelogSpringDataRepository.deleteAll();
         trainSpringDataRepository.deleteAllTrainPartners();
-        branchSpringDataRepository.deleteAll(); // cascades to train_version and changelog via FK ON DELETE CASCADE
+        branchSpringDataRepository.deleteAll(); // cascades to train_version via FK ON DELETE CASCADE
     }
 
     @Test
