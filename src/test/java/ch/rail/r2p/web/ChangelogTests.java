@@ -44,9 +44,8 @@ public class ChangelogTests {
 
     @AfterEach
     void tearDown() {
-        changelogSpringDataRepository.deleteAll();
-        trainSpringDataRepository.deleteAll();
-        branchSpringDataRepository.deleteAll();
+        trainSpringDataRepository.deleteAllTrainPartners();
+        branchSpringDataRepository.deleteAll(); // cascades to train_version and changelog via FK ON DELETE CASCADE
     }
 
     @Test

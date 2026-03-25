@@ -305,6 +305,7 @@ class MergeTests {
         assertThat(rejectedIdx).isLessThan(deletedIdx);
     }
 
+    @Test
     void should_not_update_merged_branch() {
         var train = trainController.createTrain(SBB, "new train", actor.loadSampleTrain()).getBody();
         assert train != null;

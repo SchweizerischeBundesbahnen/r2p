@@ -34,16 +34,10 @@ class TestDataServiceTests {
     private ChangelogSpringDataRepository changelogSpringDataRepository;
 
     private void cleanDatabase() {
-        // Delete all train_partner rows first (no cascade), then all other data.
-        // We must query all distinct train_ids from train_partner directly, because
-        // orphaned partner rows can exist after other test classes clean up via cascade delete.
-        trainSpringDataRepository.findAll()
-            .forEach(tv -> trainSpringDataRepository.deleteTrainPartnersByTrainId(tv.getTrainId()));
-        // Also purge any orphaned train_partner rows whose train_version was removed by cascade
-        // from other test classes (they would otherwise skew countTrainsPerPartner queries).
+        // Delete train_partner first (no FK cascade), then branches (cascades to train_version
+        // and changelog via ON DELETE CASCADE), then any remaining train_version rows.
         trainSpringDataRepository.deleteAllTrainPartners();
-        changelogSpringDataRepository.deleteAll();
-        branchSpringDataRepository.deleteAll();  // cascades to train_version via FK
+        branchSpringDataRepository.deleteAll(); // cascades to train_version and changelog via FK ON DELETE CASCADE
         trainSpringDataRepository.deleteAll();
     }
 
@@ -67,26 +61,21 @@ class TestDataServiceTests {
     }
 
     @Test
-    void should_generate_requested_number_of_trains() {
+    void should_generate_and_persist_requested_number_of_trains() {
         var result = testDataController.generate(request(10, List.of())).getBody();
 
         assertThat(result).isNotNull();
         assertThat(result.trainsCreated()).isEqualTo(10);
+        assertThat(trainSpringDataRepository.count()).isGreaterThanOrEqualTo(10);
     }
 
     @Test
-    void should_persist_generated_trains_in_database() {
-        testDataController.generate(request(5, List.of()));
-
-        assertThat(trainSpringDataRepository.count()).isGreaterThanOrEqualTo(5);
-    }
-
-    @Test
-    void result_counters_should_be_consistent() {
+    void result_counters_should_be_consistent_and_match_database() {
         var result = testDataController.generate(request(20, List.of(SOB.name(), BLS.name()))).getBody();
 
         assertThat(result).isNotNull();
         assertThat(result.trainsCreated()).isEqualTo(20);
+
         // branches created must be >= branches deleted (can't delete more than were created)
         assertThat(result.branchesCreated()).isGreaterThanOrEqualTo(result.branchesDeleted());
         // main branch deletions are a subset of all branch deletions
@@ -99,46 +88,32 @@ class TestDataServiceTests {
         int nonMainBranchesDeleted = result.branchesDeleted() - result.mainBranchesDeleted();
         assertThat(result.mergeRequestsCreated()).isGreaterThanOrEqualTo(0);
         assertThat(result.mergeRequestsCreated()).isLessThanOrEqualTo(result.branchesCreated() - nonMainBranchesDeleted);
-    }
 
-    @Test
-    void db_open_merge_requests_should_match_result_counter() {
-        var result = testDataController.generate(request(30, List.of(SOB.name(), BLS.name()))).getBody();
-
-        assertThat(result).isNotNull();
+        // DB: open merge requests match the result counter
         long mergeRequestedInDb = branchSpringDataRepository.countMergeRequestedBranchesByOwner()
             .stream().mapToLong(BranchSpringDataRepository.OwnerCount::cnt).sum();
         assertThat(mergeRequestedInDb).isEqualTo(result.mergeRequestsCreated());
-    }
 
-    @Test
-    void db_branch_count_should_include_all_states() {
-        var result = testDataController.generate(request(20, List.of(SOB.name()))).getBody();
-
-        assertThat(result).isNotNull();
-        // Branches are never physically deleted (state = DELETED), so the DB count is:
+        // DB: branches are never physically deleted (state = DELETED), so the DB count is:
         // 1 main branch per train  +  all non-main branches created
         long totalBranchesInDb = branchSpringDataRepository.count();
         assertThat(totalBranchesInDb).isEqualTo((long) result.trainsCreated() + result.branchesCreated());
     }
 
     @Test
-    void should_share_with_at_least_one_partner_when_partners_provided() {
+    void partner_sharing_should_respect_provided_partner_list() {
+        // With partners: at least some trains must be shared with a non-owner partner
         testDataController.generate(request(10, List.of(SOB.name(), BLS.name())));
-
-        // At least some trains should be shared with a non-owner partner
         long sharedCount = trainSpringDataRepository.countTrainsPerPartner().stream()
             .filter(p -> !p.partner().equals("SBB"))
             .mapToLong(TrainSpringDataRepository.PartnerCount::cnt)
             .sum();
         assertThat(sharedCount).isGreaterThan(0);
-    }
 
-    @Test
-    void should_not_share_when_no_partners_provided() {
+        cleanDatabase();
+
+        // Without partners: only the instance owner (SBB) should appear
         testDataController.generate(request(10, List.of()));
-
-        // Only the instance owner (SBB) should appear as partner
         var partners = trainSpringDataRepository.countTrainsPerPartner();
         assertThat(partners).allMatch(p -> p.partner().equals("SBB"));
     }
