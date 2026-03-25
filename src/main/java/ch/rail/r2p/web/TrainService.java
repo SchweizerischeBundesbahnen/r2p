@@ -88,7 +88,7 @@ public class TrainService {
                     // If the branch has an open merge request, implicitly reject it first
                     if (branch.getState() == BranchState.MERGE_REQUESTED) {
                         TrainVersionEnriched branchHead = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branch.getBranchId())
-                            .orElseThrow();
+                            .orElseThrow(() -> new NoSuchElementException("Head version not found for branch " + branch.getBranchId()));
                         changelogPersistence.insert(Changelog.forMergeRejection(partner, branchHead.trainVersion(), branch,
                             "Merge request implicitly rejected due to branch deletion"));
                     }
@@ -102,7 +102,9 @@ public class TrainService {
 
     public List<TrainVersionEnriched> getTrainById(String partner, UUID trainId) {
         List<TrainVersionEnriched> trains = trainPersistence.findHeadVersionsByTrainId(trainId);
-        trains.getFirst(); // Check if the train exists, throws a NoSuchElementException if it doesn't
+        if (trains.isEmpty()) {
+            throw new NoSuchElementException("Train not found");
+        }
         checkSharing(partner, trains.getFirst());
         return trains;
     }
@@ -154,7 +156,7 @@ public class TrainService {
                 // If the branch has an open merge request, implicitly reject it first
                 if (branch.getState() == BranchState.MERGE_REQUESTED) {
                     TrainVersionEnriched branchHead = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branch.getBranchId())
-                        .orElseThrow();
+                        .orElseThrow(() -> new NoSuchElementException("Head version not found for branch " + branch.getBranchId()));
                     changelogPersistence.insert(Changelog.forMergeRejection(partner, branchHead.trainVersion(), branch,
                         "Merge request implicitly rejected due to unsharing of train"));
                 }
@@ -265,9 +267,9 @@ public class TrainService {
         // Close the merged branch
         var closedBranch = trainPersistence.updateBranchState(branchId, BranchState.MERGED);
         // Two changelog entries: one on the source branch (MERGED) for merge-request tracking,
-        // and one on the main branch (UPDATED) to record why its content changed.
-        changelogPersistence.insert(Changelog.forMerge(partner, closedBranch, newMainVersion, comment));
-        changelogPersistence.insert(Changelog.forMergeToMain(partner, mainEnriched.branch(), newMainVersion, comment));
+        // recording the branch version that was merged; and one on the main branch (UPDATED) to record why its content changed.
+        changelogPersistence.insert(Changelog.forMerge(partner, closedBranch, branchEnriched.trainVersion(), comment));
+        changelogPersistence.insert(Changelog.forUpdate(partner, newMainVersion, mainEnriched.branch(), comment));
         return trainPersistence.findHeadVersionsByTrainId(trainId);
     }
 

@@ -316,6 +316,12 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: Main branch is not in OPEN state (e.g. deleted)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
   /v1/trains/{trainId}/branches/{branchId}:
     get:
       tags:
@@ -417,6 +423,12 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: Branch is not in a valid state for updates (e.g. merged, deleted, or merge already requested)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
     delete:
       tags:
         - R2P
@@ -462,6 +474,12 @@ paths:
           description: Not authorized to delete branch
         '404':
           description: Train or branch not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: Branch is not in a valid state for deletion (e.g. already merged or deleted)
           content:
             application/problem+json:
               schema:
@@ -578,7 +596,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
         '409':
-          description: Reviewed version does not match current head version of the branch
+          description: Reviewed version does not match current head version of the branch, or branch is not in a valid state for merging (e.g. already merged or deleted)
           content:
             application/problem+json:
               schema:
