@@ -27,7 +27,7 @@ Represents a branch of a train (similar to Git branches). Each branch contains:
 * `state` (BranchState) - Current state: `OPEN`, `MERGE_REQUESTED`, `MERGED`, or `DELETED`
 
 The main branch is always named "main" and represents the current agreed-upon state of the train.
-Branch names are prefixed with the owner's name when stored (e.g., "SBB-main", "SOB-myBranch").
+The `Branch.name` field stores the raw branch name (e.g., "main"), while the owner-prefixed form (e.g., "SBB-main", "SOB-myBranch") is derived (for example via `getPrefixedName()`) and used in API fields such as `branchName` and in changelog entries.
 
 == TrainVersionEnriched
 
