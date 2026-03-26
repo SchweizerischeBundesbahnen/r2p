@@ -76,7 +76,7 @@ All endpoints require a `token` header parameter containing the partner's authen
 * *Query Parameters:*
   - `comment` (required): Description of the changes
 * *Request Body:* `Train` object (JSON) with updated data
-* *Description:* Creates a new version of the branch with the provided train data. Partners can only update their own branches; the Lead RU can update any branch including main. Not allowed when a branch is in `MERGE_REQUESTED`, `MERGED`, or `DELETED` state.
+* *Description:* Creates a new version of the branch with the provided train data. Only the owning partner can update a branch (the Lead RU owns and can therefore update the `main` branch). Updates are only allowed while the branch is in state `open`.
 * *Response:* Updated `Branch` object
 
 === Delete Branch
