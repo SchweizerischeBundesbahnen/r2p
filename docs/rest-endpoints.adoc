@@ -76,7 +76,7 @@ All endpoints require a `token` header parameter containing the partner's authen
 * *Query Parameters:*
   - `comment` (required): Description of the changes
 * *Request Body:* `Train` object (JSON) with updated data
-* *Description:* Creates a new version of the branch with the provided train data. Only the owning partner can update a branch (the Lead RU owns and can therefore update the `main` branch). Updates are only allowed while the branch is in state `open`.
+* *Description:* Creates a new version of the branch with the provided train data. Only the branch owner can update a branch. Updates are only allowed while the branch is in state `open`.
 * *Response:* Updated `Branch` object
 
 === Delete Branch
@@ -86,7 +86,7 @@ All endpoints require a `token` header parameter containing the partner's authen
   - `branchId` (UUID): The branch identifier
 * *Query Parameters:*
   - `comment` (required): Reason for deletion
-* *Description:* Marks a branch as deleted. Only the owner of a branch can delete it. The Lead RU cannot directly delete partner branches; partner branches are only deleted indirectly when the Lead RU deletes the main branch, which triggers a cascading delete.
+* *Description:* Marks a branch as deleted. Only the branch owner can delete it. Deleting the main branch also cascades deletion to all other non-deleted branches of the same train.
 * *Response:* `Branch` object with state set to `deleted`
 
 == Merge Request Workflow
