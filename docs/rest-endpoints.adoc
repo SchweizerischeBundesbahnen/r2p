@@ -57,7 +57,7 @@ All endpoints require a `token` header parameter containing the partner's authen
   - `branchName` (required): Name for the new branch (max 255 chars)
   - `comment` (required): Description of why the branch is created
 * *Request Body:* `Train` object (JSON) with the proposed changes
-* *Description:* Creates a new branch for proposing changes to the train. Both the Lead RU and shared partners can create branches. The branch is owned by the authenticated partner and starts in state `OPEN`.
+* *Description:* Creates a new branch for proposing changes to the train. Both the Lead RU and shared partners can create branches. The branch is owned by the authenticated partner and starts in state `open`.
 * *Response:* `Branch` object with business and technical data
 
 === Get Branch
@@ -87,7 +87,7 @@ All endpoints require a `token` header parameter containing the partner's authen
 * *Query Parameters:*
   - `comment` (required): Reason for deletion
 * *Description:* Marks a branch as deleted. Only the owner of a branch can delete it. The Lead RU cannot directly delete partner branches; partner branches are only deleted indirectly when the Lead RU deletes the main branch, which triggers a cascading delete.
-* *Response:* `Branch` object with state set to `DELETED`
+* *Response:* `Branch` object with state set to `deleted`
 
 == Merge Request Workflow
 
@@ -99,7 +99,7 @@ The merge request workflow allows shared partners to propose that their branch c
   - `trainId` (UUID): The train identifier
 * *Query Parameters:*
   - `state` (optional): Filter by merge action (`merge_requested`, `merge_rejected`, `merged`)
-* *Description:* Returns the latest merge-related changelog entry per branch for the given train. Actions covered are `MERGE_REQUESTED`, `MERGE_REJECTED`, and `MERGED`. For every branch that has at least one such entry, the most recent entry is returned.
+* *Description:* Returns the latest merge-related changelog entry per branch for the given train. Actions covered are `merge_requested`, `merge_rejected`, and `merged`. For every branch that has at least one such entry, the most recent entry is returned.
 * *Response:* Array of `Change` objects
 
 === Request Merge
@@ -109,7 +109,7 @@ The merge request workflow allows shared partners to propose that their branch c
   - `branchId` (UUID): The branch identifier
 * *Query Parameters:*
   - `comment` (optional): Reason or description for the merge request
-* *Description:* Creates a merge request for a branch to be merged into the main branch. **Only the branch owner can create a merge request.** The branch state changes to `MERGE_REQUESTED`. The merge request becomes visible to the Lead RU via the list merge requests endpoint.
+* *Description:* Creates a merge request for a branch to be merged into the main branch. **Only the branch owner can create a merge request.** The branch state changes to `merge_requested`. The merge request becomes visible to the Lead RU via the list merge requests endpoint.
 * *Response:* Updated `Branch` object
 
 === Merge Branch into Main
@@ -120,7 +120,7 @@ The merge request workflow allows shared partners to propose that their branch c
 * *Query Parameters:*
   - `reviewedVersion` (required): The version UUID that the Lead RU has reviewed; must match the current head version of the branch
   - `comment` (optional): Comment for the merge
-* *Description:* Merges the current state of a branch into the main branch. **Only the Lead RU can perform a merge.** The `reviewedVersion` acts as a safety check — if the branch has been modified since the Lead RU reviewed it, the merge is rejected with a conflict error. The branch state changes to `MERGED` and the main branch is updated with the branch content.
+* *Description:* Merges the current state of a branch into the main branch. **Only the Lead RU can perform a merge.** The `reviewedVersion` acts as a safety check — if the branch has been modified since the Lead RU reviewed it, the merge is rejected with a conflict error. The branch state changes to `merged` and the main branch is updated with the branch content.
 * *Response:* Updated `TrainListElement` reflecting the new main branch version
 
 === Reject Merge Request
@@ -130,7 +130,7 @@ The merge request workflow allows shared partners to propose that their branch c
   - `branchId` (UUID): The branch identifier
 * *Query Parameters:*
   - `comment` (optional): Reason for rejection
-* *Description:* Rejects an open merge request. **Only the Lead RU can reject a merge request.** The branch state reverts to `OPEN`, and the rejection is recorded in the changelog. The branch data remains unchanged and the partner can continue working on it.
+* *Description:* Rejects an open merge request. **Only the Lead RU can reject a merge request.** The branch state reverts to `open`, and the rejection is recorded in the changelog. The branch data remains unchanged and the partner can continue working on it.
 * *Response:* Updated `Branch` object
 
 == Version Management
