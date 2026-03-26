@@ -86,7 +86,7 @@ All endpoints require a `token` header parameter containing the partner's authen
   - `branchId` (UUID): The branch identifier
 * *Query Parameters:*
   - `comment` (required): Reason for deletion
-* *Description:* Marks a branch as deleted. The main branch cannot be deleted. Partners can only delete their own branches; the Lead RU can delete any partner branch.
+* *Description:* Marks a branch as deleted. Only the owner of a branch can delete it. The Lead RU cannot directly delete partner branches; partner branches are only deleted indirectly when the Lead RU deletes the main branch, which triggers a cascading delete.
 * *Response:* `Branch` object with state set to `DELETED`
 
 == Merge Request Workflow
