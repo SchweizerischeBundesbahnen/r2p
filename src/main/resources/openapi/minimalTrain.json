@@ -1,0 +1,45 @@
+{
+  "id": "minimal-train-001",
+  "references": [],
+  "links": [],
+  "name": "Minimal Train",
+  "startdate": "2026-04-10",
+  "timestamp": "2025-04-10T10:00:00.000Z",
+  "journey": {
+    "journeylocations": [
+      {
+        "locations": [
+          {
+            "type": "PLC",
+            "code": "CH02113",
+            "name": "Aarau"
+          },
+          {
+            "type": "PLC",
+            "code": "CH00218",
+            "name": "Olten"
+          }
+        ],
+        "activities": [
+          {
+            "type": "commercial",
+            "timings": [
+              {
+                "type": "departure",
+                "time": "10:00:00",
+                "offset": 0,
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rru",
+              "id": "BLS",
+              "status": "requested"
+            }
+          }
+        ],
+        "requirements": []
+      }
+    ]
+  }
+}

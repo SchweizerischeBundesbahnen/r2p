@@ -111,6 +111,8 @@ Supported types are:
 Here questions are listed to be clarified with the project team. After clarification, an issue should
 be created in the issue tracker and the questions here can be removed.
 
+- The default behavior of Jackson is to ignore all unknown properties. This means that if the RU sends additional properties to the partner, they will be ignored and not stored in the database. This can be misleading. Should we instead validate the schema "hard" fail or at least warn the caller that the datastructure is not correct? (options: FAIL_ON_UNKNOWN_PROPERTIES add a DeserializationProblemHandler and log a warning)
+
 == Limitations of current implementation
 * Performance of train list endpoint is not optimized (n+1 pattern to get partners, no paging)
 * Concurrent modifications/merging/deleting of a train may lead to problems (no optimistic or pessimistic locking implemented yet)
