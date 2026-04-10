@@ -24,9 +24,10 @@ Represents a branch of a train (similar to Git branches). Each branch contains:
 * `trainId` (UUID) - Reference to the train this branch belongs to
 * `name` (String) - Branch name (e.g., "main", "feature-branch")
 * `owner` (String) - Partner who owns/created this branch
-* `state` (BranchState) - Current state: `OPEN`, `MERGED`, or `DELETED`
+* `state` (BranchState) - Current state: `OPEN`, `MERGE_REQUESTED`, `MERGED`, or `DELETED`
 
 The main branch is always named "main" and represents the current agreed-upon state of the train.
+The `Branch.name` field stores the raw branch name (e.g., "main"), while the owner-prefixed form (e.g., "SBB-main", "SOB-myBranch") is derived (for example via `getPrefixedName()`) and used in API fields such as `branchName` and in changelog entries.
 
 == TrainVersionEnriched
 
@@ -41,12 +42,12 @@ A read model that combines a TrainVersion with its Branch information and list o
 Tracks all changes made to trains:
 
 * `id` (UUID) - Unique identifier for this change log entry
-* `action` (Action) - Type of action: `CREATED`, `UPDATED`, `MERGED`, `DELETED`, `SHARED`, `UNSHARED`
+* `action` (Action) - Type of action: `CREATED`, `UPDATED`, `MERGE_REQUESTED`, `MERGE_REJECTED`, `MERGED`, `DELETED`, `SHARED`, `UNSHARED`
 * `partner` (String) - Partner who performed the action
 * `affectedPartner` (String) - Partner affected (for share/unshare operations)
 * `trainId` (UUID) - Train involved in the action
 * `branchId` (UUID) - Branch involved (if applicable)
-* `branchName` (String) - Name of the branch
+* `branchName` (String) - Prefixed name of the branch (e.g., "SBB-main")
 * `version` (UUID) - Version created/affected (if applicable)
 * `timestamp` (OffsetDateTime) - When the action occurred
 * `comment` (String) - User-provided comment
@@ -54,4 +55,3 @@ Tracks all changes made to trains:
 == Train Payload Schema
 
 The actual payload (`TrainVersion.payload`) corresponds to the schema defined in `src/main/resources/openapi/schemas/train.yaml`, which is the same schema used in the REST endpoints. This schema contains comprehensive train information including journey details, rolling stock, staff, requirements, and capabilities.
-

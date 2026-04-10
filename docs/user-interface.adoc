@@ -1,0 +1,37 @@
+= User Interface
+
+The prototype ships with a lightweight web interface built with https://alpinejs.dev/[Alpine.js]. It is accessible at http://localhost:8080/ and is intended for manual testing and demonstration purposes.
+
+== Partner / Token Switcher
+
+Because the PoC uses a simplified token model, a drop-down in the top-right corner of every page lets you switch between the available partners (`SBB`, `BLS`, `SOB`). The active selection determines the `token` header that is sent with every API request, so all access-control rules (Lead RU vs. shared partner) apply exactly as they would in a real integration.
+
+== Train Overview (`index.html`)
+
+The main page displays a paginated, sortable table of all trains visible to the currently selected partner.
+
+* *Statistics bar* — shows the total number of trains, open branches, and open merge requests, with an optional per-partner breakdown selectable via a partner filter.
+* *Filter bar* — allows narrowing the list by train number (free-text), timetable year, operational day range, partner, and two quick checkboxes for "has open branches" and "has open merge requests".
+* *Train table* — columns: Train Number, Operational Day, Partners (colour-coded partner badges), Status (🌿 open-branch count and 🔀 open-merge-request count), Last Change timestamp.
+* Clicking a row navigates to the Train Details page for that train.
+
+== Train Details (`details.html`)
+
+The details page is split into four sections:
+
+General Information::
+  Displays Train ID (truncated, copyable), Train Number, Operational Day, Lead RU, and the list of shared partners.
+
+Merge Requests::
+  A paginated, sortable table of the latest merge-related changelog entry per branch (actions: `merge_requested`, `merge_rejected`, `merged`). Can be filtered by state. The action is shown as a colour-coded badge.
+
+Branches::
+  A paginated, sortable table of all branches of the train. Columns: Branch ID (copyable), Name, Owner, Creation Date, State (badge). Can be filtered by status and owner. Clicking a branch row opens the Train Version Viewer for the head version of that branch.
+
+Changelog::
+  A paginated, sortable table of all changelog entries for the train. Can be filtered by action type, partner, and free-text comment search. The Version ID column includes a copy button and a 🔍 button to open the version in the Train Version Viewer.
+
+== Train Version Viewer (`train-version.html`)
+
+A dedicated page (or modal) for inspecting the full `Train` payload of a specific version. The JSON payload is rendered in a collapsible, syntax-highlighted tree view. The page is reachable via the 🔍 button in the Changelog or by navigating directly to `train-version.html?version=<versionId>`.
+

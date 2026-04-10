@@ -19,7 +19,7 @@ All endpoints require a `token` header parameter containing the partner's authen
 * *Query Parameters:*
   - `comment` (required): Description of the train creation
 * *Request Body:* `Train` object (JSON)
-* *Description:* Creates a new train with the given payload. Automatically creates a main branch owned by the creating partner.
+* *Description:* Creates a new train with the given payload. **Only the Lead RU can create trains.** Automatically creates a main branch owned by the Lead RU. The train is initially only accessible to the Lead RU until explicitly shared.
 * *Response:* `TrainListElement` with the newly created train information
 
 === Get Train by ID
@@ -35,7 +35,7 @@ All endpoints require a `token` header parameter containing the partner's authen
   - `trainId` (UUID): The train identifier
 * *Query Parameters:*
   - `shareWith` (required): Partner name to share the train with
-* *Description:* Grants access to the train for another partner
+* *Description:* Grants access to the train for another partner. Only the Lead RU or partners who already have access can share the train.
 * *Response:* Updated `TrainListElement`
 
 === Unshare Train
@@ -54,10 +54,10 @@ All endpoints require a `token` header parameter containing the partner's authen
 * *Path Parameters:*
   - `trainId` (UUID): The train identifier
 * *Query Parameters:*
-  - `branchName` (optional): Name for the new branch (max 255 chars)
+  - `branchName` (required): Name for the new branch (max 255 chars)
   - `comment` (required): Description of why the branch is created
 * *Request Body:* `Train` object (JSON) with the proposed changes
-* *Description:* Creates a new branch for proposing changes to the train
+* *Description:* Creates a new branch for proposing changes to the train. Both the Lead RU and shared partners can create branches. The branch is owned by the authenticated partner and starts in state `open`.
 * *Response:* `Branch` object with business and technical data
 
 === Get Branch
@@ -76,7 +76,7 @@ All endpoints require a `token` header parameter containing the partner's authen
 * *Query Parameters:*
   - `comment` (required): Description of the changes
 * *Request Body:* `Train` object (JSON) with updated data
-* *Description:* Creates a new version of the branch with the provided train data. Can be used on any branch including main.
+* *Description:* Creates a new version of the branch with the provided train data. Only the branch owner can update a branch. Updates are only allowed while the branch is in state `open`.
 * *Response:* Updated `Branch` object
 
 === Delete Branch
@@ -86,8 +86,52 @@ All endpoints require a `token` header parameter containing the partner's authen
   - `branchId` (UUID): The branch identifier
 * *Query Parameters:*
   - `comment` (required): Reason for deletion
-* *Description:* Marks a branch as deleted. The main branch cannot be deleted.
-* *Response:* `Branch` object with state set to `DELETED`
+* *Description:* Marks a branch as deleted. Only the branch owner can delete it. Deleting the main branch also cascades deletion to all other non-deleted branches of the same train.
+* *Response:* `Branch` object with state set to `deleted`
+
+== Merge Request Workflow
+
+The merge request workflow allows shared partners to propose that their branch changes be merged into the main branch by the Lead RU.
+
+=== List Merge Requests
+* *GET* `/v1/trains/\{trainId}/mergeRequests`
+* *Path Parameters:*
+  - `trainId` (UUID): The train identifier
+* *Query Parameters:*
+  - `state` (optional): Filter by merge action (`merge_requested`, `merge_rejected`, `merged`)
+* *Description:* Returns the latest merge-related changelog entry per branch for the given train. Actions covered are `merge_requested`, `merge_rejected`, and `merged`. For every branch that has at least one such entry, the most recent entry is returned.
+* *Response:* Array of `Change` objects
+
+=== Request Merge
+* *POST* `/v1/trains/\{trainId}/branches/\{branchId}/requestMerge`
+* *Path Parameters:*
+  - `trainId` (UUID): The train identifier
+  - `branchId` (UUID): The branch identifier
+* *Query Parameters:*
+  - `comment` (optional): Reason or description for the merge request
+* *Description:* Creates a merge request for a branch to be merged into the main branch. **Only the branch owner can create a merge request.** The branch state changes to `merge_requested`. The merge request becomes visible to the Lead RU via the list merge requests endpoint.
+* *Response:* Updated `Branch` object
+
+=== Merge Branch into Main
+* *POST* `/v1/trains/\{trainId}/branches/\{branchId}/merge`
+* *Path Parameters:*
+  - `trainId` (UUID): The train identifier
+  - `branchId` (UUID): The branch identifier
+* *Query Parameters:*
+  - `reviewedVersion` (required): The version UUID that the Lead RU has reviewed; must match the current head version of the branch
+  - `comment` (optional): Comment for the merge
+* *Description:* Merges the current state of a branch into the main branch. **Only the Lead RU can perform a merge.** The `reviewedVersion` acts as a safety check — if the branch has been modified since the Lead RU reviewed it, the merge is rejected with a conflict error. The branch state changes to `merged` and the main branch is updated with the branch content.
+* *Response:* Updated `TrainListElement` reflecting the new main branch version
+
+=== Reject Merge Request
+* *POST* `/v1/trains/\{trainId}/branches/\{branchId}/rejectMerge`
+* *Path Parameters:*
+  - `trainId` (UUID): The train identifier
+  - `branchId` (UUID): The branch identifier
+* *Query Parameters:*
+  - `comment` (optional): Reason for rejection
+* *Description:* Rejects an open merge request. **Only the Lead RU can reject a merge request.** The branch state reverts to `open`, and the rejection is recorded in the changelog. The branch data remains unchanged and the partner can continue working on it.
+* *Response:* Updated `Branch` object
 
 == Version Management
 
@@ -107,7 +151,7 @@ All endpoints require a `token` header parameter containing the partner's authen
 * *Query Parameters:*
   - `from` (optional): Timestamp to filter changes from (inclusive)
   - `to` (optional): Timestamp to filter changes to (inclusive)
-* *Description:* Returns all changes (creates, updates, shares, etc.) for a specific train
+* *Description:* Returns all changes (creates, updates, shares, merges, etc.) for a specific train
 * *Response:* Array of `Change` objects
 
 === List All Changes
@@ -127,8 +171,13 @@ Contains: `trainId`, `mainTimestamp`, `partners` (array of partner names), `bran
 Contains: `branchId`, `branchName`, `business` (BranchBusinessData), `technical` (BranchTechnicalData)
 
 * *BranchBusinessData:* `trainNumber`, `operationalDay`
-* *BranchTechnicalData:* `version`, `timestamp`, `comment`, `owner`, `state`
+* *BranchTechnicalData:* `version`, `timestamp`, `comment`, `owner`, `branchState`, `mainBranch`
 
 === Change
 Contains: `action`, `partner`, `affectedPartner`, `trainId`, `branchId`, `branchName`, `version`, `timestamp`, `comment`
 
+=== BranchState
+Possible values: `open`, `merge_requested`, `merged`, `deleted`
+
+=== Action (Change log actions)
+Possible values: `created`, `updated`, `merge_requested`, `merge_rejected`, `merged`, `deleted`, `shared`, `unshared`

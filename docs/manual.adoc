@@ -4,7 +4,7 @@
 :sectnums:
 :source-highlighter: coderay
 :icons: font
-:revnumber: 0.0.12-SNAPSHOT
+:revnumber: 0.0.19-SNAPSHOT
 :revdate: {localdate}
 
 == Overview
@@ -77,6 +77,8 @@ include::domain-model.adoc[leveloffset=+1]
 
 include::rest-endpoints.adoc[leveloffset=+1]
 
+include::user-interface.adoc[leveloffset=+1]
+
 == Development
 
 The https://github.com/googleapis/release-please-action[release-please GitHub Action] is used to create releases.
@@ -116,4 +118,3 @@ be created in the issue tracker and the questions here can be removed.
 == Limitations of current implementation
 * Performance of train list endpoint is not optimized (n+1 pattern to get partners, no paging)
 * Concurrent modifications/merging/deleting of a train may lead to problems (no optimistic or pessimistic locking implemented yet)
-* There is currently no endpoint to merge branches (desired behavior has be defined first - see open issues)
