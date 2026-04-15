@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R2P – Traffic View</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── Top Navigation ──────────────────────────────────────────── -->
+<nav class="top-nav">
+    <a class="top-nav-brand" href="overview.html">
+        <span class="logo">🚂</span>
+        R2P Web Client
+    </a>
+    <ul class="top-nav-links">
+        <li><a href="overview.html">Traffic Overview</a></li>
+        <li><a href="settings.html">Settings</a></li>
+    </ul>
+    <div class="top-nav-right">
+        <div class="top-nav-partner">
+            <span class="top-nav-partner-label">Logged in as:</span>
+            <span class="partner-badge partner-badge-SBB" id="nav-partner">SBB</span>
+        </div>
+        <span class="version-tag" id="nav-version">v0.0.12</span>
+    </div>
+</nav>
+
+<!-- ── Main Content ────────────────────────────────────────────── -->
+<div class="main-content">
+    <div class="container">
+
+        <a href="overview.html" class="back-link">Traffic Overview</a>
+
+        <!-- Train Header Card -->
+        <div class="card" id="train-header-card">
+            <div class="card-body">
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+                    <div>
+                        <h1 class="page-title" id="train-title">IC 1234</h1>
+                        <p class="page-subtitle" id="train-name">IC 1234 Zürich–Basel</p>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-outline" onclick="openShareModal()">
+                            🔗 Share Train
+                        </button>
+                        <button class="btn btn-primary" onclick="openCreateBranchModal()">
+                            ⎇ New Branch
+                        </button>
+                    </div>
+                </div>
+
+                <div class="detail-grid" style="margin-top:1rem;">
+                    <div class="detail-item">
+                        <div class="detail-label">Train Number</div>
+                        <div class="detail-value" id="detail-train-number">IC 1234</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Operational Day</div>
+                        <div class="detail-value" id="detail-op-day">2025-06-15</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value" id="detail-status">–</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Shared With</div>
+                        <div class="detail-value" id="detail-partners">–</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Journey (main branch – read-only pearl necklace) -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">🗺️ Journey Route (main branch)</span>
+            </div>
+            <div class="card-body" style="padding-top:0.5rem;">
+                <div class="pearl-necklace-wrapper">
+                    <div class="pearl-necklace readonly" id="journey-container">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Branches Section -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">⎇ Branches</span>
+            </div>
+            <div id="branches-list">
+                <!-- Rendered by JS -->
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ══════════════════ MODAL: Share Train ══════════════════════════ -->
+<div class="modal-overlay hidden" id="modal-share">
+    <div class="modal-card">
+        <div class="modal-header">
+            <span class="modal-title">🔗 Share Train</span>
+            <button class="modal-close" onclick="closeModal('modal-share')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom:1rem; color:var(--text-secondary); font-size:0.9rem;">
+                Select the partner you want to share this train with. Only partners who don't yet have access are shown.
+            </p>
+            <div class="form-group">
+                <label class="form-label required" for="share-partner-select">Partner</label>
+                <select id="share-partner-select" class="form-select">
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('modal-share')">Cancel</button>
+            <button class="btn btn-primary" onclick="confirmShare()">🔗 Share</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════ MODAL: Create Branch ════════════════════════ -->
+<div class="modal-overlay hidden" id="modal-create-branch">
+    <div class="modal-card">
+        <div class="modal-header">
+            <span class="modal-title">⎇ Create New Branch</span>
+            <button class="modal-close" onclick="closeModal('modal-create-branch')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label required" for="branch-name-input">Branch Name</label>
+                <input type="text" id="branch-name-input" class="form-input" placeholder="e.g., sbb/rolling-stock-update" maxlength="255">
+                <p class="form-hint">Lowercase, hyphens and slashes allowed. Max 255 characters.</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label required" for="branch-comment-input">Comment</label>
+                <textarea id="branch-comment-input" class="form-textarea" placeholder="Describe the purpose of this branch…"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('modal-create-branch')">Cancel</button>
+            <button class="btn btn-primary" onclick="confirmCreateBranch()">⎇ Create &amp; Edit</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════ MODAL: Create Merge Request ════════════════ -->
+<div class="modal-overlay hidden" id="modal-merge-request">
+    <div class="modal-card">
+        <div class="modal-header">
+            <span class="modal-title">⇐ Open Merge Request</span>
+            <button class="modal-close" onclick="closeModal('modal-merge-request')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom:1rem; color:var(--text-secondary); font-size:0.9rem;">
+                Opening a merge request proposes your branch changes to be merged into <strong>main</strong>.
+                The branch name is: <strong id="mr-branch-name-display">–</strong>
+            </p>
+            <div class="form-group">
+                <label class="form-label" for="mr-comment-input">Comment (optional)</label>
+                <textarea id="mr-comment-input" class="form-textarea" placeholder="Describe what you changed and why…"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('modal-merge-request')">Cancel</button>
+            <button class="btn btn-primary" onclick="confirmMergeRequest()">⇐ Open Merge Request</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Toast Container ─────────────────────────────────────────── -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="sampleData.js"></script>
+<script>
+    /* ── State ──────────────────────────────────────────────────── */
+    let currentTrain = null;
+    let mrTargetBranchId = null;
+
+    const settings = JSON.parse(localStorage.getItem('r2p_settings') || JSON.stringify(defaultSettings));
+
+    /* ── Init ───────────────────────────────────────────────────── */
+    (function init() {
+        // Apply partner in nav
+        const navPartner = document.getElementById('nav-partner');
+        navPartner.textContent = settings.partner;
+        navPartner.className = `partner-badge ${PARTNERS.includes(settings.partner) ? 'partner-badge-' + settings.partner : 'partner-badge-default'}`;
+
+        // Load train from URL param (or default to first)
+        const params = new URLSearchParams(window.location.search);
+        const trainId = params.get('trainId');
+        currentTrain = sampleTrains.find(t => t.trainId === trainId) || sampleTrains[0];
+
+        renderPage();
+    })();
+
+    /* ── Page Render ────────────────────────────────────────────── */
+    function renderPage() {
+        const t = currentTrain;
+        const main = getMainBranch(t.branches);
+
+        // Header
+        document.getElementById('train-title').textContent = main?.business?.trainNumber ?? '–';
+        document.getElementById('train-name').textContent = t.mainPayload.name;
+        document.getElementById('detail-train-number').textContent = main?.business?.trainNumber ?? '–';
+        document.getElementById('detail-op-day').textContent = main?.business?.operationalDay ?? '–';
+        document.getElementById('detail-status').innerHTML = trafficLightHtml(getTrafficLightStatus(t.mainPayload));
+        document.getElementById('detail-partners').innerHTML = t.partners.map(p => partnerBadgeHtml(p)).join(' ');
+        document.title = `R2P – ${main?.business?.trainNumber ?? 'Train'}`;
+
+        // Journey pearl necklace (read-only)
+        renderPearlNecklace(document.getElementById('journey-container'), t.mainPayload.journey, false);
+
+        // Branches
+        renderBranches();
+    }
+
+    /* ── Pearl Necklace ─────────────────────────────────────────── */
+    function renderPearlNecklace(container, journey, editable) {
+        const locs = journey.journeylocations;
+        let html = '';
+
+        locs.forEach((jl, idx) => {
+            const stopName = jl.locations[0]?.name ?? '?';
+            const initials = stopName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+
+            const arrival = jl.activities.find(a => a.timings?.some(ti => ti.type === 'arrival'))?.timings.find(ti => ti.type === 'arrival')?.time;
+            const departure = jl.activities.find(a => a.timings?.some(ti => ti.type === 'departure'))?.timings.find(ti => ti.type === 'departure')?.time;
+
+            const timesHtml = [
+                arrival ? `Arr: ${arrival.slice(0,5)}` : null,
+                departure ? `Dep: ${departure.slice(0,5)}` : null
+            ].filter(Boolean).join('<br>');
+
+            const circleClass = idx === 0 ? 'pn-start' : (idx === locs.length - 1 ? 'pn-end' : '');
+            const editBtnHtml = editable ? `<button class="pn-edit-btn" onclick="openStopModal(${idx})" title="Edit stop">✏</button>` : '';
+
+            const activitiesHtml = jl.activities.map((act, aIdx) => {
+                const planBadge = `<span class="badge badge-${act.responsibility.status}" style="font-size:0.65rem;">${act.responsibility.status}</span>`;
+                const actEditBtn = editable ? `<button class="pn-activity-edit" onclick="openActivityModal(${idx},${aIdx})" title="Edit activity">✏</button>` : '';
+                return `
+                    <div class="pn-activity activity-${act.type.split('.')[0]}">
+                        <span class="pn-activity-label" title="${act.type}">${act.type.replace('train.halt.', 'halt.')}</span>
+                        ${planBadge}
+                        ${actEditBtn}
+                    </div>
+                `;
+            }).join('');
+
+            const addActivityBtn = editable ? `<button class="pn-add-activity-btn" onclick="openActivityModal(${idx}, null)">＋ Activity</button>` : '';
+
+            // Add-before button
+            if (idx === 0 && editable) {
+                html += `<div class="pn-add-btn-vert"><button class="pn-add-btn" onclick="insertStop(0)" title="Add stop before">＋</button></div>`;
+            }
+
+            html += `
+                <div class="pn-stop">
+                    <div class="pn-circle-row">
+                        <div class="pn-circle ${circleClass}">
+                            ${initials}
+                            ${editBtnHtml}
+                        </div>
+                    </div>
+                    <div class="pn-stop-name" title="${stopName}">${stopName}</div>
+                    <div class="pn-times">${timesHtml || '–'}</div>
+                    <div class="pn-activities">
+                        ${activitiesHtml}
+                        ${addActivityBtn}
+                    </div>
+                </div>
+            `;
+
+            // Connector + add-after button
+            if (idx < locs.length - 1) {
+                html += `<div class="pn-connector"></div>`;
+                if (editable) {
+                    html += `<div class="pn-add-btn-vert"><button class="pn-add-btn" onclick="insertStop(${idx + 1})" title="Add stop here">＋</button></div><div class="pn-connector"></div>`;
+                }
+            } else if (editable) {
+                html += `<div class="pn-add-btn-vert"><button class="pn-add-btn" onclick="insertStop(${idx + 1})" title="Add stop after">＋</button></div>`;
+            }
+        });
+
+        container.innerHTML = html;
+    }
+
+    /* ── Branches Render ────────────────────────────────────────── */
+    function renderBranches() {
+        const container = document.getElementById('branches-list');
+        const branches = currentTrain.branches;
+        const currentPartner = settings.partner;
+
+        const html = branches.map(b => {
+            const isOwn = b.technical.owner === currentPartner;
+            const state = b.technical.state;
+            const isMain = b.branchName === 'main';
+
+            const stateBadgeClass = {
+                OPEN: 'badge-open',
+                MERGED: 'badge-merged',
+                DELETED: 'badge-deleted',
+                MERGE_REQUESTED: 'badge-merge-requested'
+            }[state] || 'badge-open';
+
+            const stateLabel = {
+                OPEN: '● Open',
+                MERGED: '✓✓ Merged',
+                DELETED: '✗ Deleted',
+                MERGE_REQUESTED: '⇐ MR Open'
+            }[state] || state;
+
+            let actionBtns = '';
+            // Edit button: only for own OPEN non-main branches
+            if (isOwn && state === 'OPEN' && !isMain) {
+                actionBtns += `<a href="edit.html?trainId=${currentTrain.trainId}&branchId=${b.branchId}" class="btn btn-primary btn-sm">✏ Edit</a>`;
+            }
+            // Read view for all
+            actionBtns += `<a href="read-view.html?trainId=${currentTrain.trainId}&branchId=${b.branchId}" class="btn btn-ghost btn-sm">👁 View</a>`;
+            // Merge request: only for own OPEN non-main branches without MR
+            if (isOwn && state === 'OPEN' && !isMain) {
+                actionBtns += `<button class="btn btn-outline btn-sm" onclick="openMergeRequestModal('${b.branchId}', '${b.branchName}')">⇐ Merge Request</button>`;
+            }
+
+            return `
+                <div class="branch-row">
+                    <div class="branch-info">
+                        <div>
+                            <div class="branch-name">${isMain ? '🌿 ' : '⎇ '}${b.branchName}</div>
+                            <div class="branch-meta">
+                                ${partnerBadgeHtml(b.technical.owner)}
+                                <span style="margin-left:4px;">${formatDateTime(b.technical.timestamp)}</span>
+                                ${b.technical.comment ? `— <em>${b.technical.comment}</em>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                        <span class="badge ${stateBadgeClass}">${stateLabel}</span>
+                        <div class="branch-actions">${actionBtns}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html || '<div class="empty-state">No branches found.</div>';
+    }
+
+    /* ── Modals ─────────────────────────────────────────────────── */
+    function openShareModal() {
+        const sharedPartners = currentTrain.partners;
+        const available = PARTNERS.filter(p => !sharedPartners.includes(p));
+
+        const select = document.getElementById('share-partner-select');
+        if (available.length === 0) {
+            select.innerHTML = '<option value="">All partners already have access</option>';
+            select.disabled = true;
+        } else {
+            select.disabled = false;
+            select.innerHTML = available.map(p => `<option value="${p}">${p}</option>`).join('');
+        }
+        openModal('modal-share');
+    }
+
+    function confirmShare() {
+        const partner = document.getElementById('share-partner-select').value;
+        if (!partner) return;
+        showToast(`Train shared with ${partner} successfully.`, 'success');
+        closeModal('modal-share');
+    }
+
+    function openCreateBranchModal() {
+        document.getElementById('branch-name-input').value = settings.partner.toLowerCase() + '/';
+        document.getElementById('branch-comment-input').value = '';
+        openModal('modal-create-branch');
+    }
+
+    function confirmCreateBranch() {
+        const name = document.getElementById('branch-name-input').value.trim();
+        const comment = document.getElementById('branch-comment-input').value.trim();
+        if (!name || !comment) {
+            showToast('Please fill in branch name and comment.', 'error');
+            return;
+        }
+        showToast(`Branch "${name}" created. Opening editor…`, 'success');
+        closeModal('modal-create-branch');
+        // In the real app, redirect to edit.html with new branch ID
+        setTimeout(() => {
+            window.location.href = `edit.html?trainId=${currentTrain.trainId}&branchId=new&branchName=${encodeURIComponent(name)}`;
+        }, 800);
+    }
+
+    function openMergeRequestModal(branchId, branchName) {
+        mrTargetBranchId = branchId;
+        document.getElementById('mr-branch-name-display').textContent = branchName;
+        document.getElementById('mr-comment-input').value = '';
+        openModal('modal-merge-request');
+    }
+
+    function confirmMergeRequest() {
+        showToast('Merge request opened successfully.', 'success');
+        closeModal('modal-merge-request');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3500);
+    }
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) overlay.classList.add('hidden');
+        });
+    });
+</script>
+</body>
+</html>
+

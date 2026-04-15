@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R2P – Settings</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Settings page is a standalone centred card – no top nav shown on first run -->
+    <div class="settings-page">
+        <div class="settings-card">
+            <!-- Logo & Branding -->
+            <div class="settings-logo">
+                <span class="logo-icon">🚂</span>
+                <h1>R2P Web Client</h1>
+                <p>Railway Undertaking Partner Communication</p>
+            </div>
+
+            <!-- Info alert shown only on first visit -->
+            <div class="alert alert-info" id="first-run-hint">
+                👋 Welcome! Please configure your server connection and partner before continuing.
+            </div>
+
+            <!-- Settings Form -->
+            <form id="settings-form" onsubmit="saveSettings(event)">
+                <div class="form-group">
+                    <label class="form-label required" for="server-url">Server URL</label>
+                    <input
+                        type="url"
+                        id="server-url"
+                        class="form-input"
+                        placeholder="https://r2p.example.com"
+                        value="http://localhost:8080"
+                        required
+                    >
+                    <p class="form-hint">Base URL of the R2P backend server (without trailing slash).</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required" for="partner-select">Your Partner</label>
+                    <select id="partner-select" class="form-select" required>
+                        <option value="" disabled>Select a partner…</option>
+                        <option value="SBB" selected>SBB – Schweizerische Bundesbahnen</option>
+                        <option value="BLS">BLS – BLS AG</option>
+                        <option value="SOB">SOB – Schweizerische Südostbahn</option>
+                    </select>
+                    <p class="form-hint">All requests will be sent on behalf of this partner.</p>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width:100%; justify-content: center; margin-top: 0.5rem;">
+                    💾 Save &amp; Continue
+                </button>
+            </form>
+
+            <!-- Already configured: link to overview -->
+            <p class="text-center" style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-muted);">
+                Already configured?
+                <a href="overview.html" style="color: var(--accent-color); font-weight: 600;">Go to Traffic Overview →</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Toast container (for save feedback) -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="sampleData.js"></script>
+    <script>
+        // On load: if settings are saved, redirect to overview
+        (function () {
+            const saved = localStorage.getItem('r2p_settings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                document.getElementById('server-url').value = settings.serverUrl || '';
+                document.getElementById('partner-select').value = settings.partner || '';
+                document.getElementById('first-run-hint').style.display = 'none';
+            }
+        })();
+
+        function saveSettings(event) {
+            event.preventDefault();
+            const serverUrl = document.getElementById('server-url').value.trim().replace(/\/$/, '');
+            const partner = document.getElementById('partner-select').value;
+            const settings = { serverUrl, partner };
+            localStorage.setItem('r2p_settings', JSON.stringify(settings));
+            showToast('Settings saved! Redirecting…', 'success');
+            setTimeout(() => { window.location.href = 'overview.html'; }, 1000);
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+    </script>
+</body>
+</html>
+

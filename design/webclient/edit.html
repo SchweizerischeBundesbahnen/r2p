@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R2P – Edit Branch</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── Top Navigation ──────────────────────────────────────────── -->
+<nav class="top-nav">
+    <a class="top-nav-brand" href="overview.html">
+        <span class="logo">🚂</span>
+        R2P Web Client
+    </a>
+    <ul class="top-nav-links">
+        <li><a href="overview.html">Traffic Overview</a></li>
+        <li><a href="settings.html">Settings</a></li>
+    </ul>
+    <div class="top-nav-right">
+        <div class="top-nav-partner">
+            <span class="top-nav-partner-label">Logged in as:</span>
+            <span class="partner-badge partner-badge-SBB" id="nav-partner">SBB</span>
+        </div>
+        <span class="version-tag">v0.0.12</span>
+    </div>
+</nav>
+
+<!-- ── Main Content ────────────────────────────────────────────── -->
+<div class="main-content">
+    <div class="container">
+
+        <a href="#" class="back-link" id="back-link">Traffic View</a>
+
+        <!-- Page Header with branch info -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" id="page-title">Edit Branch</h1>
+                <p class="page-subtitle" id="page-subtitle">Editing branch: –</p>
+            </div>
+        </div>
+
+        <!-- Branch context info -->
+        <div class="alert alert-info" id="branch-alert">
+            ✏️ You are editing branch <strong id="branch-name-display">–</strong>.
+            Changes will be saved as a new version of this branch.
+        </div>
+
+        <!-- ── Basic Info Card ──────────────────────────────────── -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">📋 Train Details</span>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required" for="train-name">Name</label>
+                        <input type="text" id="train-name" class="form-input" value="">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required" for="train-opday">Operational Day</label>
+                        <input type="date" id="train-opday" class="form-input">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required" for="save-comment">Change Comment</label>
+                    <textarea id="save-comment" class="form-textarea" placeholder="Describe what you changed…"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Journey Card ─────────────────────────────────────── -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">🗺️ Journey Route</span>
+                <span style="font-size:0.8rem; color:var(--text-muted);">
+                    Use <strong>＋</strong> to add stops, <strong>✏</strong> to edit.
+                </span>
+            </div>
+            <div class="card-body" style="padding-top:0.5rem;">
+                <div class="pearl-necklace-wrapper">
+                    <div class="pearl-necklace" id="journey-container">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Action Buttons ────────────────────────────────────── -->
+        <div class="btn-group" style="justify-content:flex-end; margin-top:0.5rem; margin-bottom:2rem;">
+            <a href="#" class="btn btn-ghost" id="cancel-btn">Cancel</a>
+            <button class="btn btn-success" onclick="saveBranch()">💾 Save Changes</button>
+        </div>
+
+    </div>
+</div>
+
+<!-- ══════════════════ MODAL: Journey Stop ═════════════════════════ -->
+<div class="modal-overlay hidden" id="modal-stop">
+    <div class="modal-card">
+        <div class="modal-header">
+            <span class="modal-title" id="modal-stop-title">Edit Stop</span>
+            <button class="modal-close" onclick="closeModal('modal-stop')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label required" for="stop-name">Stop Name (Betriebspunkt)</label>
+                <input type="text" id="stop-name" class="form-input" placeholder="e.g., Zürich HB">
+                <p class="form-hint">Enter the name of the operational point manually.</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="stop-code">Location Code</label>
+                <input type="text" id="stop-code" class="form-input" placeholder="e.g., 8503000">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="stop-arrival">Arrival Time</label>
+                    <input type="time" id="stop-arrival" class="form-input" step="60">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="stop-departure">Departure Time</label>
+                    <input type="time" id="stop-departure" class="form-input" step="60">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('modal-stop')">Cancel</button>
+            <button class="btn btn-primary" onclick="confirmStop()">✓ Save Stop</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════ MODAL: Activity ════════════════════════════ -->
+<div class="modal-overlay hidden" id="modal-activity">
+    <div class="modal-card modal-lg">
+        <div class="modal-header">
+            <span class="modal-title" id="modal-activity-title">Edit Activity</span>
+            <button class="modal-close" onclick="closeModal('modal-activity')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label required" for="act-type">Activity Type</label>
+                <select id="act-type" class="form-select" onchange="onActivityTypeChange()">
+                    <option value="journey">journey – Train journey segment</option>
+                    <option value="train.halt.1">train.halt.1 – Passenger stop</option>
+                    <option value="train.halt.11">train.halt.11 – Technical stop</option>
+                    <option value="rollingStock">rollingStock – Rolling stock</option>
+                    <option value="train.runthrough">train.runthrough – Run-through</option>
+                    <option value="traction">traction – Traction</option>
+                    <option value="wagons">wagons – Wagons</option>
+                    <option value="formation">formation – Formation</option>
+                    <option value="commercial">commercial – Commercial stop</option>
+                    <option value="planning">planning – Planning activity</option>
+                </select>
+            </div>
+
+            <div class="card" style="margin-bottom:1rem; box-shadow:none; border:1px solid var(--border-color);">
+                <div class="card-header" style="padding:0.5rem 1rem;">
+                    <span class="card-title" style="font-size:0.875rem;">Responsibility</span>
+                </div>
+                <div class="card-body" style="padding:1rem;">
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label required" for="act-resp-type">Type</label>
+                            <select id="act-resp-type" class="form-select">
+                                <option value="rru">rru – Responsible RU</option>
+                                <option value="rp">rp – Resource Provider</option>
+                                <option value="ra">ra – Responsible Applicant</option>
+                                <option value="rim">rim – Responsible Infrastructure Manager</option>
+                                <option value="pim">pim – Planning Infrastructure Manager</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label required" for="act-resp-id">Partner ID</label>
+                            <input type="text" id="act-resp-id" class="form-input" placeholder="e.g., SBB">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label required" for="act-resp-status">Plan Status</label>
+                            <select id="act-resp-status" class="form-select">
+                                <option value="proposed">proposed</option>
+                                <option value="requested">requested</option>
+                                <option value="confirmed">confirmed</option>
+                                <option value="refused">refused</option>
+                                <option value="dropped">dropped</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom:1rem; box-shadow:none; border:1px solid var(--border-color);">
+                <div class="card-header" style="padding:0.5rem 1rem;">
+                    <span class="card-title" style="font-size:0.875rem;">Timing</span>
+                </div>
+                <div class="card-body" style="padding:1rem;">
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="act-arrival">Arrival</label>
+                            <input type="time" id="act-arrival" class="form-input" step="60">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="act-departure">Departure</label>
+                            <input type="time" id="act-departure" class="form-input" step="60">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-staff" class="card" style="display:none; margin-bottom:1rem; box-shadow:none; border:1px solid var(--border-color);">
+                <div class="card-header" style="padding:0.5rem 1rem;">
+                    <span class="card-title" style="font-size:0.875rem;">👤 Staff</span>
+                </div>
+                <div class="card-body" style="padding:1rem;">
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="staff-type">Staff Type</label>
+                            <input type="text" id="staff-type" class="form-input" placeholder="e.g., conductor">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="staff-action">Action</label>
+                            <input type="text" id="staff-action" class="form-input" placeholder="e.g., board train">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-rolling-stock" class="card" style="display:none; margin-bottom:0; box-shadow:none; border:1px solid var(--border-color);">
+                <div class="card-header" style="padding:0.5rem 1rem;">
+                    <span class="card-title" style="font-size:0.875rem;">🚃 Rolling Stock</span>
+                </div>
+                <div class="card-body" style="padding:1rem;">
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="rs-weight">Weight (kg)</label>
+                            <input type="number" id="rs-weight" class="form-input" placeholder="e.g., 420000">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="rs-length">Length (mm)</label>
+                            <input type="number" id="rs-length" class="form-input" placeholder="e.g., 200000">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="rs-speed">Max Speed (km/h)</label>
+                            <input type="number" id="rs-speed" class="form-input" placeholder="e.g., 200">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('modal-activity')">Cancel</button>
+            <button class="btn btn-primary" onclick="confirmActivity()">✓ Save Activity</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Toast Container ─────────────────────────────────────────── -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="sampleData.js"></script>
+<script>
+    const settings = JSON.parse(localStorage.getItem('r2p_settings') || JSON.stringify(defaultSettings));
+    const params = new URLSearchParams(window.location.search);
+    const trainId = params.get('trainId');
+    const branchId = params.get('branchId');
+    const branchNameParam = params.get('branchName');
+
+    let currentTrain = null;
+    let currentBranch = null;
+    let workingJourney = null;
+    let pendingStopIndex = null;
+    let pendingStopInsertBefore = null;
+    let pendingActivityStopIndex = null;
+    let pendingActivityIndex = null;
+
+    (function init() {
+        // Nav partner
+        const navPartner = document.getElementById('nav-partner');
+        navPartner.textContent = settings.partner;
+        navPartner.className = `partner-badge ${PARTNERS.includes(settings.partner) ? 'partner-badge-' + settings.partner : 'partner-badge-default'}`;
+
+        // Load train & branch
+        currentTrain = sampleTrains.find(t => t.trainId === trainId) || sampleTrains[0];
+        currentBranch = currentTrain.branches.find(b => b.branchId === branchId) || currentTrain.branches[0];
+
+        const branchDisplayName = branchNameParam || currentBranch.branchName;
+
+        // Set back link
+        document.getElementById('back-link').href = `traffic-view.html?trainId=${currentTrain.trainId}`;
+        document.getElementById('cancel-btn').href = `traffic-view.html?trainId=${currentTrain.trainId}`;
+        document.getElementById('page-title').textContent = `Edit: ${currentBranch.business.trainNumber}`;
+        document.getElementById('page-subtitle').textContent = `Branch: ${branchDisplayName}`;
+        document.getElementById('branch-name-display').textContent = branchDisplayName;
+
+        // Pre-fill train details from main branch payload
+        const payload = currentTrain.mainPayload;
+        document.getElementById('train-name').value = payload.name;
+        document.getElementById('train-opday').value = payload.startdate;
+        document.getElementById('act-resp-id').value = settings.partner;
+
+        // Deep copy journey for editing
+        workingJourney = JSON.parse(JSON.stringify(payload.journey));
+
+        renderJourney();
+    })();
+
+    function renderJourney() {
+        const locs = workingJourney.journeylocations;
+        const container = document.getElementById('journey-container');
+        let html = '';
+
+        locs.forEach((jl, idx) => {
+            const stopName = jl.locations[0]?.name ?? '?';
+            const initials = stopName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+            const arrival = jl.activities.find(a => a.timings?.some(ti => ti.type === 'arrival'))?.timings.find(ti => ti.type === 'arrival')?.time;
+            const departure = jl.activities.find(a => a.timings?.some(ti => ti.type === 'departure'))?.timings.find(ti => ti.type === 'departure')?.time;
+            const timesHtml = [arrival ? `Arr: ${arrival.slice(0,5)}` : null, departure ? `Dep: ${departure.slice(0,5)}` : null].filter(Boolean).join('<br>');
+            const circleClass = idx === 0 ? 'pn-start' : (idx === locs.length - 1 ? 'pn-end' : '');
+
+            const activitiesHtml = jl.activities.map((act, aIdx) => `
+                <div class="pn-activity activity-${act.type.split('.')[0]}">
+                    <span class="pn-activity-label" title="${act.type}">${act.type.replace('train.halt.', 'halt.')}</span>
+                    <span class="badge badge-${act.responsibility.status}" style="font-size:0.65rem;">${act.responsibility.status}</span>
+                    <button class="pn-activity-edit" onclick="openActivityModal(${idx},${aIdx})" title="Edit">✏</button>
+                </div>
+            `).join('');
+
+            if (idx === 0) {
+                html += `<div class="pn-add-btn-vert"><button class="pn-add-btn" onclick="insertStop(0)" title="Add stop before">＋</button></div>`;
+            }
+
+            html += `
+                <div class="pn-stop">
+                    <div class="pn-circle-row">
+                        <div class="pn-circle ${circleClass}">
+                            ${initials}
+                            <button class="pn-edit-btn" onclick="openStopModal(${idx})" title="Edit stop">✏</button>
+                        </div>
+                    </div>
+                    <div class="pn-stop-name" title="${stopName}">${stopName}</div>
+                    <div class="pn-times">${timesHtml || '–'}</div>
+                    <div class="pn-activities">
+                        ${activitiesHtml}
+                        <button class="pn-add-activity-btn" onclick="openActivityModal(${idx}, null)">＋ Activity</button>
+                    </div>
+                </div>
+            `;
+
+            if (idx < locs.length - 1) {
+                html += `<div class="pn-connector"></div>`;
+                html += `<div class="pn-add-btn-vert"><button class="pn-add-btn" onclick="insertStop(${idx + 1})" title="Add stop here">＋</button></div>`;
+                html += `<div class="pn-connector"></div>`;
+            } else {
+                html += `<div class="pn-add-btn-vert"><button class="pn-add-btn" onclick="insertStop(${idx + 1})" title="Add stop after">＋</button></div>`;
+            }
+        });
+
+        container.innerHTML = html;
+    }
+
+    function insertStop(beforeIndex) {
+        pendingStopIndex = null;
+        pendingStopInsertBefore = beforeIndex;
+        document.getElementById('modal-stop-title').textContent = 'Add Stop';
+        document.getElementById('stop-name').value = '';
+        document.getElementById('stop-code').value = '';
+        document.getElementById('stop-arrival').value = '';
+        document.getElementById('stop-departure').value = '';
+        openModal('modal-stop');
+    }
+
+    function openStopModal(stopIdx) {
+        pendingStopIndex = stopIdx;
+        pendingStopInsertBefore = null;
+        const jl = workingJourney.journeylocations[stopIdx];
+        document.getElementById('modal-stop-title').textContent = 'Edit Stop';
+        document.getElementById('stop-name').value = jl.locations[0]?.name ?? '';
+        document.getElementById('stop-code').value = jl.locations[0]?.code ?? '';
+        const arr = jl.activities.find(a => a.timings?.some(ti => ti.type === 'arrival'))?.timings.find(ti => ti.type === 'arrival')?.time;
+        const dep = jl.activities.find(a => a.timings?.some(ti => ti.type === 'departure'))?.timings.find(ti => ti.type === 'departure')?.time;
+        document.getElementById('stop-arrival').value = arr ? arr.slice(0,5) : '';
+        document.getElementById('stop-departure').value = dep ? dep.slice(0,5) : '';
+        openModal('modal-stop');
+    }
+
+    function confirmStop() {
+        const name = document.getElementById('stop-name').value.trim();
+        if (!name) { showToast('Stop name is required.', 'error'); return; }
+        const code = document.getElementById('stop-code').value.trim() || '0000000';
+        const arrival = document.getElementById('stop-arrival').value;
+        const departure = document.getElementById('stop-departure').value;
+        const timings = [];
+        if (arrival) timings.push({ type: 'arrival', time: arrival + ':00', offset: 0, focus: 'planning' });
+        if (departure) timings.push({ type: 'departure', time: departure + ':00', offset: 0, focus: 'planning' });
+
+        const newJl = {
+            locations: [{ type: 'SLC', code, name }],
+            activities: timings.length > 0 ? [{ type: 'journey', timings, responsibility: { type: 'rru', id: settings.partner, status: 'proposed' } }] : [],
+            requirements: []
+        };
+
+        if (pendingStopIndex !== null) {
+            const jl = workingJourney.journeylocations[pendingStopIndex];
+            jl.locations[0] = { type: 'SLC', code, name };
+            const jAct = jl.activities.find(a => a.type === 'journey');
+            if (jAct) jAct.timings = timings;
+        } else {
+            workingJourney.journeylocations.splice(pendingStopInsertBefore, 0, newJl);
+        }
+
+        closeModal('modal-stop');
+        renderJourney();
+        showToast(`Stop "${name}" saved.`, 'success');
+    }
+
+    function openActivityModal(stopIdx, actIdx) {
+        pendingActivityStopIndex = stopIdx;
+        pendingActivityIndex = actIdx;
+        const isEdit = actIdx !== null && actIdx !== undefined;
+        document.getElementById('modal-activity-title').textContent = isEdit ? 'Edit Activity' : 'Add Activity';
+
+        if (isEdit) {
+            const act = workingJourney.journeylocations[stopIdx].activities[actIdx];
+            document.getElementById('act-resp-type').value = act.responsibility.type;
+            document.getElementById('act-resp-id').value = act.responsibility.id;
+            document.getElementById('act-resp-status').value = act.responsibility.status;
+            const arr = act.timings?.find(t => t.type === 'arrival')?.time;
+            const dep = act.timings?.find(t => t.type === 'departure')?.time;
+            document.getElementById('act-arrival').value = arr ? arr.slice(0,5) : '';
+            document.getElementById('act-departure').value = dep ? dep.slice(0,5) : '';
+        } else {
+            document.getElementById('act-type').value = 'journey';
+            document.getElementById('act-resp-type').value = 'rru';
+            document.getElementById('act-resp-id').value = settings.partner;
+            document.getElementById('act-resp-status').value = 'proposed';
+            document.getElementById('act-arrival').value = '';
+            document.getElementById('act-departure').value = '';
+        }
+        onActivityTypeChange();
+        openModal('modal-activity');
+    }
+
+    function onActivityTypeChange() {
+        const type = document.getElementById('act-type').value;
+        document.getElementById('section-staff').style.display = type === 'journey' ? 'block' : 'none';
+        document.getElementById('section-rolling-stock').style.display = type === 'rollingStock' ? 'block' : 'none';
+    }
+
+    function confirmActivity() {
+        const type = document.getElementById('act-type').value;
+        const respType = document.getElementById('act-resp-type').value;
+        const respId = document.getElementById('act-resp-id').value.trim();
+        const respStatus = document.getElementById('act-resp-status').value;
+        if (!respId) { showToast('Responsible partner ID is required.', 'error'); return; }
+        const arrival = document.getElementById('act-arrival').value;
+        const departure = document.getElementById('act-departure').value;
+        const timings = [];
+        if (arrival) timings.push({ type: 'arrival', time: arrival + ':00', offset: 0, focus: 'planning' });
+        if (departure) timings.push({ type: 'departure', time: departure + ':00', offset: 0, focus: 'planning' });
+
+        const act = { type, timings, responsibility: { type: respType, id: respId, status: respStatus } };
+        if (type === 'rollingStock') {
+            act.capability = { features: [], rollingStock: {
+                weight: parseInt(document.getElementById('rs-weight').value) || null,
+                length: parseInt(document.getElementById('rs-length').value) || null,
+                maxSpeed: parseInt(document.getElementById('rs-speed').value) || null
+            }};
+        } else if (type === 'journey') {
+            const st = document.getElementById('staff-type').value.trim();
+            const sa = document.getElementById('staff-action').value.trim();
+            if (st || sa) act.capability = { features: [], staff: [{ type: st, action: sa }] };
+        }
+
+        const activities = workingJourney.journeylocations[pendingActivityStopIndex].activities;
+        if (pendingActivityIndex !== null && pendingActivityIndex !== undefined) {
+            activities[pendingActivityIndex] = act;
+        } else {
+            activities.push(act);
+        }
+        closeModal('modal-activity');
+        renderJourney();
+        showToast('Activity saved.', 'success');
+    }
+
+    function saveBranch() {
+        const name = document.getElementById('train-name').value.trim();
+        const comment = document.getElementById('save-comment').value.trim();
+        if (!name) { showToast('Train name is required.', 'error'); return; }
+        if (!comment) { showToast('A change comment is required.', 'error'); return; }
+        showToast('Branch updated successfully!', 'success');
+        setTimeout(() => { window.location.href = `traffic-view.html?trainId=${currentTrain.trainId}`; }, 1200);
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3500);
+    }
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.add('hidden'); });
+    });
+</script>
+</body>
+</html>
+

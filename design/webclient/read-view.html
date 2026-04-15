@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R2P – Read View</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── Top Navigation ──────────────────────────────────────────── -->
+<nav class="top-nav">
+    <a class="top-nav-brand" href="overview.html">
+        <span class="logo">🚂</span>
+        R2P Web Client
+    </a>
+    <ul class="top-nav-links">
+        <li><a href="overview.html">Traffic Overview</a></li>
+        <li><a href="settings.html">Settings</a></li>
+    </ul>
+    <div class="top-nav-right">
+        <div class="top-nav-partner">
+            <span class="top-nav-partner-label">Logged in as:</span>
+            <span class="partner-badge partner-badge-SBB" id="nav-partner">SBB</span>
+        </div>
+        <span class="version-tag">v0.0.12</span>
+    </div>
+</nav>
+
+<!-- ── Main Content ────────────────────────────────────────────── -->
+<div class="main-content">
+    <div class="container">
+
+        <a href="#" class="back-link" id="back-link">Traffic View</a>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" id="page-title">Read View</h1>
+                <p class="page-subtitle" id="page-subtitle">Branch: –</p>
+            </div>
+        </div>
+
+        <!-- Read-only notice -->
+        <div class="alert alert-info">
+            👁️ This is a <strong>read-only view</strong> of the branch. No changes can be made here.
+        </div>
+
+        <!-- ── Train Details Card ────────────────────────────────── -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">📋 Train Details</span>
+            </div>
+            <div class="card-body">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Train Number</div>
+                        <div class="detail-value" id="detail-train-number">–</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Name</div>
+                        <div class="detail-value" id="detail-name">–</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Operational Day</div>
+                        <div class="detail-value" id="detail-op-day">–</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Branch Owner</div>
+                        <div class="detail-value" id="detail-owner">–</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Branch State</div>
+                        <div class="detail-value" id="detail-state">–</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Version Timestamp</div>
+                        <div class="detail-value" id="detail-timestamp">–</div>
+                    </div>
+                </div>
+
+                <!-- Version comment -->
+                <div style="margin-top: 0.5rem; background-color: var(--background-color); padding: 0.75rem 1rem; border-radius: 6px; border-left: 3px solid var(--accent-color);">
+                    <div class="detail-label">Version Comment</div>
+                    <div style="font-size:0.875rem; color:var(--text-secondary); margin-top:0.25rem;" id="detail-comment">–</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Journey Card (read-only pearl necklace) ───────────── -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">🗺️ Journey Route</span>
+            </div>
+            <div class="card-body" style="padding-top:0.5rem;">
+                <div class="pearl-necklace-wrapper">
+                    <div class="pearl-necklace readonly" id="journey-container">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Activities Summary ─────────────────────────────────── -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">📋 Activities Summary</span>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <table id="activities-table">
+                    <thead>
+                        <tr>
+                            <th>Stop</th>
+                            <th>Activity Type</th>
+                            <th>Resp. Type</th>
+                            <th>Responsible</th>
+                            <th>Status</th>
+                            <th>Arrival</th>
+                            <th>Departure</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activities-tbody">
+                        <!-- Rendered by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Back button -->
+        <div class="btn-group" style="margin-bottom:2rem;">
+            <a href="#" class="btn btn-ghost" id="back-btn">← Back to Traffic View</a>
+        </div>
+
+    </div>
+</div>
+
+<!-- ── Toast Container ─────────────────────────────────────────── -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="sampleData.js"></script>
+<script>
+    const settings = JSON.parse(localStorage.getItem('r2p_settings') || JSON.stringify(defaultSettings));
+    const params = new URLSearchParams(window.location.search);
+    const trainId = params.get('trainId');
+    const branchId = params.get('branchId');
+
+    (function init() {
+        // Nav partner
+        const navPartner = document.getElementById('nav-partner');
+        navPartner.textContent = settings.partner;
+        navPartner.className = `partner-badge ${PARTNERS.includes(settings.partner) ? 'partner-badge-' + settings.partner : 'partner-badge-default'}`;
+
+        const train = sampleTrains.find(t => t.trainId === trainId) || sampleTrains[0];
+        const branch = train.branches.find(b => b.branchId === branchId) || train.branches[0];
+
+        // Set back links
+        const backUrl = `traffic-view.html?trainId=${train.trainId}`;
+        document.getElementById('back-link').href = backUrl;
+        document.getElementById('back-btn').href = backUrl;
+
+        // Titles
+        document.getElementById('page-title').textContent = branch.business.trainNumber;
+        document.getElementById('page-subtitle').textContent = `Branch: ${branch.branchName}`;
+        document.title = `R2P – ${branch.business.trainNumber} (${branch.branchName})`;
+
+        // Details
+        document.getElementById('detail-train-number').textContent = branch.business.trainNumber;
+        document.getElementById('detail-op-day').textContent = branch.business.operationalDay;
+        document.getElementById('detail-name').textContent = train.mainPayload.name;
+        document.getElementById('detail-owner').innerHTML = partnerBadgeHtml(branch.technical.owner);
+        document.getElementById('detail-timestamp').textContent = formatDateTime(branch.technical.timestamp);
+        document.getElementById('detail-comment').textContent = branch.technical.comment || '–';
+
+        const stateClasses = { OPEN: 'badge-open', MERGED: 'badge-merged', DELETED: 'badge-deleted', MERGE_REQUESTED: 'badge-merge-requested' };
+        document.getElementById('detail-state').innerHTML = `<span class="badge ${stateClasses[branch.technical.state] || ''}">${branch.technical.state}</span>`;
+
+        // Use main payload for journey display (simplified: real app would load branch version)
+        const journey = train.mainPayload.journey;
+
+        // Pearl necklace (read-only)
+        renderPearlNecklace(journey);
+
+        // Activities table
+        renderActivitiesTable(journey);
+    })();
+
+    function renderPearlNecklace(journey) {
+        const locs = journey.journeylocations;
+        const container = document.getElementById('journey-container');
+        let html = '';
+
+        locs.forEach((jl, idx) => {
+            const stopName = jl.locations[0]?.name ?? '?';
+            const initials = stopName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+            const arrival = jl.activities.find(a => a.timings?.some(ti => ti.type === 'arrival'))?.timings.find(ti => ti.type === 'arrival')?.time;
+            const departure = jl.activities.find(a => a.timings?.some(ti => ti.type === 'departure'))?.timings.find(ti => ti.type === 'departure')?.time;
+            const timesHtml = [arrival ? `Arr: ${arrival.slice(0,5)}` : null, departure ? `Dep: ${departure.slice(0,5)}` : null].filter(Boolean).join('<br>');
+            const circleClass = idx === 0 ? 'pn-start' : (idx === locs.length - 1 ? 'pn-end' : '');
+
+            const activitiesHtml = jl.activities.map(act => `
+                <div class="pn-activity activity-${act.type.split('.')[0]}">
+                    <span class="pn-activity-label" title="${act.type}">${act.type.replace('train.halt.', 'halt.')}</span>
+                    <span class="badge badge-${act.responsibility.status}" style="font-size:0.65rem;">${act.responsibility.status}</span>
+                </div>
+            `).join('');
+
+            html += `
+                <div class="pn-stop">
+                    <div class="pn-circle-row">
+                        <div class="pn-circle ${circleClass}">${initials}</div>
+                    </div>
+                    <div class="pn-stop-name" title="${stopName}">${stopName}</div>
+                    <div class="pn-times">${timesHtml || '–'}</div>
+                    <div class="pn-activities">${activitiesHtml}</div>
+                </div>
+            `;
+
+            if (idx < locs.length - 1) {
+                html += `<div class="pn-connector"></div>`;
+            }
+        });
+
+        container.innerHTML = html;
+    }
+
+    function renderActivitiesTable(journey) {
+        const tbody = document.getElementById('activities-tbody');
+        const rows = [];
+
+        journey.journeylocations.forEach(jl => {
+            const stopName = jl.locations[0]?.name ?? '?';
+            jl.activities.forEach(act => {
+                const arr = act.timings?.find(t => t.type === 'arrival')?.time?.slice(0,5) ?? '–';
+                const dep = act.timings?.find(t => t.type === 'departure')?.time?.slice(0,5) ?? '–';
+                rows.push(`
+                    <tr>
+                        <td><strong>${stopName}</strong></td>
+                        <td><code style="font-size:0.8rem;">${act.type}</code></td>
+                        <td>${act.responsibility.type}</td>
+                        <td>${partnerBadgeHtml(act.responsibility.id)}</td>
+                        <td><span class="badge badge-${act.responsibility.status}">${act.responsibility.status}</span></td>
+                        <td>${arr}</td>
+                        <td>${dep}</td>
+                    </tr>
+                `);
+            });
+        });
+
+        tbody.innerHTML = rows.join('') || '<tr><td colspan="7" class="text-center text-muted">No activities</td></tr>';
+    }
+</script>
+</body>
+</html>
+

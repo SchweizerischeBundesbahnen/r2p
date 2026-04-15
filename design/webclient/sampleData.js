@@ -1,0 +1,349 @@
+/**
+ * R2P Web Client - Sample Data for Design Mockups
+ * Mirrors the real domain model from the R2P backend.
+ */
+
+const PARTNERS = ['SBB', 'BLS', 'SOB'];
+const ALL_PLAN_STATUSES = ['proposed', 'requested', 'confirmed', 'dropped', 'refused'];
+const BRANCH_STATES = { OPEN: 'OPEN', MERGED: 'MERGED', DELETED: 'DELETED', MERGE_REQUESTED: 'MERGE_REQUESTED' };
+
+/* ── Sample Train Payloads (Train schema) ─────────────────────── */
+
+const trainPayloadIC1234 = {
+    id: "train-ic1234",
+    name: "IC 1234 Zürich–Basel",
+    startdate: "2025-06-15",
+    timestamp: "2025-04-10T08:30:00Z",
+    references: [],
+    links: [],
+    journey: {
+        journeylocations: [
+            {
+                locations: [{ type: "SLC", code: "8503000", name: "Zürich HB" }],
+                activities: [
+                    {
+                        type: "journey",
+                        timings: [
+                            { type: "departure", time: "08:00:00", offset: 0, focus: "planning" }
+                        ],
+                        responsibility: { type: "rru", id: "SBB", status: "confirmed" }
+                    }
+                ],
+                requirements: []
+            },
+            {
+                locations: [{ type: "SLC", code: "8500218", name: "Baden" }],
+                activities: [
+                    {
+                        type: "train.halt.1",
+                        timings: [
+                            { type: "arrival", time: "08:18:00", offset: 0, focus: "planning" },
+                            { type: "departure", time: "08:20:00", offset: 0, focus: "planning" }
+                        ],
+                        responsibility: { type: "rru", id: "SBB", status: "confirmed" }
+                    },
+                    {
+                        type: "rollingStock",
+                        timings: [],
+                        responsibility: { type: "rp", id: "BLS", status: "proposed" },
+                        capability: {
+                            features: [],
+                            rollingStock: {
+                                weight: 420000,
+                                length: 200000,
+                                maxSpeed: 200
+                            }
+                        }
+                    }
+                ],
+                requirements: []
+            },
+            {
+                locations: [{ type: "SLC", code: "8500010", name: "Basel SBB" }],
+                activities: [
+                    {
+                        type: "journey",
+                        timings: [
+                            { type: "arrival", time: "08:55:00", offset: 0, focus: "planning" }
+                        ],
+                        responsibility: { type: "rru", id: "SBB", status: "confirmed" }
+                    }
+                ],
+                requirements: []
+            }
+        ]
+    }
+};
+
+const trainPayloadRE4711 = {
+    id: "train-re4711",
+    name: "RE 4711 Bern–Thun",
+    startdate: "2025-06-15",
+    timestamp: "2025-04-09T14:00:00Z",
+    references: [],
+    links: [],
+    journey: {
+        journeylocations: [
+            {
+                locations: [{ type: "SLC", code: "8507000", name: "Bern" }],
+                activities: [
+                    {
+                        type: "journey",
+                        timings: [{ type: "departure", time: "09:00:00", offset: 0, focus: "planning" }],
+                        responsibility: { type: "rru", id: "BLS", status: "confirmed" }
+                    },
+                    {
+                        type: "rollingStock",
+                        timings: [],
+                        responsibility: { type: "rp", id: "BLS", status: "confirmed" },
+                        capability: {
+                            features: [],
+                            rollingStock: { weight: 280000, length: 150000, maxSpeed: 160 }
+                        }
+                    }
+                ],
+                requirements: []
+            },
+            {
+                locations: [{ type: "SLC", code: "8500218", name: "Münsingen" }],
+                activities: [
+                    {
+                        type: "train.halt.1",
+                        timings: [
+                            { type: "arrival", time: "09:17:00", offset: 0, focus: "planning" },
+                            { type: "departure", time: "09:18:00", offset: 0, focus: "planning" }
+                        ],
+                        responsibility: { type: "rru", id: "BLS", status: "requested" }
+                    }
+                ],
+                requirements: []
+            },
+            {
+                locations: [{ type: "SLC", code: "8500200", name: "Thun" }],
+                activities: [
+                    {
+                        type: "journey",
+                        timings: [{ type: "arrival", time: "09:32:00", offset: 0, focus: "planning" }],
+                        responsibility: { type: "rru", id: "BLS", status: "confirmed" }
+                    }
+                ],
+                requirements: []
+            }
+        ]
+    }
+};
+
+const trainPayloadS2050 = {
+    id: "train-s2050",
+    name: "S 2050 St. Gallen–Romanshorn",
+    startdate: "2025-06-16",
+    timestamp: "2025-04-08T11:00:00Z",
+    references: [],
+    links: [],
+    journey: {
+        journeylocations: [
+            {
+                locations: [{ type: "SLC", code: "8506302", name: "St. Gallen" }],
+                activities: [
+                    {
+                        type: "journey",
+                        timings: [{ type: "departure", time: "07:05:00", offset: 0, focus: "planning" }],
+                        responsibility: { type: "rru", id: "SOB", status: "confirmed" }
+                    }
+                ],
+                requirements: []
+            },
+            {
+                locations: [{ type: "SLC", code: "8506202", name: "Arbon" }],
+                activities: [
+                    {
+                        type: "train.halt.1",
+                        timings: [
+                            { type: "arrival", time: "07:28:00", offset: 0, focus: "planning" },
+                            { type: "departure", time: "07:29:00", offset: 0, focus: "planning" }
+                        ],
+                        responsibility: { type: "rru", id: "SOB", status: "refused" }
+                    }
+                ],
+                requirements: []
+            },
+            {
+                locations: [{ type: "SLC", code: "8506207", name: "Romanshorn" }],
+                activities: [
+                    {
+                        type: "journey",
+                        timings: [{ type: "arrival", time: "07:45:00", offset: 0, focus: "planning" }],
+                        responsibility: { type: "rru", id: "SOB", status: "confirmed" }
+                    }
+                ],
+                requirements: []
+            }
+        ]
+    }
+};
+
+/* ── Branch data ────────────────────────────────────────────────── */
+
+const branchesIC1234 = [
+    {
+        branchId: "br-ic1234-main",
+        trainId: "tid-1234",
+        branchName: "main",
+        business: { trainNumber: "IC 1234", operationalDay: "2025-06-15" },
+        technical: { version: "v-001", timestamp: "2025-04-10T08:30:00Z", comment: "Initial creation", owner: "SBB", state: "OPEN" }
+    },
+    {
+        branchId: "br-ic1234-bls",
+        trainId: "tid-1234",
+        branchName: "bls/rolling-stock-update",
+        business: { trainNumber: "IC 1234", operationalDay: "2025-06-15" },
+        technical: { version: "v-002", timestamp: "2025-04-11T10:00:00Z", comment: "Propose updated rolling stock at Baden", owner: "BLS", state: "MERGE_REQUESTED" }
+    },
+    {
+        branchId: "br-ic1234-sbb-timing",
+        trainId: "tid-1234",
+        branchName: "sbb/adjust-timing",
+        business: { trainNumber: "IC 1234", operationalDay: "2025-06-15" },
+        technical: { version: "v-003", timestamp: "2025-04-12T09:15:00Z", comment: "Adjust departure time by 2 min", owner: "SBB", state: "OPEN" }
+    }
+];
+
+const branchesRE4711 = [
+    {
+        branchId: "br-re4711-main",
+        trainId: "tid-4711",
+        branchName: "main",
+        business: { trainNumber: "RE 4711", operationalDay: "2025-06-15" },
+        technical: { version: "v-010", timestamp: "2025-04-09T14:00:00Z", comment: "Initial", owner: "BLS", state: "OPEN" }
+    },
+    {
+        branchId: "br-re4711-sob",
+        trainId: "tid-4711",
+        branchName: "sob/staff-addition",
+        business: { trainNumber: "RE 4711", operationalDay: "2025-06-15" },
+        technical: { version: "v-011", timestamp: "2025-04-12T16:30:00Z", comment: "Add staff at Münsingen", owner: "SOB", state: "OPEN" }
+    }
+];
+
+const branchesS2050 = [
+    {
+        branchId: "br-s2050-main",
+        trainId: "tid-2050",
+        branchName: "main",
+        business: { trainNumber: "S 2050", operationalDay: "2025-06-16" },
+        technical: { version: "v-020", timestamp: "2025-04-08T11:00:00Z", comment: "Initial creation", owner: "SOB", state: "OPEN" }
+    },
+    {
+        branchId: "br-s2050-sbb",
+        trainId: "tid-2050",
+        branchName: "sbb/route-extension",
+        business: { trainNumber: "S 2050", operationalDay: "2025-06-16" },
+        technical: { version: "v-021", timestamp: "2025-04-13T07:00:00Z", comment: "Propose route extension to Kreuzlingen", owner: "SBB", state: "MERGED" }
+    }
+];
+
+/* ── Train List Elements (as returned by GET /v1/trains) ────────── */
+
+const sampleTrains = [
+    {
+        trainId: "tid-1234",
+        mainTimestamp: "2025-04-10T08:30:00Z",
+        partners: ["SBB", "BLS"],
+        branches: branchesIC1234,
+        mainPayload: trainPayloadIC1234
+    },
+    {
+        trainId: "tid-4711",
+        mainTimestamp: "2025-04-09T14:00:00Z",
+        partners: ["BLS", "SOB"],
+        branches: branchesRE4711,
+        mainPayload: trainPayloadRE4711
+    },
+    {
+        trainId: "tid-2050",
+        mainTimestamp: "2025-04-08T11:00:00Z",
+        partners: ["SBB", "BLS", "SOB"],
+        branches: branchesS2050,
+        mainPayload: trainPayloadS2050
+    }
+];
+
+/* ── Helpers ─────────────────────────────────────────────────────── */
+
+/**
+ * Get the overall traffic-light status for a train's main branch payload.
+ * Green  = all responsibilities confirmed
+ * Yellow = at least one proposed or requested (no red)
+ * Red    = at least one dropped or refused
+ */
+function getTrafficLightStatus(trainPayload) {
+    const statuses = [];
+    for (const jl of trainPayload.journey.journeylocations) {
+        for (const act of jl.activities) {
+            statuses.push(act.responsibility.status);
+        }
+    }
+    if (statuses.some(s => s === 'dropped' || s === 'refused')) return 'red';
+    if (statuses.some(s => s === 'proposed' || s === 'requested')) return 'yellow';
+    return 'green';
+}
+
+/**
+ * Get origin and destination stop names from train payload.
+ */
+function getOriginDestination(trainPayload) {
+    const locs = trainPayload.journey.journeylocations;
+    return {
+        from: locs[0]?.locations[0]?.name ?? '–',
+        to: locs[locs.length - 1]?.locations[0]?.name ?? '–'
+    };
+}
+
+/**
+ * Format date-time string to locale date.
+ */
+function formatDate(isoString) {
+    return new Date(isoString).toLocaleDateString('en-CH', {
+        year: 'numeric', month: '2-digit', day: '2-digit'
+    });
+}
+
+/**
+ * Format date-time string to locale date+time.
+ */
+function formatDateTime(isoString) {
+    return new Date(isoString).toLocaleString('en-CH', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit'
+    });
+}
+
+/**
+ * Get main branch from branches array.
+ */
+function getMainBranch(branches) {
+    return branches.find(b => b.branchName === 'main');
+}
+
+/**
+ * Render a partner badge HTML string.
+ */
+function partnerBadgeHtml(partner) {
+    const cls = PARTNERS.includes(partner) ? `partner-badge-${partner}` : 'partner-badge-default';
+    return `<span class="partner-badge ${cls}">${partner}</span>`;
+}
+
+/**
+ * Render a traffic light HTML string.
+ */
+function trafficLightHtml(status) {
+    const labels = { green: 'All confirmed', yellow: 'Pending', red: 'Issue' };
+    return `<span class="traffic-light tl-${status}"><span class="tl-dot"></span><span class="tl-label">${labels[status] ?? status}</span></span>`;
+}
+
+/* ── Settings (localStorage mock) ──────────────────────────────── */
+const defaultSettings = {
+    serverUrl: 'http://localhost:8080',
+    partner: 'SBB'
+};
+
