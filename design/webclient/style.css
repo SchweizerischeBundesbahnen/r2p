@@ -772,16 +772,22 @@ tbody td {
 }
 
 .pn-activity-edit {
-    background: none;
-    border: none;
+    background: rgba(49,130,206,0.08);
+    border: 1px solid rgba(49,130,206,0.25);
+    border-radius: 4px;
     cursor: pointer;
-    color: var(--text-muted);
+    color: var(--accent-color);
     font-size: 0.75rem;
-    padding: 0 2px;
+    padding: 2px 5px;
     flex-shrink: 0;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
 }
 
-.pn-activity-edit:hover { color: var(--accent-color); }
+.pn-activity-edit:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+}
 
 .pn-add-activity-btn {
     margin-top: 4px;
@@ -1196,6 +1202,21 @@ tbody td {
     display: flex;
     gap: 4px;
     flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Compact edit button used inside journey stop rows */
+.jt-stop-actions .btn-ghost {
+    font-size: 0.75rem;
+    padding: 2px 7px;
+    color: var(--accent-color);
+    border-color: rgba(49,130,206,0.35);
+    background: rgba(49,130,206,0.06);
+}
+.jt-stop-actions .btn-ghost:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
 }
 
 /* Activity cell */
@@ -1287,17 +1308,21 @@ tbody td {
 
 /* Delete buttons */
 .btn-delete {
-    background: none;
-    border: none;
+    background: rgba(229,62,62,0.08);
+    border: 1px solid rgba(229,62,62,0.3);
+    border-radius: 4px;
     cursor: pointer;
     color: var(--tl-red);
     font-size: 0.75rem;
-    padding: 0 2px;
-    opacity: 0.6;
-    transition: opacity 0.2s;
+    padding: 2px 5px;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
     flex-shrink: 0;
 }
-.btn-delete:hover { opacity: 1; }
+.btn-delete:hover {
+    background: var(--tl-red);
+    border-color: var(--tl-red);
+    color: white;
+}
 
 /* JSON viewer modal */
 .modal-card.modal-xl {
