@@ -337,16 +337,16 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <version>${license-maven-plugin.version}</version>
-				<configuration>
-					<excludedScopes>test,system</excludedScopes>
-					<outputDirectory>${project.basedir}</outputDirectory>
-					<thirdPartyFilename>THIRD-PARTY.txt</thirdPartyFilename>
-					<failOnMissing>false</failOnMissing>
-					<sortArtifactByName>true</sortArtifactByName>
-					<includedLicenses>
-						<!-- all licenses – leave empty to include everything -->
-					</includedLicenses>
-				</configuration>
+                <configuration>
+                    <excludedScopes>test,system</excludedScopes>
+                    <outputDirectory>${project.basedir}</outputDirectory>
+                    <thirdPartyFilename>THIRD-PARTY.txt</thirdPartyFilename>
+                    <failOnMissing>false</failOnMissing>
+                    <sortArtifactByName>true</sortArtifactByName>
+                    <includedLicenses>
+                        <!-- all licenses – leave empty to include everything -->
+                    </includedLicenses>
+                </configuration>
             </plugin>
 		</plugins>
 	</build>
