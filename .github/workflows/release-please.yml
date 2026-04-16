@@ -35,7 +35,7 @@ jobs:
         if: ${{ steps.release.outputs.pr }}
         uses: actions/checkout@v6
         with:
-          ref: ${{ steps.release.outputs.pr.headBranchName }}
+          ref: ${{ fromJSON(steps.release.outputs.pr).headBranchName }}
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Set up JDK
@@ -46,6 +46,9 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+
       - name: Generate THIRD-PARTY.txt
         if: ${{ steps.release.outputs.pr }}
         run: ./mvnw license:add-third-party
@@ -54,6 +57,8 @@ jobs:
         if: ${{ steps.release.outputs.pr }}
         run: |
           if ! git diff --quiet THIRD-PARTY.txt; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add THIRD-PARTY.txt
             git commit -m "chore: update THIRD-PARTY.txt"
             git push
