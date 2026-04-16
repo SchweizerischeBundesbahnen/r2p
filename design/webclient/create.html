@@ -27,6 +27,20 @@
     </div>
 </nav>
 
+<!-- ── Sticky Edit Bar ──────────────────────────────────────────── -->
+<div class="sticky-edit-bar" id="sticky-edit-bar">
+    <div class="sticky-edit-bar-inner">
+        <div class="sticky-edit-bar-title">
+            <span id="sticky-title">Create New Train</span>
+            <span class="unsaved-indicator hidden" id="unsaved-indicator">● Unsaved changes</span>
+        </div>
+        <div class="sticky-edit-bar-actions">
+            <a href="overview.html" class="btn btn-ghost" id="sticky-cancel-btn">Cancel</a>
+            <button class="btn btn-success btn-muted" id="sticky-save-btn" onclick="saveTrain()">💾 Save Train</button>
+        </div>
+    </div>
+</div>
+
 <!-- ── Main Content ────────────────────────────────────────────── -->
 <div class="main-content">
     <div class="container">
@@ -67,7 +81,7 @@
         <div class="card">
             <div class="card-header">
                 <span class="card-title">🗺️ Journey Route</span>
-                <button class="btn btn-outline btn-sm" onclick="insertStop(workingJourney.journeylocations.length)">＋ Add Stop</button>
+ue                <button class="btn btn-outline btn-sm" onclick="insertStop(workingJourney.journeylocations.length)">＋ Add Stop</button>
             </div>
             <div class="card-body" style="padding:0;">
                 <div id="journey-empty" class="empty-state" style="display:none; margin:1rem;">
@@ -93,11 +107,7 @@
             </div>
         </div>
 
-        <!-- ── Action Buttons ────────────────────────────────────── -->
-        <div class="btn-group" style="justify-content:flex-end; margin-top:0.5rem; margin-bottom:2rem;">
-            <a href="overview.html" class="btn btn-ghost">Cancel</a>
-            <button class="btn btn-success" onclick="saveTrain()">💾 Save Train</button>
-        </div>
+        <!-- ── Action Buttons (removed – use sticky bar above) ──────── -->
 
     </div>
 </div>
@@ -262,6 +272,22 @@
 <!-- ── Toast Container ─────────────────────────────────────────── -->
 <div class="toast-container" id="toast-container"></div>
 
+<!-- ══════════════════ MODAL: Discard Changes ══════════════════════ -->
+<div class="modal-overlay hidden" id="modal-discard">
+    <div class="modal-card" style="max-width:420px;">
+        <div class="modal-header">
+            <span class="modal-title">⚠️ Unsaved Changes</span>
+        </div>
+        <div class="modal-body">
+            <p style="color:var(--text-secondary); font-size:0.9rem;">You have unsaved changes. If you leave now, all changes will be lost.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('modal-discard')">Keep Editing</button>
+            <button class="btn btn-danger" id="discard-confirm-btn">Discard & Leave</button>
+        </div>
+    </div>
+</div>
+
 <script src="sampleData.js"></script>
 <script>
     /* ── State ──────────────────────────────────────────────────── */
@@ -274,6 +300,25 @@
     let pendingActivityStopIndex = null;
     let pendingActivityIndex = null;
     let pendingActivityColType = null; // 'rs' | 'staff' | 'plan'
+    let isDirty = false;
+    let pendingDiscardHref = null;
+
+    function markDirty() {
+        if (isDirty) return;
+        isDirty = true;
+        document.getElementById('sticky-edit-bar').classList.add('dirty');
+        document.getElementById('unsaved-indicator').classList.remove('hidden');
+        document.getElementById('sticky-title').textContent = 'Create New Train *';
+        document.getElementById('sticky-save-btn').classList.remove('btn-muted');
+    }
+
+    function clearDirty() {
+        isDirty = false;
+        document.getElementById('sticky-edit-bar').classList.remove('dirty');
+        document.getElementById('unsaved-indicator').classList.add('hidden');
+        document.getElementById('sticky-title').textContent = 'Create New Train';
+        document.getElementById('sticky-save-btn').classList.add('btn-muted');
+    }
 
     /* ── Init ───────────────────────────────────────────────────── */
     (function init() {
@@ -282,6 +327,11 @@
         navPartner.className = `partner-badge ${PARTNERS.includes(settings.partner) ? 'partner-badge-' + settings.partner : 'partner-badge-default'}`;
         document.getElementById('act-resp-id').value = settings.partner;
         renderJourney();
+
+        // Dirty tracking on form fields
+        ['train-name', 'train-opday', 'save-comment'].forEach(id => {
+            document.getElementById(id).addEventListener('input', markDirty);
+        });
     })();
 
     /* ── Journey Render ─────────────────────────────────────────── */
@@ -411,6 +461,7 @@
 
         closeModal('modal-stop');
         renderJourney();
+        markDirty();
         showToast(`Stop "${name}" saved.`, 'success');
     }
 
@@ -419,6 +470,7 @@
         if (!confirm(`Delete stop "${name}"?`)) return;
         workingJourney.journeylocations.splice(stopIdx, 1);
         renderJourney();
+        markDirty();
         showToast(`Stop "${name}" deleted.`, 'success');
     }
 
@@ -527,6 +579,7 @@
 
         closeModal('modal-activity');
         renderJourney();
+        markDirty();
         showToast('Activity saved.', 'success');
     }
 
@@ -534,6 +587,7 @@
         if (!confirm('Delete this activity?')) return;
         workingJourney.journeylocations[stopIdx].activities.splice(actIdx, 1);
         renderJourney();
+        markDirty();
         showToast('Activity deleted.', 'success');
     }
 
@@ -550,6 +604,7 @@
             showToast('A train must have at least 2 stops.', 'error'); return;
         }
 
+        clearDirty();
         showToast(`Train "${name}" saved successfully!`, 'success');
         setTimeout(() => { window.location.href = 'overview.html'; }, 1200);
     }
@@ -571,6 +626,29 @@
         overlay.addEventListener('click', e => {
             if (e.target === overlay) overlay.classList.add('hidden');
         });
+    });
+
+    // Navigation guard: Cancel button
+    document.getElementById('sticky-cancel-btn').addEventListener('click', function(e) {
+        if (isDirty) {
+            e.preventDefault();
+            pendingDiscardHref = this.href;
+            openModal('modal-discard');
+        }
+    });
+
+    // Discard & Leave confirmation
+    document.getElementById('discard-confirm-btn').addEventListener('click', function() {
+        clearDirty();
+        window.location.href = pendingDiscardHref;
+    });
+
+    // Browser-level navigation guard
+    window.addEventListener('beforeunload', function(e) {
+        if (isDirty) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
     });
 </script>
 </body>

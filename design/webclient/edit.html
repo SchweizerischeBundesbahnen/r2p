@@ -27,6 +27,20 @@
     </div>
 </nav>
 
+<!-- ── Sticky Edit Bar ──────────────────────────────────────────── -->
+<div class="sticky-edit-bar" id="sticky-edit-bar">
+    <div class="sticky-edit-bar-inner">
+        <div class="sticky-edit-bar-title">
+            <span id="sticky-title">Edit Branch</span>
+            <span class="unsaved-indicator hidden" id="unsaved-indicator">● Unsaved changes</span>
+        </div>
+        <div class="sticky-edit-bar-actions">
+            <a href="#" class="btn btn-ghost" id="sticky-cancel-btn">Cancel</a>
+            <button class="btn btn-success btn-muted" id="sticky-save-btn" onclick="saveBranch()">💾 Save Changes</button>
+        </div>
+    </div>
+</div>
+
 <!-- ── Main Content ────────────────────────────────────────────── -->
 <div class="main-content">
     <div class="container">
@@ -95,11 +109,7 @@
             </div>
         </div>
 
-        <!-- ── Action Buttons ────────────────────────────────────── -->
-        <div class="btn-group" style="justify-content:flex-end; margin-top:0.5rem; margin-bottom:2rem;">
-            <a href="#" class="btn btn-ghost" id="cancel-btn">Cancel</a>
-            <button class="btn btn-success" onclick="saveBranch()">💾 Save Changes</button>
-        </div>
+        <!-- ── Action Buttons (removed – use sticky bar above) ──────── -->
 
     </div>
 </div>
@@ -264,6 +274,22 @@
 <!-- ── Toast Container ─────────────────────────────────────────── -->
 <div class="toast-container" id="toast-container"></div>
 
+<!-- ══════════════════ MODAL: Discard Changes ══════════════════════ -->
+<div class="modal-overlay hidden" id="modal-discard">
+    <div class="modal-card" style="max-width:420px;">
+        <div class="modal-header">
+            <span class="modal-title">⚠️ Unsaved Changes</span>
+        </div>
+        <div class="modal-body">
+            <p style="color:var(--text-secondary); font-size:0.9rem;">You have unsaved changes. If you leave now, all changes will be lost.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('modal-discard')">Keep Editing</button>
+            <button class="btn btn-danger" id="discard-confirm-btn">Discard & Leave</button>
+        </div>
+    </div>
+</div>
+
 <script src="sampleData.js"></script>
 <script>
     const settings = JSON.parse(localStorage.getItem('r2p_settings') || JSON.stringify(defaultSettings));
@@ -280,6 +306,26 @@
     let pendingActivityStopIndex = null;
     let pendingActivityIndex = null;
     let pendingActivityColType = null; // 'rs' | 'staff' | 'plan'
+    let isDirty = false;
+    let pendingDiscardHref = null;
+
+    function markDirty() {
+        if (isDirty) return;
+        isDirty = true;
+        document.getElementById('sticky-edit-bar').classList.add('dirty');
+        document.getElementById('unsaved-indicator').classList.remove('hidden');
+        const title = document.getElementById('page-title').textContent;
+        document.getElementById('sticky-title').textContent = title + ' *';
+        document.getElementById('sticky-save-btn').classList.remove('btn-muted');
+    }
+
+    function clearDirty() {
+        isDirty = false;
+        document.getElementById('sticky-edit-bar').classList.remove('dirty');
+        document.getElementById('unsaved-indicator').classList.add('hidden');
+        document.getElementById('sticky-title').textContent = document.getElementById('page-title').textContent;
+        document.getElementById('sticky-save-btn').classList.add('btn-muted');
+    }
 
     (function init() {
         const navPartner = document.getElementById('nav-partner');
@@ -292,10 +338,12 @@
         const branchDisplayName = branchNameParam || currentBranch.branchName;
 
         document.getElementById('back-link').href = `traffic-view.html?trainId=${currentTrain.trainId}`;
-        document.getElementById('cancel-btn').href = `traffic-view.html?trainId=${currentTrain.trainId}`;
+        document.getElementById('cancel-btn') && (document.getElementById('cancel-btn').href = `traffic-view.html?trainId=${currentTrain.trainId}`);
+        document.getElementById('sticky-cancel-btn').href = `traffic-view.html?trainId=${currentTrain.trainId}`;
         document.getElementById('page-title').textContent = `Edit: ${currentBranch.business.trainNumber}`;
         document.getElementById('page-subtitle').textContent = `Branch: ${branchDisplayName}`;
         document.getElementById('branch-name-display').textContent = branchDisplayName;
+        document.getElementById('sticky-title').textContent = `Edit: ${currentBranch.business.trainNumber}`;
 
         const payload = currentTrain.mainPayload;
         document.getElementById('train-name').value = payload.name;
@@ -305,6 +353,11 @@
         workingJourney = JSON.parse(JSON.stringify(payload.journey));
 
         renderJourney();
+
+        // Dirty tracking on form fields
+        ['train-name', 'train-opday', 'save-comment'].forEach(id => {
+            document.getElementById(id).addEventListener('input', markDirty);
+        });
     })();
 
     function renderJourney() {
@@ -419,6 +472,7 @@
 
         closeModal('modal-stop');
         renderJourney();
+        markDirty();
         showToast(`Stop "${name}" saved.`, 'success');
     }
 
@@ -427,6 +481,7 @@
         if (!confirm(`Delete stop "${name}"?`)) return;
         workingJourney.journeylocations.splice(stopIdx, 1);
         renderJourney();
+        markDirty();
         showToast(`Stop "${name}" deleted.`, 'success');
     }
 
@@ -522,6 +577,7 @@
         }
         closeModal('modal-activity');
         renderJourney();
+        markDirty();
         showToast('Activity saved.', 'success');
     }
 
@@ -529,6 +585,7 @@
         if (!confirm('Delete this activity?')) return;
         workingJourney.journeylocations[stopIdx].activities.splice(actIdx, 1);
         renderJourney();
+        markDirty();
         showToast('Activity deleted.', 'success');
     }
 
@@ -537,6 +594,7 @@
         const comment = document.getElementById('save-comment').value.trim();
         if (!name) { showToast('Train name is required.', 'error'); return; }
         if (!comment) { showToast('A change comment is required.', 'error'); return; }
+        clearDirty();
         showToast('Branch updated successfully!', 'success');
         setTimeout(() => { window.location.href = `traffic-view.html?trainId=${currentTrain.trainId}`; }, 1200);
     }
@@ -553,6 +611,29 @@
     }
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
         overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.add('hidden'); });
+    });
+
+    // Navigation guard: Cancel button
+    document.getElementById('sticky-cancel-btn').addEventListener('click', function(e) {
+        if (isDirty) {
+            e.preventDefault();
+            pendingDiscardHref = this.href;
+            openModal('modal-discard');
+        }
+    });
+
+    // Discard & Leave confirmation
+    document.getElementById('discard-confirm-btn').addEventListener('click', function() {
+        clearDirty();
+        window.location.href = pendingDiscardHref;
+    });
+
+    // Browser-level navigation guard (tab close, address bar, etc.)
+    window.addEventListener('beforeunload', function(e) {
+        if (isDirty) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
     });
 </script>
 </body>
