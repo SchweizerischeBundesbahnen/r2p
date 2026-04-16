@@ -36,6 +36,7 @@
         <maven-antrun-plugin.version>3.2.0</maven-antrun-plugin.version>
         <exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
         <alpinejs.version>3.15.11</alpinejs.version>
+        <license-maven-plugin.version>2.5.0</license-maven-plugin.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -331,6 +332,21 @@
                         <version>${asciidoctorj.pdf.version}</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>${license-maven-plugin.version}</version>
+				<configuration>
+					<excludedScopes>test,system</excludedScopes>
+					<outputDirectory>${project.basedir}</outputDirectory>
+					<thirdPartyFilename>THIRD-PARTY.txt</thirdPartyFilename>
+					<failOnMissing>false</failOnMissing>
+					<sortArtifactByName>true</sortArtifactByName>
+					<includedLicenses>
+						<!-- all licenses – leave empty to include everything -->
+					</includedLicenses>
+				</configuration>
             </plugin>
 		</plugins>
 	</build>

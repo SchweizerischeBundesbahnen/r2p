@@ -37,8 +37,8 @@ release-please-config.json
 .release-please-manifest.json
 
 # Licenses
-gpl-3.0.txt
 LICENSE
+THIRD-PARTY.txt
 
 # Node
 node_modules/
