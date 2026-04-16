@@ -48,12 +48,16 @@ const trainPayloadIC1234 = {
                         responsibility: { type: "rp", id: "BLS", status: "proposed" },
                         capability: {
                             features: [],
-                            rollingStock: {
-                                weight: 420000,
-                                length: 200000,
-                                maxSpeed: 200
-                            }
+                            rollingStock: { weight: 420000, length: 200000, maxSpeed: 200 }
                         }
+                    },
+                    {
+                        type: "pathRequest",
+                        timings: [
+                            { type: "arrival", time: "08:18:00", offset: 0, focus: "planning" },
+                            { type: "departure", time: "08:20:00", offset: 0, focus: "planning" }
+                        ],
+                        responsibility: { type: "rim", id: "SBB", status: "confirmed" }
                     }
                 ],
                 requirements: []
@@ -114,6 +118,14 @@ const trainPayloadRE4711 = {
                             { type: "departure", time: "09:18:00", offset: 0, focus: "planning" }
                         ],
                         responsibility: { type: "rru", id: "BLS", status: "requested" }
+                    },
+                    {
+                        type: "pathRequest",
+                        timings: [
+                            { type: "arrival", time: "09:17:00", offset: 0, focus: "planning" },
+                            { type: "departure", time: "09:18:00", offset: 0, focus: "planning" }
+                        ],
+                        responsibility: { type: "rim", id: "BLS", status: "confirmed" }
                     }
                 ],
                 requirements: []
@@ -149,6 +161,15 @@ const trainPayloadS2050 = {
                         type: "journey",
                         timings: [{ type: "departure", time: "07:05:00", offset: 0, focus: "planning" }],
                         responsibility: { type: "rru", id: "SOB", status: "confirmed" }
+                    },
+                    {
+                        type: "rollingStock",
+                        timings: [],
+                        responsibility: { type: "rp", id: "SOB", status: "confirmed" },
+                        capability: {
+                            features: [],
+                            rollingStock: { weight: 180000, length: 100000, maxSpeed: 140 }
+                        }
                     }
                 ],
                 requirements: []
@@ -163,6 +184,14 @@ const trainPayloadS2050 = {
                             { type: "departure", time: "07:29:00", offset: 0, focus: "planning" }
                         ],
                         responsibility: { type: "rru", id: "SOB", status: "refused" }
+                    },
+                    {
+                        type: "pathRequest",
+                        timings: [
+                            { type: "arrival", time: "07:28:00", offset: 0, focus: "planning" },
+                            { type: "departure", time: "07:29:00", offset: 0, focus: "planning" }
+                        ],
+                        responsibility: { type: "rim", id: "SOB", status: "refused" }
                     }
                 ],
                 requirements: []
@@ -182,7 +211,83 @@ const trainPayloadS2050 = {
     }
 };
 
-/* ── Branch data ────────────────────────────────────────────────── */
+const trainPayloadIR2275 = {
+    id: "train-ir2275",
+    name: "IR 2275 Zürich–Chur",
+    startdate: "2025-06-15",
+    timestamp: "2025-04-14T07:00:00Z",
+    references: [],
+    links: [],
+    journey: {
+        journeylocations: [
+            {
+                locations: [{ type: "SLC", code: "8503000", name: "Zürich HB" }],
+                activities: [
+                    {
+                        type: "journey",
+                        timings: [{ type: "departure", time: "10:03:00", offset: 0, focus: "planning" }],
+                        responsibility: { type: "rru", id: "SBB", status: "confirmed" }
+                    },
+                    {
+                        type: "rollingStock",
+                        timings: [],
+                        responsibility: { type: "rp", id: "SBB", status: "confirmed" },
+                        capability: {
+                            features: [],
+                            rollingStock: { weight: 380000, length: 190000, maxSpeed: 200 }
+                        }
+                    }
+                ],
+                requirements: []
+            },
+            {
+                locations: [{ type: "SLC", code: "8509000", name: "Sargans" }],
+                activities: [
+                    {
+                        type: "train.halt.1",
+                        timings: [
+                            { type: "arrival", time: "10:58:00", offset: 0, focus: "planning" },
+                            { type: "departure", time: "11:00:00", offset: 0, focus: "planning" }
+                        ],
+                        responsibility: { type: "rru", id: "SBB", status: "confirmed" }
+                    },
+                    {
+                        type: "pathRequest",
+                        timings: [
+                            { type: "arrival", time: "10:58:00", offset: 0, focus: "planning" },
+                            { type: "departure", time: "11:00:00", offset: 0, focus: "planning" }
+                        ],
+                        responsibility: { type: "rim", id: "SBB", status: "confirmed" }
+                    }
+                ],
+                requirements: []
+            },
+            {
+                locations: [{ type: "SLC", code: "8509990", name: "Chur" }],
+                activities: [
+                    {
+                        type: "journey",
+                        timings: [{ type: "arrival", time: "11:20:00", offset: 0, focus: "planning" }],
+                        responsibility: { type: "rru", id: "SBB", status: "confirmed" }
+                    }
+                ],
+                requirements: []
+            }
+        ]
+    }
+};
+
+const branchesIR2275 = [
+    {
+        branchId: "br-ir2275-main",
+        trainId: "tid-2275",
+        branchName: "main",
+        business: { trainNumber: "IR 2275", operationalDay: "2025-06-15" },
+        technical: { version: "v-030", timestamp: "2025-04-14T07:00:00Z", comment: "Initial creation", owner: "SBB", state: "OPEN" }
+    }
+];
+
+
 
 const branchesIC1234 = [
     {
@@ -265,6 +370,13 @@ const sampleTrains = [
         partners: ["SBB", "BLS", "SOB"],
         branches: branchesS2050,
         mainPayload: trainPayloadS2050
+    },
+    {
+        trainId: "tid-2275",
+        mainTimestamp: "2025-04-14T07:00:00Z",
+        partners: ["SBB", "SOB"],
+        branches: branchesIR2275,
+        mainPayload: trainPayloadIR2275
     }
 ];
 
@@ -368,8 +480,7 @@ function partnerBadgeHtml(partner) {
  * Render a traffic light HTML string.
  */
 function trafficLightHtml(status) {
-    const labels = { green: 'All confirmed', yellow: 'Pending', red: 'Issue' };
-    return `<span class="traffic-light tl-${status}"><span class="tl-dot"></span><span class="tl-label">${labels[status] ?? status}</span></span>`;
+    return `<span class="traffic-light tl-${status}"><span class="tl-dot"></span></span>`;
 }
 
 /* ── Settings (localStorage mock) ──────────────────────────────── */

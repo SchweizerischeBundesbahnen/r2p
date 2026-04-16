@@ -77,11 +77,14 @@
                         <div class="detail-value" id="detail-op-day">2025-06-15</div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-label">Status</div>
+                        <div class="detail-label">
+                            Gesamtstatus
+                            <span class="tooltip-anchor" tabindex="0">?<span class="tooltip-box">🟢 Alle Activities sind <em>confirmed</em>.<br>🟡 Mindestens eine Activity ist <em>proposed</em> oder <em>requested</em>, keine abgelehnt.<br>🔴 Mindestens eine Activity ist <em>refused</em> oder <em>dropped</em>.</span></span>
+                        </div>
                         <div class="detail-value" id="detail-status">–</div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-label">Shared With</div>
+                        <div class="detail-label">Partners</div>
                         <div class="detail-value" id="detail-partners">–</div>
                     </div>
                 </div>
@@ -99,9 +102,9 @@
                         <thead>
                             <tr>
                                 <th style="width:200px;">Stop</th>
-                                <th>🚃 Rolling Stock</th>
-                                <th>👤 Staff / Journey</th>
-                                <th>📋 Planning / Path</th>
+                                <th>Rolling Stock</th>
+                                <th>Staff</th>
+                                <th>Path</th>
                             </tr>
                         </thead>
                         <tbody id="journey-tbody">
@@ -241,7 +244,9 @@
         document.getElementById('detail-arr-time').textContent = arrTime ?? '–';
         document.getElementById('detail-op-day').textContent = main?.business?.operationalDay ?? '–';
         document.getElementById('detail-status').innerHTML = trafficLightHtml(getTrafficLightStatus(t.mainPayload));
-        document.getElementById('detail-partners').innerHTML = t.partners.map(p => partnerBadgeHtml(p)).join(' ');
+        document.getElementById('detail-partners').innerHTML = t.partners
+            .filter(p => p !== settings.partner)
+            .map(p => partnerBadgeHtml(p)).join(' ') || '–';
         document.title = `R2P – ${main?.business?.trainNumber ?? 'Train'}`;
 
         // Journey table (read-only)
@@ -260,7 +265,6 @@
             const stopName = jl.locations[0]?.name ?? '?';
             const isFirst = idx === 0;
             const isLast = idx === locs.length - 1;
-            const dotClass = isFirst ? 'jt-start' : (isLast ? 'jt-end' : '');
 
             // Separate activities by column
             const rsActs = jl.activities.filter(a => activityColumnType(a.type) === 'rs');
@@ -276,8 +280,9 @@
                 <td class="jt-stop-cell">
                     <div class="jt-stop-indicator">
                         <div class="jt-stop-line-col">
-                            <div class="jt-stop-dot ${dotClass}"></div>
-                            ${!isLast ? '<div class="jt-stop-line"></div>' : ''}
+                            <div class="jt-line-seg${isFirst ? ' jt-line-invisible' : ''}"></div>
+                            <div class="jt-stop-dot"></div>
+                            <div class="jt-line-seg${isLast ? ' jt-line-invisible' : ''}"></div>
                         </div>
                         <div class="jt-stop-info">
                             <div class="jt-stop-name">${stopName}</div>
@@ -315,8 +320,7 @@
             html += `
                 <div class="jt-act-item act-${colType}">
                     <div class="jt-act-header">
-                        <span>${statusDot}</span>
-                        <span style="flex:1; font-weight:600; font-size:0.7rem; margin-left:4px;">${act.responsibility.id}</span>
+                        <span style="flex:1;">${partnerBadgeHtml(act.responsibility.id)}</span>
                     </div>
                     <div class="jt-act-resp">${act.responsibility.type} · <span class="badge badge-${act.responsibility.status}" style="font-size:0.6rem;">${act.responsibility.status}</span></div>
                     ${timesHtml ? `<div class="jt-act-times">${timesHtml}</div>` : ''}
@@ -352,13 +356,13 @@
             }[state] || state;
 
             let actionBtns = '';
-            // Edit button: only for own OPEN non-main branches
-            if (isOwn && state === 'OPEN' && !isMain) {
+            // Edit button: only for own OPEN branches (Lead RU can edit main, partners their own)
+            if (isOwn && state === 'OPEN') {
                 actionBtns += `<a href="edit.html?trainId=${currentTrain.trainId}&branchId=${b.branchId}" class="btn btn-primary btn-sm">✏ Edit</a>`;
             }
             // Read view for all
             actionBtns += `<a href="read-view.html?trainId=${currentTrain.trainId}&branchId=${b.branchId}" class="btn btn-ghost btn-sm">👁 View</a>`;
-            // Merge request: only for own OPEN non-main branches without MR
+            // Merge request: only for own OPEN non-main branches
             if (isOwn && state === 'OPEN' && !isMain) {
                 actionBtns += `<button class="btn btn-outline btn-sm" onclick="openMergeRequestModal('${b.branchId}', '${b.branchName}')">⇐ Merge Request</button>`;
             }

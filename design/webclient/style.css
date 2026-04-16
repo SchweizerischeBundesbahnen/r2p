@@ -294,8 +294,16 @@ body {
     background-color: var(--card-background);
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    overflow: hidden;
+    overflow: visible;
     margin-bottom: var(--spacing-md);
+}
+
+/* Re-apply corner rounding to thead since overflow:visible no longer clips */
+.table-container thead tr:first-child th:first-child {
+    border-radius: 8px 0 0 0;
+}
+.table-container thead tr:first-child th:last-child {
+    border-radius: 0 8px 0 0;
 }
 
 table {
@@ -1151,12 +1159,17 @@ tbody td {
 .jt-stop-cell {
     min-width: 160px;
     white-space: nowrap;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    height: 1px; /* enables height:100% on children in table cells */
 }
 
 .jt-stop-indicator {
     display: flex;
-    align-items: flex-start;
+    align-items: stretch;
     gap: var(--spacing-sm);
+    height: 100%;
+    min-height: 44px;
 }
 
 .jt-stop-line-col {
@@ -1167,28 +1180,34 @@ tbody td {
     flex-shrink: 0;
 }
 
+.jt-line-seg {
+    width: 2px;
+    flex: 1;
+    background-color: var(--border-color);
+}
+
+.jt-line-invisible {
+    background-color: transparent;
+}
+
 .jt-stop-dot {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
-    background-color: var(--primary-color);
+    background-color: var(--text-primary);
     flex-shrink: 0;
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
-.jt-stop-dot.jt-start { background-color: var(--tl-green); }
-.jt-stop-dot.jt-end   { background-color: var(--partner-sbb); }
-
-.jt-stop-line {
-    width: 2px;
-    flex: 1;
-    min-height: 20px;
-    background-color: var(--border-color);
-    margin-top: 2px;
-}
+.jt-stop-dot.jt-start { background-color: var(--text-primary); }
+.jt-stop-dot.jt-end   { background-color: var(--text-primary); }
 
 .jt-stop-info {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px 0;
 }
 
 .jt-stop-name {
@@ -1205,7 +1224,6 @@ tbody td {
     align-items: center;
 }
 
-/* Compact edit button used inside journey stop rows */
 .jt-stop-actions .btn-ghost {
     font-size: 0.75rem;
     padding: 2px 7px;
@@ -1222,12 +1240,16 @@ tbody td {
 /* Activity cell */
 .jt-act-cell {
     min-width: 180px;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    height: 1px;
 }
 
 .jt-act-list {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    padding: 10px 0;
 }
 
 .jt-act-item {
@@ -1238,9 +1260,9 @@ tbody td {
     font-size: 0.75rem;
 }
 
-.jt-act-item.act-rs   { border-left: 3px solid var(--partner-sob); }
-.jt-act-item.act-staff { border-left: 3px solid var(--accent-color); }
-.jt-act-item.act-plan  { border-left: 3px solid var(--tl-yellow); }
+.jt-act-item.act-rs    { border-left: 3px solid var(--secondary-color); }
+.jt-act-item.act-staff { border-left: 3px solid var(--secondary-color); }
+.jt-act-item.act-plan  { border-left: 3px solid var(--secondary-color); }
 
 .jt-act-header {
     display: flex;
@@ -1305,6 +1327,17 @@ tbody td {
 .status-dot-green  { background-color: var(--tl-green); }
 .status-dot-yellow { background-color: var(--tl-yellow); }
 .status-dot-red    { background-color: var(--tl-red); }
+
+/* Stop row (full-height) */
+.jt-stop-row {
+    display: table-row;
+    height: 100%;
+}
+
+.jt-stop-row > * {
+    display: table-cell;
+    vertical-align: middle;
+}
 
 /* Delete buttons */
 .btn-delete {
@@ -1411,6 +1444,95 @@ tbody td {
 #sticky-save-btn.btn-muted {
     background-color: #a0aec0;
     pointer-events: none;
+}
+
+/* ========================================
+   Tooltip
+   ======================================== */
+.tooltip-anchor {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: var(--text-muted);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    cursor: default;
+    position: relative;
+    margin-left: 4px;
+    vertical-align: middle;
+    line-height: 1;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+/* In dark thead the badge should be white/translucent */
+thead .tooltip-anchor {
+    background-color: rgba(255,255,255,0.35);
+    color: white;
+}
+
+.tooltip-box {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--text-primary);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.5;
+    padding: 8px 12px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    z-index: 500;
+    pointer-events: none;
+    text-transform: none;
+    letter-spacing: 0;
+    min-width: 260px;
+    white-space: normal;
+}
+
+.tooltip-box::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: var(--text-primary);
+}
+
+.tooltip-anchor:hover .tooltip-box,
+.tooltip-anchor:focus .tooltip-box {
+    display: block;
+}
+
+.btn-ghost-danger {
+    background-color: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+}
+.btn-ghost-danger:hover {
+    background-color: var(--tl-red);
+    border-color: var(--tl-red);
+    color: white;
+}
+
+/* In the detail-label (traffic-view), show tooltip above */
+.detail-label .tooltip-anchor .tooltip-box {
+    top: auto;
+    bottom: calc(100% + 6px);
+}
+.detail-label .tooltip-anchor .tooltip-box::after {
+    bottom: auto;
+    top: 100%;
+    border-bottom-color: transparent;
+    border-top-color: var(--text-primary);
 }
 
 /* ========================================

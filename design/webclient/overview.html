@@ -35,7 +35,6 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title">Traffic Overview</h1>
-                <p class="page-subtitle">All trains accessible to your partner</p>
             </div>
             <a href="create.html" class="btn btn-success">
                 ＋ New Train
@@ -83,11 +82,14 @@
                         <th class="sort-header" onclick="sortTable('operationalDay')" id="th-operationalDay">
                             Op. Day <span class="sort-indicator"></span>
                         </th>
-                        <th>Shared With</th>
+                        <th>Partners</th>
                         <th class="sort-header" onclick="sortTable('lastChange')" id="th-lastChange">
                             Last Change / Version <span class="sort-indicator"></span>
                         </th>
-                        <th>Status</th>
+                        <th>
+                            Status
+                            <span class="tooltip-anchor" tabindex="0">?<span class="tooltip-box">🟢 Alle Activities sind <em>confirmed</em>.<br>🟡 Mindestens eine Activity ist <em>proposed</em> oder <em>requested</em>, keine abgelehnt.<br>🔴 Mindestens eine Activity ist <em>refused</em> oder <em>dropped</em>.</span></span>
+                        </th>
                     </tr>
                 </thead>
                 <tbody id="trains-tbody">
@@ -111,17 +113,25 @@
 <script>
     /* ── State ──────────────────────────────────────────────────── */
     let currentSort = { field: 'lastChange', dir: 'desc' };
-    let filteredTrains = [...sampleTrains];
+    let currentPartner = 'SBB';
+    let filteredTrains = [];
+
+    /* Trains accessible to the current partner */
+    function partnerTrains() {
+        return sampleTrains.filter(t => t.partners.includes(currentPartner));
+    }
 
     /* ── Init ───────────────────────────────────────────────────── */
     (function init() {
         // Load settings
         const settings = JSON.parse(localStorage.getItem('r2p_settings') || JSON.stringify(defaultSettings));
+        currentPartner = settings.partner;
         const partnerCls = PARTNERS.includes(settings.partner) ? `partner-badge-${settings.partner}` : 'partner-badge-default';
         const navPartner = document.getElementById('nav-partner');
         navPartner.textContent = settings.partner;
         navPartner.className = `partner-badge ${partnerCls}`;
 
+        filteredTrains = partnerTrains();
         renderTable();
     })();
 
@@ -132,7 +142,7 @@
         const fromDate = document.getElementById('filter-from').value;
         const toDate = document.getElementById('filter-to').value;
 
-        filteredTrains = sampleTrains.filter(t => {
+        filteredTrains = partnerTrains().filter(t => {
             const main = getMainBranch(t.branches);
             const opDay = main?.business?.operationalDay ?? '';
             const tNum = main?.business?.trainNumber?.toLowerCase() ?? '';
@@ -152,7 +162,7 @@
         document.getElementById('filter-year').value = '2025';
         document.getElementById('filter-from').value = '';
         document.getElementById('filter-to').value = '';
-        filteredTrains = [...sampleTrains];
+        filteredTrains = partnerTrains();
         renderTable();
     }
 
@@ -212,7 +222,7 @@
             const { from, to, depTime, arrTime } = getOriginDestination(t.mainPayload);
             const lastChange = formatDateTime(t.mainTimestamp);
             const version = main?.technical?.version ?? '';
-            const partners = t.partners.filter(p => p !== (main?.technical?.owner ?? '')).map(p => partnerBadgeHtml(p)).join(' ');
+            const partners = t.partners.filter(p => p !== currentPartner).map(p => partnerBadgeHtml(p)).join(' ');
             const tlStatus = getTrafficLightStatus(t.mainPayload);
             const tl = trafficLightHtml(tlStatus);
 

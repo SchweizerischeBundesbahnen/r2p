@@ -107,9 +107,9 @@
                         <thead>
                             <tr>
                                 <th style="width:200px;">Stop</th>
-                                <th>🚃 Rolling Stock</th>
-                                <th>👤 Staff / Journey</th>
-                                <th>📋 Planning / Path</th>
+                                <th>Rolling Stock</th>
+                                <th>Staff</th>
+                                <th>Path</th>
                             </tr>
                         </thead>
                         <tbody id="journey-tbody">
@@ -188,7 +188,7 @@
         const isOwn = currentBranch.technical.owner === settings.partner;
         const isOpen = currentBranch.technical.state === 'OPEN';
         const isMain = currentBranch.branchName === 'main';
-        if (isOwn && isOpen && !isMain) {
+        if (isOwn && isOpen) {
             const editBtn = document.getElementById('edit-btn');
             editBtn.href = `edit.html?trainId=${currentTrain.trainId}&branchId=${currentBranch.branchId}`;
             editBtn.style.display = '';
@@ -208,7 +208,6 @@
             const stopName = jl.locations[0]?.name ?? '?';
             const isFirst = idx === 0;
             const isLast = idx === locs.length - 1;
-            const dotClass = isFirst ? 'jt-start' : (isLast ? 'jt-end' : '');
 
             const rsActs = jl.activities.filter(a => activityColumnType(a.type) === 'rs');
             const staffActs = jl.activities.filter(a => activityColumnType(a.type) === 'staff');
@@ -218,8 +217,9 @@
                 <td class="jt-stop-cell">
                     <div class="jt-stop-indicator">
                         <div class="jt-stop-line-col">
-                            <div class="jt-stop-dot ${dotClass}"></div>
-                            ${!isLast ? '<div class="jt-stop-line"></div>' : ''}
+                            <div class="jt-line-seg${isFirst ? ' jt-line-invisible' : ''}"></div>
+                            <div class="jt-stop-dot"></div>
+                            <div class="jt-line-seg${isLast ? ' jt-line-invisible' : ''}"></div>
                         </div>
                         <div class="jt-stop-info">
                             <div class="jt-stop-name">${stopName}</div>
@@ -241,12 +241,10 @@
             const arr = act.timings?.find(t => t.type === 'arrival')?.time?.slice(0, 5);
             const dep = act.timings?.find(t => t.type === 'departure')?.time?.slice(0, 5);
             const timesHtml = [arr ? `Arr: ${arr}` : null, dep ? `Dep: ${dep}` : null].filter(Boolean).join(' / ');
-            const statusDot = `<span class="status-dot ${planStatusColorClass(act.responsibility.status)}" title="${act.responsibility.status}"></span>`;
             html += `
                 <div class="jt-act-item act-${colType}">
                     <div class="jt-act-header">
-                        <span>${statusDot}</span>
-                        <span style="flex:1; font-weight:600; font-size:0.7rem; margin-left:4px;">${act.responsibility.id}</span>
+                        <span style="flex:1;">${partnerBadgeHtml(act.responsibility.id)}</span>
                     </div>
                     <div class="jt-act-resp">${act.responsibility.type} · <span class="badge badge-${act.responsibility.status}" style="font-size:0.6rem;">${act.responsibility.status}</span></div>
                     ${timesHtml ? `<div class="jt-act-times">${timesHtml}</div>` : ''}

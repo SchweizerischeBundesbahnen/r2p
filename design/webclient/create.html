@@ -81,7 +81,6 @@
         <div class="card">
             <div class="card-header">
                 <span class="card-title">🗺️ Journey Route</span>
-ue                <button class="btn btn-outline btn-sm" onclick="insertStop(workingJourney.journeylocations.length)">＋ Add Stop</button>
             </div>
             <div class="card-body" style="padding:0;">
                 <div id="journey-empty" class="empty-state" style="display:none; margin:1rem;">
@@ -94,9 +93,9 @@ ue                <button class="btn btn-outline btn-sm" onclick="insertStop(wor
                         <thead>
                             <tr>
                                 <th style="width:200px;">Stop</th>
-                                <th>🚃 Rolling Stock</th>
-                                <th>👤 Staff / Journey</th>
-                                <th>📋 Planning / Path</th>
+                                <th>Rolling Stock</th>
+                                <th>Staff</th>
+                                <th>Path</th>
                             </tr>
                         </thead>
                         <tbody id="journey-tbody">
@@ -354,7 +353,6 @@ ue                <button class="btn btn-outline btn-sm" onclick="insertStop(wor
             const stopName = jl.locations[0]?.name ?? '?';
             const isFirst = idx === 0;
             const isLast = idx === locs.length - 1;
-            const dotClass = isFirst ? 'jt-start' : (isLast ? 'jt-end' : '');
 
             const rsActs = jl.activities.filter(a => activityColumnType(a.type) === 'rs');
             const staffActs = jl.activities.filter(a => activityColumnType(a.type) === 'staff');
@@ -369,14 +367,15 @@ ue                <button class="btn btn-outline btn-sm" onclick="insertStop(wor
                 <td class="jt-stop-cell">
                     <div class="jt-stop-indicator">
                         <div class="jt-stop-line-col">
-                            <div class="jt-stop-dot ${dotClass}"></div>
-                            ${!isLast ? '<div class="jt-stop-line"></div>' : ''}
+                            <div class="jt-line-seg${isFirst ? ' jt-line-invisible' : ''}"></div>
+                            <div class="jt-stop-dot"></div>
+                            <div class="jt-line-seg${isLast ? ' jt-line-invisible' : ''}"></div>
                         </div>
                         <div class="jt-stop-info">
                             <div class="jt-stop-name">${stopName}</div>
                             <div class="jt-stop-actions">
-                                <button class="btn btn-ghost btn-sm" style="font-size:0.7rem; padding:2px 6px;" onclick="openStopModal(${idx})">✏ Edit</button>
-                                <button class="btn-delete" onclick="deleteStop(${idx})" title="Delete stop">🗑</button>
+                                <button class="btn btn-ghost btn-sm" onclick="openStopModal(${idx})">Edit</button>
+                                <button class="btn btn-ghost-danger btn-sm" onclick="deleteStop(${idx})">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -394,22 +393,19 @@ ue                <button class="btn btn-outline btn-sm" onclick="insertStop(wor
     }
 
     function renderActCells(colActs, allActs, stopIdx, colType, editable) {
-        const colLabel = { rs: '🚃 Rolling Stock', staff: '👤 Staff/Journey', plan: '📋 Planning' }[colType];
         let html = '<div class="jt-act-list">';
         colActs.forEach(act => {
             const globalAIdx = allActs.indexOf(act);
             const arr = act.timings?.find(t => t.type === 'arrival')?.time?.slice(0, 5);
             const dep = act.timings?.find(t => t.type === 'departure')?.time?.slice(0, 5);
             const timesHtml = [arr ? `Arr: ${arr}` : null, dep ? `Dep: ${dep}` : null].filter(Boolean).join(' / ');
-            const statusDot = `<span class="status-dot ${planStatusColorClass(act.responsibility.status)}" title="${act.responsibility.status}"></span>`;
             html += `
                 <div class="jt-act-item act-${colType}">
                     <div class="jt-act-header">
-                        <span>${statusDot}</span>
-                        <span style="flex:1; font-weight:600; font-size:0.7rem; margin-left:4px;">${act.responsibility.id}</span>
+                        <span style="flex:1;">${partnerBadgeHtml(act.responsibility.id)}</span>
                         <div class="jt-act-actions">
-                            <button class="pn-activity-edit" onclick="openActivityModal(${stopIdx}, ${globalAIdx}, '${colType}')" title="Edit">✏</button>
-                            <button class="btn-delete" onclick="deleteActivity(${stopIdx}, ${globalAIdx})" title="Delete">🗑</button>
+                            <button class="btn btn-ghost btn-sm" onclick="openActivityModal(${stopIdx}, ${globalAIdx}, '${colType}')">Edit</button>
+                            <button class="btn btn-ghost-danger btn-sm" onclick="deleteActivity(${stopIdx}, ${globalAIdx})">Delete</button>
                         </div>
                     </div>
                     <div class="jt-act-resp">${act.responsibility.type} · <span class="badge badge-${act.responsibility.status}" style="font-size:0.6rem;">${act.responsibility.status}</span></div>
@@ -484,7 +480,7 @@ ue                <button class="btn btn-outline btn-sm" onclick="insertStop(wor
         document.getElementById('modal-activity-title').textContent = isEdit ? 'Edit Activity' : `Add Activity`;
 
         // Show column type info
-        const colLabels = { rs: '🚃 Rolling Stock', staff: '👤 Staff / Journey', plan: '📋 Planning / Path' };
+        const colLabels = { rs: 'Rolling Stock', staff: 'Staff', plan: 'Path' };
         const displayGroup = document.getElementById('act-type-display-group');
         document.getElementById('act-type-display').textContent = colLabels[colType] ?? colType;
         displayGroup.style.display = 'block';
