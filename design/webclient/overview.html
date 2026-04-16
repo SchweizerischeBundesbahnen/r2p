@@ -85,7 +85,7 @@
                         </th>
                         <th>Shared With</th>
                         <th class="sort-header" onclick="sortTable('lastChange')" id="th-lastChange">
-                            Last Change <span class="sort-indicator"></span>
+                            Last Change / Version <span class="sort-indicator"></span>
                         </th>
                         <th>Status</th>
                     </tr>
@@ -209,20 +209,27 @@
             const main = getMainBranch(t.branches);
             const trainNo = main?.business?.trainNumber ?? '–';
             const opDay = main?.business?.operationalDay ?? '–';
-            const { from, to } = getOriginDestination(t.mainPayload);
+            const { from, to, depTime, arrTime } = getOriginDestination(t.mainPayload);
             const lastChange = formatDateTime(t.mainTimestamp);
+            const version = main?.technical?.version ?? '';
             const partners = t.partners.filter(p => p !== (main?.technical?.owner ?? '')).map(p => partnerBadgeHtml(p)).join(' ');
             const tlStatus = getTrafficLightStatus(t.mainPayload);
             const tl = trafficLightHtml(tlStatus);
 
+            const fromHtml = depTime ? `${from}<br><span class="text-muted" style="font-size:0.75rem;">Dep: ${depTime}</span>` : from;
+            const toHtml = arrTime ? `${to}<br><span class="text-muted" style="font-size:0.75rem;">Arr: ${arrTime}</span>` : to;
+            const lastChangeHtml = version
+                ? `${lastChange}<br><span class="text-muted" style="font-size:0.75rem;">${version}</span>`
+                : lastChange;
+
             return `
                 <tr class="clickable" onclick="window.location.href='traffic-view.html?trainId=${t.trainId}'">
                     <td><strong>${trainNo}</strong></td>
-                    <td>${from}</td>
-                    <td>${to}</td>
+                    <td>${fromHtml}</td>
+                    <td>${toHtml}</td>
                     <td>${opDay}</td>
                     <td>${partners || '<span class="text-muted">–</span>'}</td>
-                    <td>${lastChange}</td>
+                    <td>${lastChangeHtml}</td>
                     <td>${tl}</td>
                 </tr>
             `;

@@ -67,20 +67,28 @@
         <div class="card">
             <div class="card-header">
                 <span class="card-title">🗺️ Journey Route</span>
-                <span style="font-size:0.8rem; color:var(--text-muted);">
-                    Use <strong>＋</strong> to add stops, <strong>✏</strong> to edit, click activities to manage them.
-                </span>
+                <button class="btn btn-outline btn-sm" onclick="insertStop(workingJourney.journeylocations.length)">＋ Add Stop</button>
             </div>
-            <div class="card-body" style="padding-top:0.5rem;">
-                <div class="pearl-necklace-wrapper">
-                    <div class="pearl-necklace" id="journey-container">
-                        <!-- Rendered by JS -->
-                    </div>
-                </div>
-                <div id="journey-empty" class="empty-state" style="display:none;">
+            <div class="card-body" style="padding:0;">
+                <div id="journey-empty" class="empty-state" style="display:none; margin:1rem;">
                     <div class="empty-state-icon">🛤️</div>
                     <p class="empty-state-text">No stops yet</p>
                     <button class="btn btn-primary" style="margin-top:1rem;" onclick="insertStop(0)">＋ Add First Stop</button>
+                </div>
+                <div class="journey-table-wrapper" id="journey-table-wrapper">
+                    <table class="journey-table" id="journey-table">
+                        <thead>
+                            <tr>
+                                <th style="width:200px;">Stop</th>
+                                <th>🚃 Rolling Stock</th>
+                                <th>👤 Staff / Journey</th>
+                                <th>📋 Planning / Path</th>
+                            </tr>
+                        </thead>
+                        <tbody id="journey-tbody">
+                            <!-- Rendered by JS -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -111,16 +119,6 @@
                 <label class="form-label" for="stop-code">Location Code</label>
                 <input type="text" id="stop-code" class="form-input" placeholder="e.g., 8503000">
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label" for="stop-arrival">Arrival Time</label>
-                    <input type="time" id="stop-arrival" class="form-input" step="60">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="stop-departure">Departure Time</label>
-                    <input type="time" id="stop-departure" class="form-input" step="60">
-                </div>
-            </div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-ghost" onclick="closeModal('modal-stop')">Cancel</button>
@@ -137,21 +135,10 @@
             <button class="modal-close" onclick="closeModal('modal-activity')">✕</button>
         </div>
         <div class="modal-body">
-            <!-- Activity Type -->
-            <div class="form-group">
-                <label class="form-label required" for="act-type">Activity Type</label>
-                <select id="act-type" class="form-select" onchange="onActivityTypeChange()">
-                    <option value="journey">journey – Train journey segment</option>
-                    <option value="train.halt.1">train.halt.1 – Passenger stop</option>
-                    <option value="train.halt.11">train.halt.11 – Technical stop</option>
-                    <option value="rollingStock">rollingStock – Rolling stock</option>
-                    <option value="train.runthrough">train.runthrough – Run-through</option>
-                    <option value="traction">traction – Traction</option>
-                    <option value="wagons">wagons – Wagons</option>
-                    <option value="formation">formation – Formation</option>
-                    <option value="commercial">commercial – Commercial stop</option>
-                    <option value="planning">planning – Planning activity</option>
-                </select>
+            <!-- Activity type display (read-only when editing, hidden when new) -->
+            <div class="form-group" id="act-type-display-group" style="display:none;">
+                <label class="form-label">Activity Column</label>
+                <div id="act-type-display" style="font-weight:600; font-size:0.9rem; color:var(--text-primary);"></div>
             </div>
 
             <!-- Responsibility -->
@@ -189,10 +176,10 @@
                 </div>
             </div>
 
-            <!-- Timing (simplified: arrival & departure) -->
+            <!-- Timing -->
             <div class="card" style="margin-bottom:1rem; box-shadow:none; border:1px solid var(--border-color);">
                 <div class="card-header" style="padding:0.5rem 1rem;">
-                    <span class="card-title" style="font-size:0.875rem;">Timing</span>
+                    <span class="card-title" style="font-size:0.875rem;">Timing (optional)</span>
                 </div>
                 <div class="card-body" style="padding:1rem;">
                     <div class="form-row">
@@ -208,44 +195,59 @@
                 </div>
             </div>
 
-            <!-- Journey-type fields (staff) -->
+            <!-- Staff fields (shown for staff/journey column) -->
             <div id="section-staff" class="card" style="display:none; margin-bottom:1rem; box-shadow:none; border:1px solid var(--border-color);">
                 <div class="card-header" style="padding:0.5rem 1rem;">
-                    <span class="card-title" style="font-size:0.875rem;">👤 Staff (journey activities)</span>
+                    <span class="card-title" style="font-size:0.875rem;">👤 Staff Details</span>
                 </div>
                 <div class="card-body" style="padding:1rem;">
                     <div class="form-row">
                         <div class="form-group" style="margin-bottom:0;">
-                            <label class="form-label" for="staff-type">Staff Type</label>
-                            <input type="text" id="staff-type" class="form-input" placeholder="e.g., conductor">
+                            <label class="form-label" for="staff-role">Role</label>
+                            <input type="text" id="staff-role" class="form-input" placeholder="e.g., conductor">
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
-                            <label class="form-label" for="staff-action">Action</label>
-                            <input type="text" id="staff-action" class="form-input" placeholder="e.g., board train">
+                            <label class="form-label" for="staff-function">Function / Activity</label>
+                            <input type="text" id="staff-function" class="form-input" placeholder="e.g., board train">
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- RollingStock-type fields -->
-            <div id="section-rolling-stock" class="card" style="display:none; margin-bottom:0; box-shadow:none; border:1px solid var(--border-color);">
+            <!-- Rolling Stock fields -->
+            <div id="section-rolling-stock" class="card" style="display:none; margin-bottom:1rem; box-shadow:none; border:1px solid var(--border-color);">
                 <div class="card-header" style="padding:0.5rem 1rem;">
-                    <span class="card-title" style="font-size:0.875rem;">🚃 Rolling Stock</span>
+                    <span class="card-title" style="font-size:0.875rem;">🚃 Rolling Stock Details</span>
                 </div>
                 <div class="card-body" style="padding:1rem;">
                     <div class="form-row">
                         <div class="form-group" style="margin-bottom:0;">
-                            <label class="form-label" for="rs-weight">Total Weight (kg)</label>
-                            <input type="number" id="rs-weight" class="form-input" placeholder="e.g., 420000">
-                        </div>
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label class="form-label" for="rs-length">Total Length (mm)</label>
+                            <label class="form-label" for="rs-length">Length (mm)</label>
                             <input type="number" id="rs-length" class="form-input" placeholder="e.g., 200000">
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
-                            <label class="form-label" for="rs-speed">Max Speed (km/h)</label>
-                            <input type="number" id="rs-speed" class="form-input" placeholder="e.g., 200">
+                            <label class="form-label" for="rs-weight">Weight (kg)</label>
+                            <input type="number" id="rs-weight" class="form-input" placeholder="e.g., 420000">
                         </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="rs-composition">Composition</label>
+                            <input type="text" id="rs-composition" class="form-input" placeholder="e.g., RABDe 502">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Planning fields -->
+            <div id="section-planning" class="card" style="display:none; margin-bottom:0; box-shadow:none; border:1px solid var(--border-color);">
+                <div class="card-header" style="padding:0.5rem 1rem;">
+                    <span class="card-title" style="font-size:0.875rem;">📋 Planning / Path Details</span>
+                </div>
+                <div class="card-body" style="padding:1rem;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                            <input type="checkbox" id="plan-passthrough" style="width:16px; height:16px;">
+                            <span class="form-label" style="margin-bottom:0;">Is Passthrough (Durchfahrt)</span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -265,95 +267,110 @@
     /* ── State ──────────────────────────────────────────────────── */
     const settings = JSON.parse(localStorage.getItem('r2p_settings') || JSON.stringify(defaultSettings));
 
-    // Working journey (mutable copy)
     let workingJourney = { journeylocations: [] };
 
-    // Modal state
-    let pendingStopIndex = null;   // null = add new at end, number = edit existing
+    let pendingStopIndex = null;
     let pendingStopInsertBefore = null;
     let pendingActivityStopIndex = null;
-    let pendingActivityIndex = null; // null = add new
+    let pendingActivityIndex = null;
+    let pendingActivityColType = null; // 'rs' | 'staff' | 'plan'
 
     /* ── Init ───────────────────────────────────────────────────── */
     (function init() {
-        // Nav partner
         const navPartner = document.getElementById('nav-partner');
         navPartner.textContent = settings.partner;
         navPartner.className = `partner-badge ${PARTNERS.includes(settings.partner) ? 'partner-badge-' + settings.partner : 'partner-badge-default'}`;
-
-        // Pre-fill responsible partner
         document.getElementById('act-resp-id').value = settings.partner;
-
-        // Render empty journey
         renderJourney();
     })();
 
     /* ── Journey Render ─────────────────────────────────────────── */
     function renderJourney() {
         const locs = workingJourney.journeylocations;
-        const container = document.getElementById('journey-container');
+        const wrapper = document.getElementById('journey-table-wrapper');
         const empty = document.getElementById('journey-empty');
+        const tbody = document.getElementById('journey-tbody');
 
         if (locs.length === 0) {
-            container.style.display = 'none';
+            wrapper.style.display = 'none';
             empty.style.display = 'block';
             return;
         }
-        container.style.display = 'flex';
+        wrapper.style.display = '';
         empty.style.display = 'none';
 
         let html = '';
-
         locs.forEach((jl, idx) => {
             const stopName = jl.locations[0]?.name ?? '?';
-            const initials = stopName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-            const arrival = jl.activities.find(a => a.timings?.some(ti => ti.type === 'arrival'))?.timings.find(ti => ti.type === 'arrival')?.time;
-            const departure = jl.activities.find(a => a.timings?.some(ti => ti.type === 'departure'))?.timings.find(ti => ti.type === 'departure')?.time;
-            const timesHtml = [arrival ? `Arr: ${arrival.slice(0,5)}` : null, departure ? `Dep: ${departure.slice(0,5)}` : null].filter(Boolean).join('<br>');
-            const circleClass = idx === 0 ? 'pn-start' : (idx === locs.length - 1 ? 'pn-end' : '');
+            const isFirst = idx === 0;
+            const isLast = idx === locs.length - 1;
+            const dotClass = isFirst ? 'jt-start' : (isLast ? 'jt-end' : '');
 
-            const activitiesHtml = jl.activities.map((act, aIdx) => `
-                <div class="pn-activity activity-${act.type.split('.')[0]}">
-                    <span class="pn-activity-label" title="${act.type}">${act.type.replace('train.halt.', 'halt.')}</span>
-                    <span class="badge badge-${act.responsibility.status}" style="font-size:0.65rem;">${act.responsibility.status}</span>
-                    <button class="pn-activity-edit" onclick="openActivityModal(${idx}, ${aIdx})" title="Edit">✏</button>
-                </div>
-            `).join('');
+            const rsActs = jl.activities.filter(a => activityColumnType(a.type) === 'rs');
+            const staffActs = jl.activities.filter(a => activityColumnType(a.type) === 'staff');
+            const planActs = jl.activities.filter(a => activityColumnType(a.type) === 'plan');
 
-            // Add before first
+            // Add-before row for first stop
             if (idx === 0) {
-                html += `<div class="pn-add-btn-vert"><button class="pn-add-btn" onclick="insertStop(0)" title="Add stop before">＋</button></div>`;
+                html += `<tr class="jt-add-stop-row"><td colspan="4"><button class="jt-add-activity-btn" style="max-width:200px;" onclick="insertStop(0)">＋ Add Stop Before</button></td></tr>`;
             }
 
-            html += `
-                <div class="pn-stop">
-                    <div class="pn-circle-row">
-                        <div class="pn-circle ${circleClass}">
-                            ${initials}
-                            <button class="pn-edit-btn" onclick="openStopModal(${idx})" title="Edit stop">✏</button>
+            html += `<tr>
+                <td class="jt-stop-cell">
+                    <div class="jt-stop-indicator">
+                        <div class="jt-stop-line-col">
+                            <div class="jt-stop-dot ${dotClass}"></div>
+                            ${!isLast ? '<div class="jt-stop-line"></div>' : ''}
+                        </div>
+                        <div class="jt-stop-info">
+                            <div class="jt-stop-name">${stopName}</div>
+                            <div class="jt-stop-actions">
+                                <button class="btn btn-ghost btn-sm" style="font-size:0.7rem; padding:2px 6px;" onclick="openStopModal(${idx})">✏ Edit</button>
+                                <button class="btn-delete" onclick="deleteStop(${idx})" title="Delete stop">🗑</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="pn-stop-name" title="${stopName}">${stopName}</div>
-                    <div class="pn-times">${timesHtml || '–'}</div>
-                    <div class="pn-activities">
-                        ${activitiesHtml}
-                        <button class="pn-add-activity-btn" onclick="openActivityModal(${idx}, null)">＋ Activity</button>
-                    </div>
-                </div>
-            `;
+                </td>
+                <td class="jt-act-cell">${renderActCells(rsActs, jl.activities, idx, 'rs', true)}</td>
+                <td class="jt-act-cell">${renderActCells(staffActs, jl.activities, idx, 'staff', true)}</td>
+                <td class="jt-act-cell">${renderActCells(planActs, jl.activities, idx, 'plan', true)}</td>
+            </tr>`;
 
-            // Connector + add between
-            if (idx < locs.length - 1) {
-                html += `<div class="pn-connector"></div>`;
-                html += `<div class="pn-add-btn-vert"><button class="pn-add-btn" onclick="insertStop(${idx + 1})" title="Add stop here">＋</button></div>`;
-                html += `<div class="pn-connector"></div>`;
-            } else {
-                // Add after last
-                html += `<div class="pn-add-btn-vert"><button class="pn-add-btn" onclick="insertStop(${idx + 1})" title="Add stop after">＋</button></div>`;
-            }
+            // Add-after row
+            html += `<tr class="jt-add-stop-row"><td colspan="4"><button class="jt-add-activity-btn" style="max-width:200px;" onclick="insertStop(${idx + 1})">＋ Add Stop After</button></td></tr>`;
         });
 
-        container.innerHTML = html;
+        tbody.innerHTML = html;
+    }
+
+    function renderActCells(colActs, allActs, stopIdx, colType, editable) {
+        const colLabel = { rs: '🚃 Rolling Stock', staff: '👤 Staff/Journey', plan: '📋 Planning' }[colType];
+        let html = '<div class="jt-act-list">';
+        colActs.forEach(act => {
+            const globalAIdx = allActs.indexOf(act);
+            const arr = act.timings?.find(t => t.type === 'arrival')?.time?.slice(0, 5);
+            const dep = act.timings?.find(t => t.type === 'departure')?.time?.slice(0, 5);
+            const timesHtml = [arr ? `Arr: ${arr}` : null, dep ? `Dep: ${dep}` : null].filter(Boolean).join(' / ');
+            const statusDot = `<span class="status-dot ${planStatusColorClass(act.responsibility.status)}" title="${act.responsibility.status}"></span>`;
+            html += `
+                <div class="jt-act-item act-${colType}">
+                    <div class="jt-act-header">
+                        <span>${statusDot}</span>
+                        <span style="flex:1; font-weight:600; font-size:0.7rem; margin-left:4px;">${act.responsibility.id}</span>
+                        <div class="jt-act-actions">
+                            <button class="pn-activity-edit" onclick="openActivityModal(${stopIdx}, ${globalAIdx}, '${colType}')" title="Edit">✏</button>
+                            <button class="btn-delete" onclick="deleteActivity(${stopIdx}, ${globalAIdx})" title="Delete">🗑</button>
+                        </div>
+                    </div>
+                    <div class="jt-act-resp">${act.responsibility.type} · <span class="badge badge-${act.responsibility.status}" style="font-size:0.6rem;">${act.responsibility.status}</span></div>
+                    ${timesHtml ? `<div class="jt-act-times">${timesHtml}</div>` : ''}
+                </div>`;
+        });
+        if (editable) {
+            html += `<button class="jt-add-activity-btn" onclick="openActivityModal(${stopIdx}, null, '${colType}')">＋ Activity</button>`;
+        }
+        html += '</div>';
+        return html;
     }
 
     /* ── Stop Modal ─────────────────────────────────────────────── */
@@ -363,8 +380,6 @@
         document.getElementById('modal-stop-title').textContent = 'Add Stop';
         document.getElementById('stop-name').value = '';
         document.getElementById('stop-code').value = '';
-        document.getElementById('stop-arrival').value = '';
-        document.getElementById('stop-departure').value = '';
         openModal('modal-stop');
     }
 
@@ -375,10 +390,6 @@
         document.getElementById('modal-stop-title').textContent = 'Edit Stop';
         document.getElementById('stop-name').value = jl.locations[0]?.name ?? '';
         document.getElementById('stop-code').value = jl.locations[0]?.code ?? '';
-        const arr = jl.activities.find(a => a.timings?.some(ti => ti.type === 'arrival'))?.timings.find(ti => ti.type === 'arrival')?.time;
-        const dep = jl.activities.find(a => a.timings?.some(ti => ti.type === 'departure'))?.timings.find(ti => ti.type === 'departure')?.time;
-        document.getElementById('stop-arrival').value = arr ? arr.slice(0,5) : '';
-        document.getElementById('stop-departure').value = dep ? dep.slice(0,5) : '';
         openModal('modal-stop');
     }
 
@@ -386,34 +397,16 @@
         const name = document.getElementById('stop-name').value.trim();
         if (!name) { showToast('Stop name is required.', 'error'); return; }
         const code = document.getElementById('stop-code').value.trim() || '0000000';
-        const arrival = document.getElementById('stop-arrival').value;
-        const departure = document.getElementById('stop-departure').value;
-
-        const timings = [];
-        if (arrival) timings.push({ type: 'arrival', time: arrival + ':00', offset: 0, focus: 'planning' });
-        if (departure) timings.push({ type: 'departure', time: departure + ':00', offset: 0, focus: 'planning' });
-
-        const newJl = {
-            locations: [{ type: 'SLC', code, name }],
-            activities: timings.length > 0 ? [{
-                type: 'journey',
-                timings,
-                responsibility: { type: 'rru', id: settings.partner, status: 'proposed' }
-            }] : [],
-            requirements: []
-        };
 
         if (pendingStopIndex !== null) {
-            // Edit existing – update location name/code and merge timings into existing journey activity
             const jl = workingJourney.journeylocations[pendingStopIndex];
             jl.locations[0] = { type: 'SLC', code, name };
-            // Update timings in first journey-type activity
-            const jAct = jl.activities.find(a => a.type === 'journey');
-            if (jAct) {
-                jAct.timings = timings;
-            }
         } else {
-            workingJourney.journeylocations.splice(pendingStopInsertBefore, 0, newJl);
+            workingJourney.journeylocations.splice(pendingStopInsertBefore, 0, {
+                locations: [{ type: 'SLC', code, name }],
+                activities: [],
+                requirements: []
+            });
         }
 
         closeModal('modal-stop');
@@ -421,17 +414,31 @@
         showToast(`Stop "${name}" saved.`, 'success');
     }
 
+    function deleteStop(stopIdx) {
+        const name = workingJourney.journeylocations[stopIdx]?.locations[0]?.name ?? 'Stop';
+        if (!confirm(`Delete stop "${name}"?`)) return;
+        workingJourney.journeylocations.splice(stopIdx, 1);
+        renderJourney();
+        showToast(`Stop "${name}" deleted.`, 'success');
+    }
+
     /* ── Activity Modal ─────────────────────────────────────────── */
-    function openActivityModal(stopIdx, actIdx) {
+    function openActivityModal(stopIdx, actIdx, colType) {
         pendingActivityStopIndex = stopIdx;
         pendingActivityIndex = actIdx;
+        pendingActivityColType = colType;
 
         const isEdit = actIdx !== null && actIdx !== undefined;
-        document.getElementById('modal-activity-title').textContent = isEdit ? 'Edit Activity' : 'Add Activity';
+        document.getElementById('modal-activity-title').textContent = isEdit ? 'Edit Activity' : `Add Activity`;
+
+        // Show column type info
+        const colLabels = { rs: '🚃 Rolling Stock', staff: '👤 Staff / Journey', plan: '📋 Planning / Path' };
+        const displayGroup = document.getElementById('act-type-display-group');
+        document.getElementById('act-type-display').textContent = colLabels[colType] ?? colType;
+        displayGroup.style.display = 'block';
 
         if (isEdit) {
             const act = workingJourney.journeylocations[stopIdx].activities[actIdx];
-            document.getElementById('act-type').value = act.type in document.getElementById('act-type').options ? act.type : 'journey';
             document.getElementById('act-resp-type').value = act.responsibility.type;
             document.getElementById('act-resp-id').value = act.responsibility.id;
             document.getElementById('act-resp-status').value = act.responsibility.status;
@@ -439,68 +446,76 @@
             const dep = act.timings?.find(t => t.type === 'departure')?.time;
             document.getElementById('act-arrival').value = arr ? arr.slice(0,5) : '';
             document.getElementById('act-departure').value = dep ? dep.slice(0,5) : '';
+            // Type-specific fields
+            if (colType === 'rs') {
+                document.getElementById('rs-length').value = act.capability?.rollingStock?.length ?? '';
+                document.getElementById('rs-weight').value = act.capability?.rollingStock?.weight ?? '';
+                document.getElementById('rs-composition').value = act.capability?.rollingStock?.composition ?? '';
+            } else if (colType === 'staff') {
+                document.getElementById('staff-role').value = act.capability?.staff?.[0]?.type ?? '';
+                document.getElementById('staff-function').value = act.capability?.staff?.[0]?.action ?? '';
+            } else if (colType === 'plan') {
+                document.getElementById('plan-passthrough').checked = act.passthrough ?? false;
+            }
         } else {
-            document.getElementById('act-type').value = 'journey';
             document.getElementById('act-resp-type').value = 'rru';
             document.getElementById('act-resp-id').value = settings.partner;
             document.getElementById('act-resp-status').value = 'proposed';
             document.getElementById('act-arrival').value = '';
             document.getElementById('act-departure').value = '';
-            document.getElementById('staff-type').value = '';
-            document.getElementById('staff-action').value = '';
-            document.getElementById('rs-weight').value = '';
             document.getElementById('rs-length').value = '';
-            document.getElementById('rs-speed').value = '';
+            document.getElementById('rs-weight').value = '';
+            document.getElementById('rs-composition').value = '';
+            document.getElementById('staff-role').value = '';
+            document.getElementById('staff-function').value = '';
+            document.getElementById('plan-passthrough').checked = false;
         }
 
-        onActivityTypeChange();
+        updateActivityTypeSections(colType);
         openModal('modal-activity');
     }
 
-    function onActivityTypeChange() {
-        const type = document.getElementById('act-type').value;
-        document.getElementById('section-staff').style.display = type === 'journey' ? 'block' : 'none';
-        document.getElementById('section-rolling-stock').style.display = type === 'rollingStock' ? 'block' : 'none';
+    function updateActivityTypeSections(colType) {
+        document.getElementById('section-rolling-stock').style.display = colType === 'rs' ? 'block' : 'none';
+        document.getElementById('section-staff').style.display = colType === 'staff' ? 'block' : 'none';
+        document.getElementById('section-planning').style.display = colType === 'plan' ? 'block' : 'none';
     }
 
     function confirmActivity() {
-        const type = document.getElementById('act-type').value;
         const respType = document.getElementById('act-resp-type').value;
         const respId = document.getElementById('act-resp-id').value.trim();
         const respStatus = document.getElementById('act-resp-status').value;
-        const arrival = document.getElementById('act-arrival').value;
-        const departure = document.getElementById('act-departure').value;
-
         if (!respId) { showToast('Responsible partner ID is required.', 'error'); return; }
 
+        const arrival = document.getElementById('act-arrival').value;
+        const departure = document.getElementById('act-departure').value;
         const timings = [];
         if (arrival) timings.push({ type: 'arrival', time: arrival + ':00', offset: 0, focus: 'planning' });
         if (departure) timings.push({ type: 'departure', time: departure + ':00', offset: 0, focus: 'planning' });
 
+        // Derive type from column
+        const typeMap = { rs: 'rollingStock', staff: 'journey', plan: 'planning' };
+        const actType = typeMap[pendingActivityColType] ?? 'journey';
+
         const act = {
-            type,
+            type: actType,
             timings,
             responsibility: { type: respType, id: respId, status: respStatus }
         };
 
-        if (type === 'rollingStock') {
-            act.capability = {
-                features: [],
-                rollingStock: {
-                    weight: parseInt(document.getElementById('rs-weight').value) || null,
-                    length: parseInt(document.getElementById('rs-length').value) || null,
-                    maxSpeed: parseInt(document.getElementById('rs-speed').value) || null
-                }
-            };
-        } else if (type === 'journey') {
-            const staffType = document.getElementById('staff-type').value.trim();
-            const staffAction = document.getElementById('staff-action').value.trim();
-            if (staffType || staffAction) {
-                act.capability = {
-                    features: [],
-                    staff: [{ type: staffType, action: staffAction }]
-                };
-            }
+        if (pendingActivityColType === 'rs') {
+            const len = parseInt(document.getElementById('rs-length').value);
+            const wgt = parseInt(document.getElementById('rs-weight').value);
+            const comp = document.getElementById('rs-composition').value.trim();
+            act.capability = { features: [], rollingStock: {
+                length: len || null, weight: wgt || null, composition: comp || null
+            }};
+        } else if (pendingActivityColType === 'staff') {
+            const role = document.getElementById('staff-role').value.trim();
+            const fn = document.getElementById('staff-function').value.trim();
+            if (role || fn) act.capability = { features: [], staff: [{ type: role, action: fn }] };
+        } else if (pendingActivityColType === 'plan') {
+            act.passthrough = document.getElementById('plan-passthrough').checked;
         }
 
         const activities = workingJourney.journeylocations[pendingActivityStopIndex].activities;
@@ -513,6 +528,13 @@
         closeModal('modal-activity');
         renderJourney();
         showToast('Activity saved.', 'success');
+    }
+
+    function deleteActivity(stopIdx, actIdx) {
+        if (!confirm('Delete this activity?')) return;
+        workingJourney.journeylocations[stopIdx].activities.splice(actIdx, 1);
+        renderJourney();
+        showToast('Activity deleted.', 'success');
     }
 
     /* ── Save Train ─────────────────────────────────────────────── */

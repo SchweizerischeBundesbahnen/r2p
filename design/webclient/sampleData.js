@@ -289,14 +289,45 @@ function getTrafficLightStatus(trainPayload) {
 }
 
 /**
- * Get origin and destination stop names from train payload.
+ * Get origin and destination stop names and times from train payload.
  */
 function getOriginDestination(trainPayload) {
     const locs = trainPayload.journey.journeylocations;
+    const firstLoc = locs[0];
+    const lastLoc = locs[locs.length - 1];
+
+    const depTime = firstLoc?.activities
+        .flatMap(a => a.timings ?? [])
+        .find(t => t.type === 'departure')?.time;
+    const arrTime = lastLoc?.activities
+        .flatMap(a => a.timings ?? [])
+        .find(t => t.type === 'arrival')?.time;
+
     return {
-        from: locs[0]?.locations[0]?.name ?? '–',
-        to: locs[locs.length - 1]?.locations[0]?.name ?? '–'
+        from: firstLoc?.locations[0]?.name ?? '–',
+        to: lastLoc?.locations[0]?.name ?? '–',
+        depTime: depTime ? depTime.slice(0, 5) : null,
+        arrTime: arrTime ? arrTime.slice(0, 5) : null
     };
+}
+
+/**
+ * Get plan status color class (green / yellow / red).
+ */
+function planStatusColorClass(status) {
+    if (status === 'confirmed') return 'status-dot-green';
+    if (status === 'proposed' || status === 'requested') return 'status-dot-yellow';
+    return 'status-dot-red';
+}
+
+/**
+ * Classify an activity into column type: 'rs' | 'staff' | 'plan'
+ */
+function activityColumnType(actType) {
+    if (actType === 'rollingStock' || actType === 'wagons' || actType === 'formation' || actType === 'traction') return 'rs';
+    if (actType === 'journey' || actType === 'train.runthrough' || actType === 'commercial' ||
+        actType.startsWith('train.halt')) return 'staff';
+    return 'plan';
 }
 
 /**
@@ -346,4 +377,5 @@ const defaultSettings = {
     serverUrl: 'http://localhost:8080',
     partner: 'SBB'
 };
+
 

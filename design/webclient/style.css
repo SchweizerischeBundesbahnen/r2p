@@ -1099,6 +1099,225 @@ tbody td {
 .empty-state-text { font-size: 1rem; font-weight: 600; color: var(--text-secondary); }
 
 /* ========================================
+   Vertical Journey Table (new pearl necklace)
+   ======================================== */
+.journey-table-wrapper {
+    overflow-x: auto;
+}
+
+.journey-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.journey-table thead th {
+    background-color: var(--primary-color);
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: left;
+}
+
+.journey-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: top;
+}
+
+.journey-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.journey-table tbody tr:nth-child(even) {
+    background-color: #f7fafc;
+}
+
+.journey-table tbody td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.875rem;
+    vertical-align: top;
+}
+
+/* Stop cell with vertical pearl necklace indicator */
+.jt-stop-cell {
+    min-width: 160px;
+    white-space: nowrap;
+}
+
+.jt-stop-indicator {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+}
+
+.jt-stop-line-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 20px;
+    flex-shrink: 0;
+}
+
+.jt-stop-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.jt-stop-dot.jt-start { background-color: var(--tl-green); }
+.jt-stop-dot.jt-end   { background-color: var(--partner-sbb); }
+
+.jt-stop-line {
+    width: 2px;
+    flex: 1;
+    min-height: 20px;
+    background-color: var(--border-color);
+    margin-top: 2px;
+}
+
+.jt-stop-info {
+    flex: 1;
+}
+
+.jt-stop-name {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.jt-stop-actions {
+    margin-top: 4px;
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+/* Activity cell */
+.jt-act-cell {
+    min-width: 180px;
+}
+
+.jt-act-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.jt-act-item {
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 0.75rem;
+}
+
+.jt-act-item.act-rs   { border-left: 3px solid var(--partner-sob); }
+.jt-act-item.act-staff { border-left: 3px solid var(--accent-color); }
+.jt-act-item.act-plan  { border-left: 3px solid var(--tl-yellow); }
+
+.jt-act-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    margin-bottom: 3px;
+}
+
+.jt-act-resp {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.jt-act-times {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.jt-act-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.jt-add-activity-btn {
+    margin-top: 6px;
+    width: 100%;
+    padding: 4px 6px;
+    border: 1.5px dashed var(--border-color);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.jt-add-activity-btn:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.jt-add-stop-row td {
+    padding: 4px var(--spacing-md);
+    background-color: transparent;
+}
+
+/* Status dot (colored dot for plan status) */
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.status-dot-green  { background-color: var(--tl-green); }
+.status-dot-yellow { background-color: var(--tl-yellow); }
+.status-dot-red    { background-color: var(--tl-red); }
+
+/* Delete buttons */
+.btn-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--tl-red);
+    font-size: 0.75rem;
+    padding: 0 2px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+}
+.btn-delete:hover { opacity: 1; }
+
+/* JSON viewer modal */
+.modal-card.modal-xl {
+    max-width: 860px;
+}
+
+.json-viewer {
+    background-color: #1a202c;
+    color: #e2e8f0;
+    padding: var(--spacing-md);
+    border-radius: 6px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    overflow: auto;
+    max-height: 60vh;
+    white-space: pre;
+}
+
+/* ========================================
    Responsive
    ======================================== */
 @media (max-width: 767px) {
@@ -1111,4 +1330,5 @@ tbody td {
     .modal-card { max-width: 100%; }
     .form-row { grid-template-columns: 1fr; }
 }
+
 

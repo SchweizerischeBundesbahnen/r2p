@@ -39,6 +39,11 @@
                 <h1 class="page-title" id="page-title">Read View</h1>
                 <p class="page-subtitle" id="page-subtitle">Branch: –</p>
             </div>
+            <div class="btn-group">
+                <!-- Edit button: only for own branches -->
+                <a href="#" class="btn btn-primary" id="edit-btn" style="display:none;">✏ Edit Branch</a>
+                <button class="btn btn-outline" onclick="openJsonModal()">{ } View JSON</button>
+            </div>
         </div>
 
         <!-- Read-only notice -->
@@ -74,6 +79,10 @@
                         <div class="detail-value" id="detail-state">–</div>
                     </div>
                     <div class="detail-item">
+                        <div class="detail-label">Version</div>
+                        <div class="detail-value" id="detail-version">–</div>
+                    </div>
+                    <div class="detail-item">
                         <div class="detail-label">Version Timestamp</div>
                         <div class="detail-value" id="detail-timestamp">–</div>
                     </div>
@@ -87,42 +96,27 @@
             </div>
         </div>
 
-        <!-- ── Journey Card (read-only pearl necklace) ───────────── -->
+        <!-- ── Journey Card (read-only vertical table) ───────────── -->
         <div class="card">
             <div class="card-header">
                 <span class="card-title">🗺️ Journey Route</span>
             </div>
-            <div class="card-body" style="padding-top:0.5rem;">
-                <div class="pearl-necklace-wrapper">
-                    <div class="pearl-necklace readonly" id="journey-container">
-                        <!-- Rendered by JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ── Activities Summary ─────────────────────────────────── -->
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title">📋 Activities Summary</span>
-            </div>
             <div class="card-body" style="padding:0;">
-                <table id="activities-table">
-                    <thead>
-                        <tr>
-                            <th>Stop</th>
-                            <th>Activity Type</th>
-                            <th>Resp. Type</th>
-                            <th>Responsible</th>
-                            <th>Status</th>
-                            <th>Arrival</th>
-                            <th>Departure</th>
-                        </tr>
-                    </thead>
-                    <tbody id="activities-tbody">
-                        <!-- Rendered by JS -->
-                    </tbody>
-                </table>
+                <div class="journey-table-wrapper">
+                    <table class="journey-table" id="journey-table">
+                        <thead>
+                            <tr>
+                                <th style="width:200px;">Stop</th>
+                                <th>🚃 Rolling Stock</th>
+                                <th>👤 Staff / Journey</th>
+                                <th>📋 Planning / Path</th>
+                            </tr>
+                        </thead>
+                        <tbody id="journey-tbody">
+                            <!-- Rendered by JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -131,6 +125,22 @@
             <a href="#" class="btn btn-ghost" id="back-btn">← Back to Traffic View</a>
         </div>
 
+    </div>
+</div>
+
+<!-- ══════════════════ MODAL: JSON Viewer ══════════════════════════ -->
+<div class="modal-overlay hidden" id="modal-json">
+    <div class="modal-card modal-xl">
+        <div class="modal-header">
+            <span class="modal-title">{ } JSON – Train Payload</span>
+            <button class="modal-close" onclick="closeModal('modal-json')">✕</button>
+        </div>
+        <div class="modal-body" style="padding:1rem;">
+            <pre class="json-viewer" id="json-viewer-content"></pre>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('modal-json')">Close</button>
+        </div>
     </div>
 </div>
 
@@ -144,110 +154,133 @@
     const trainId = params.get('trainId');
     const branchId = params.get('branchId');
 
+    let currentTrain = null;
+    let currentBranch = null;
+
     (function init() {
-        // Nav partner
         const navPartner = document.getElementById('nav-partner');
         navPartner.textContent = settings.partner;
         navPartner.className = `partner-badge ${PARTNERS.includes(settings.partner) ? 'partner-badge-' + settings.partner : 'partner-badge-default'}`;
 
-        const train = sampleTrains.find(t => t.trainId === trainId) || sampleTrains[0];
-        const branch = train.branches.find(b => b.branchId === branchId) || train.branches[0];
+        currentTrain = sampleTrains.find(t => t.trainId === trainId) || sampleTrains[0];
+        currentBranch = currentTrain.branches.find(b => b.branchId === branchId) || currentTrain.branches[0];
 
-        // Set back links
-        const backUrl = `traffic-view.html?trainId=${train.trainId}`;
+        const backUrl = `traffic-view.html?trainId=${currentTrain.trainId}`;
         document.getElementById('back-link').href = backUrl;
         document.getElementById('back-btn').href = backUrl;
 
-        // Titles
-        document.getElementById('page-title').textContent = branch.business.trainNumber;
-        document.getElementById('page-subtitle').textContent = `Branch: ${branch.branchName}`;
-        document.title = `R2P – ${branch.business.trainNumber} (${branch.branchName})`;
+        document.getElementById('page-title').textContent = currentBranch.business.trainNumber;
+        document.getElementById('page-subtitle').textContent = `Branch: ${currentBranch.branchName}`;
+        document.title = `R2P – ${currentBranch.business.trainNumber} (${currentBranch.branchName})`;
 
-        // Details
-        document.getElementById('detail-train-number').textContent = branch.business.trainNumber;
-        document.getElementById('detail-op-day').textContent = branch.business.operationalDay;
-        document.getElementById('detail-name').textContent = train.mainPayload.name;
-        document.getElementById('detail-owner').innerHTML = partnerBadgeHtml(branch.technical.owner);
-        document.getElementById('detail-timestamp').textContent = formatDateTime(branch.technical.timestamp);
-        document.getElementById('detail-comment').textContent = branch.technical.comment || '–';
+        document.getElementById('detail-train-number').textContent = currentBranch.business.trainNumber;
+        document.getElementById('detail-op-day').textContent = currentBranch.business.operationalDay;
+        document.getElementById('detail-name').textContent = currentTrain.mainPayload.name;
+        document.getElementById('detail-owner').innerHTML = partnerBadgeHtml(currentBranch.technical.owner);
+        document.getElementById('detail-version').textContent = currentBranch.technical.version ?? '–';
+        document.getElementById('detail-timestamp').textContent = formatDateTime(currentBranch.technical.timestamp);
+        document.getElementById('detail-comment').textContent = currentBranch.technical.comment || '–';
 
         const stateClasses = { OPEN: 'badge-open', MERGED: 'badge-merged', DELETED: 'badge-deleted', MERGE_REQUESTED: 'badge-merge-requested' };
-        document.getElementById('detail-state').innerHTML = `<span class="badge ${stateClasses[branch.technical.state] || ''}">${branch.technical.state}</span>`;
+        document.getElementById('detail-state').innerHTML = `<span class="badge ${stateClasses[currentBranch.technical.state] || ''}">${currentBranch.technical.state}</span>`;
 
-        // Use main payload for journey display (simplified: real app would load branch version)
-        const journey = train.mainPayload.journey;
+        // Show Edit button only for own OPEN non-main branches
+        const isOwn = currentBranch.technical.owner === settings.partner;
+        const isOpen = currentBranch.technical.state === 'OPEN';
+        const isMain = currentBranch.branchName === 'main';
+        if (isOwn && isOpen && !isMain) {
+            const editBtn = document.getElementById('edit-btn');
+            editBtn.href = `edit.html?trainId=${currentTrain.trainId}&branchId=${currentBranch.branchId}`;
+            editBtn.style.display = '';
+        }
 
-        // Pearl necklace (read-only)
-        renderPearlNecklace(journey);
-
-        // Activities table
-        renderActivitiesTable(journey);
+        const journey = currentTrain.mainPayload.journey;
+        renderJourneyTable(journey);
     })();
 
-    function renderPearlNecklace(journey) {
+    /* ── Journey Table (read-only) ──────────────────────────────── */
+    function renderJourneyTable(journey) {
         const locs = journey.journeylocations;
-        const container = document.getElementById('journey-container');
+        const tbody = document.getElementById('journey-tbody');
         let html = '';
 
         locs.forEach((jl, idx) => {
             const stopName = jl.locations[0]?.name ?? '?';
-            const initials = stopName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-            const arrival = jl.activities.find(a => a.timings?.some(ti => ti.type === 'arrival'))?.timings.find(ti => ti.type === 'arrival')?.time;
-            const departure = jl.activities.find(a => a.timings?.some(ti => ti.type === 'departure'))?.timings.find(ti => ti.type === 'departure')?.time;
-            const timesHtml = [arrival ? `Arr: ${arrival.slice(0,5)}` : null, departure ? `Dep: ${departure.slice(0,5)}` : null].filter(Boolean).join('<br>');
-            const circleClass = idx === 0 ? 'pn-start' : (idx === locs.length - 1 ? 'pn-end' : '');
+            const isFirst = idx === 0;
+            const isLast = idx === locs.length - 1;
+            const dotClass = isFirst ? 'jt-start' : (isLast ? 'jt-end' : '');
 
-            const activitiesHtml = jl.activities.map(act => `
-                <div class="pn-activity activity-${act.type.split('.')[0]}">
-                    <span class="pn-activity-label" title="${act.type}">${act.type.replace('train.halt.', 'halt.')}</span>
-                    <span class="badge badge-${act.responsibility.status}" style="font-size:0.65rem;">${act.responsibility.status}</span>
-                </div>
-            `).join('');
+            const rsActs = jl.activities.filter(a => activityColumnType(a.type) === 'rs');
+            const staffActs = jl.activities.filter(a => activityColumnType(a.type) === 'staff');
+            const planActs = jl.activities.filter(a => activityColumnType(a.type) === 'plan');
 
-            html += `
-                <div class="pn-stop">
-                    <div class="pn-circle-row">
-                        <div class="pn-circle ${circleClass}">${initials}</div>
+            html += `<tr>
+                <td class="jt-stop-cell">
+                    <div class="jt-stop-indicator">
+                        <div class="jt-stop-line-col">
+                            <div class="jt-stop-dot ${dotClass}"></div>
+                            ${!isLast ? '<div class="jt-stop-line"></div>' : ''}
+                        </div>
+                        <div class="jt-stop-info">
+                            <div class="jt-stop-name">${stopName}</div>
+                        </div>
                     </div>
-                    <div class="pn-stop-name" title="${stopName}">${stopName}</div>
-                    <div class="pn-times">${timesHtml || '–'}</div>
-                    <div class="pn-activities">${activitiesHtml}</div>
-                </div>
-            `;
-
-            if (idx < locs.length - 1) {
-                html += `<div class="pn-connector"></div>`;
-            }
+                </td>
+                <td class="jt-act-cell">${renderActCells(rsActs, 'rs')}</td>
+                <td class="jt-act-cell">${renderActCells(staffActs, 'staff')}</td>
+                <td class="jt-act-cell">${renderActCells(planActs, 'plan')}</td>
+            </tr>`;
         });
 
-        container.innerHTML = html;
+        tbody.innerHTML = html || '<tr><td colspan="4" class="text-muted text-center" style="padding:2rem;">No journey stops defined.</td></tr>';
     }
 
-    function renderActivitiesTable(journey) {
-        const tbody = document.getElementById('activities-tbody');
-        const rows = [];
-
-        journey.journeylocations.forEach(jl => {
-            const stopName = jl.locations[0]?.name ?? '?';
-            jl.activities.forEach(act => {
-                const arr = act.timings?.find(t => t.type === 'arrival')?.time?.slice(0,5) ?? '–';
-                const dep = act.timings?.find(t => t.type === 'departure')?.time?.slice(0,5) ?? '–';
-                rows.push(`
-                    <tr>
-                        <td><strong>${stopName}</strong></td>
-                        <td><code style="font-size:0.8rem;">${act.type}</code></td>
-                        <td>${act.responsibility.type}</td>
-                        <td>${partnerBadgeHtml(act.responsibility.id)}</td>
-                        <td><span class="badge badge-${act.responsibility.status}">${act.responsibility.status}</span></td>
-                        <td>${arr}</td>
-                        <td>${dep}</td>
-                    </tr>
-                `);
-            });
+    function renderActCells(acts, colType) {
+        let html = '<div class="jt-act-list">';
+        acts.forEach(act => {
+            const arr = act.timings?.find(t => t.type === 'arrival')?.time?.slice(0, 5);
+            const dep = act.timings?.find(t => t.type === 'departure')?.time?.slice(0, 5);
+            const timesHtml = [arr ? `Arr: ${arr}` : null, dep ? `Dep: ${dep}` : null].filter(Boolean).join(' / ');
+            const statusDot = `<span class="status-dot ${planStatusColorClass(act.responsibility.status)}" title="${act.responsibility.status}"></span>`;
+            html += `
+                <div class="jt-act-item act-${colType}">
+                    <div class="jt-act-header">
+                        <span>${statusDot}</span>
+                        <span style="flex:1; font-weight:600; font-size:0.7rem; margin-left:4px;">${act.responsibility.id}</span>
+                    </div>
+                    <div class="jt-act-resp">${act.responsibility.type} · <span class="badge badge-${act.responsibility.status}" style="font-size:0.6rem;">${act.responsibility.status}</span></div>
+                    ${timesHtml ? `<div class="jt-act-times">${timesHtml}</div>` : ''}
+                </div>`;
         });
-
-        tbody.innerHTML = rows.join('') || '<tr><td colspan="7" class="text-center text-muted">No activities</td></tr>';
+        html += '</div>';
+        return html;
     }
+
+    /* ── JSON Modal ─────────────────────────────────────────────── */
+    function openJsonModal() {
+        const payload = {
+            trainId: currentTrain.trainId,
+            branch: {
+                branchId: currentBranch.branchId,
+                branchName: currentBranch.branchName,
+                business: currentBranch.business,
+                technical: currentBranch.technical
+            },
+            trainPayload: currentTrain.mainPayload
+        };
+        document.getElementById('json-viewer-content').textContent = JSON.stringify(payload, null, 2);
+        openModal('modal-json');
+    }
+
+    /* ── Helpers ────────────────────────────────────────────────── */
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) overlay.classList.add('hidden');
+        });
+    });
 </script>
 </body>
 </html>

@@ -57,6 +57,22 @@
                         <div class="detail-value" id="detail-train-number">IC 1234</div>
                     </div>
                     <div class="detail-item">
+                        <div class="detail-label">From</div>
+                        <div class="detail-value" id="detail-from">–</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Departure</div>
+                        <div class="detail-value" id="detail-dep-time">–</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">To</div>
+                        <div class="detail-value" id="detail-to">–</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Arrival</div>
+                        <div class="detail-value" id="detail-arr-time">–</div>
+                    </div>
+                    <div class="detail-item">
                         <div class="detail-label">Operational Day</div>
                         <div class="detail-value" id="detail-op-day">2025-06-15</div>
                     </div>
@@ -72,16 +88,26 @@
             </div>
         </div>
 
-        <!-- Journey (main branch – read-only pearl necklace) -->
+        <!-- Journey (main branch – read-only table) -->
         <div class="card">
             <div class="card-header">
                 <span class="card-title">🗺️ Journey Route (main branch)</span>
             </div>
-            <div class="card-body" style="padding-top:0.5rem;">
-                <div class="pearl-necklace-wrapper">
-                    <div class="pearl-necklace readonly" id="journey-container">
-                        <!-- Rendered by JS -->
-                    </div>
+            <div class="card-body" style="padding-top:0.5rem; padding-bottom:0.5rem;">
+                <div class="journey-table-wrapper">
+                    <table class="journey-table" id="journey-table">
+                        <thead>
+                            <tr>
+                                <th style="width:200px;">Stop</th>
+                                <th>🚃 Rolling Stock</th>
+                                <th>👤 Staff / Journey</th>
+                                <th>📋 Planning / Path</th>
+                            </tr>
+                        </thead>
+                        <tbody id="journey-tbody">
+                            <!-- Rendered by JS -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -203,91 +229,101 @@
     function renderPage() {
         const t = currentTrain;
         const main = getMainBranch(t.branches);
+        const { from, to, depTime, arrTime } = getOriginDestination(t.mainPayload);
 
         // Header
         document.getElementById('train-title').textContent = main?.business?.trainNumber ?? '–';
         document.getElementById('train-name').textContent = t.mainPayload.name;
         document.getElementById('detail-train-number').textContent = main?.business?.trainNumber ?? '–';
+        document.getElementById('detail-from').textContent = from;
+        document.getElementById('detail-dep-time').textContent = depTime ?? '–';
+        document.getElementById('detail-to').textContent = to;
+        document.getElementById('detail-arr-time').textContent = arrTime ?? '–';
         document.getElementById('detail-op-day').textContent = main?.business?.operationalDay ?? '–';
         document.getElementById('detail-status').innerHTML = trafficLightHtml(getTrafficLightStatus(t.mainPayload));
         document.getElementById('detail-partners').innerHTML = t.partners.map(p => partnerBadgeHtml(p)).join(' ');
         document.title = `R2P – ${main?.business?.trainNumber ?? 'Train'}`;
 
-        // Journey pearl necklace (read-only)
-        renderPearlNecklace(document.getElementById('journey-container'), t.mainPayload.journey, false);
+        // Journey table (read-only)
+        renderJourneyTable(document.getElementById('journey-tbody'), t.mainPayload.journey, false);
 
         // Branches
         renderBranches();
     }
 
-    /* ── Pearl Necklace ─────────────────────────────────────────── */
-    function renderPearlNecklace(container, journey, editable) {
+    /* ── Journey Table ──────────────────────────────────────────── */
+    function renderJourneyTable(tbody, journey, editable) {
         const locs = journey.journeylocations;
         let html = '';
 
         locs.forEach((jl, idx) => {
             const stopName = jl.locations[0]?.name ?? '?';
-            const initials = stopName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+            const isFirst = idx === 0;
+            const isLast = idx === locs.length - 1;
+            const dotClass = isFirst ? 'jt-start' : (isLast ? 'jt-end' : '');
 
-            const arrival = jl.activities.find(a => a.timings?.some(ti => ti.type === 'arrival'))?.timings.find(ti => ti.type === 'arrival')?.time;
-            const departure = jl.activities.find(a => a.timings?.some(ti => ti.type === 'departure'))?.timings.find(ti => ti.type === 'departure')?.time;
+            // Separate activities by column
+            const rsActs = jl.activities.filter(a => activityColumnType(a.type) === 'rs');
+            const staffActs = jl.activities.filter(a => activityColumnType(a.type) === 'staff');
+            const planActs = jl.activities.filter(a => activityColumnType(a.type) === 'plan');
 
-            const timesHtml = [
-                arrival ? `Arr: ${arrival.slice(0,5)}` : null,
-                departure ? `Dep: ${departure.slice(0,5)}` : null
-            ].filter(Boolean).join('<br>');
-
-            const circleClass = idx === 0 ? 'pn-start' : (idx === locs.length - 1 ? 'pn-end' : '');
-            const editBtnHtml = editable ? `<button class="pn-edit-btn" onclick="openStopModal(${idx})" title="Edit stop">✏</button>` : '';
-
-            const activitiesHtml = jl.activities.map((act, aIdx) => {
-                const planBadge = `<span class="badge badge-${act.responsibility.status}" style="font-size:0.65rem;">${act.responsibility.status}</span>`;
-                const actEditBtn = editable ? `<button class="pn-activity-edit" onclick="openActivityModal(${idx},${aIdx})" title="Edit activity">✏</button>` : '';
-                return `
-                    <div class="pn-activity activity-${act.type.split('.')[0]}">
-                        <span class="pn-activity-label" title="${act.type}">${act.type.replace('train.halt.', 'halt.')}</span>
-                        ${planBadge}
-                        ${actEditBtn}
-                    </div>
-                `;
-            }).join('');
-
-            const addActivityBtn = editable ? `<button class="pn-add-activity-btn" onclick="openActivityModal(${idx}, null)">＋ Activity</button>` : '';
-
-            // Add-before button
-            if (idx === 0 && editable) {
-                html += `<div class="pn-add-btn-vert"><button class="pn-add-btn" onclick="insertStop(0)" title="Add stop before">＋</button></div>`;
+            // Add-stop-before row (editable only, first stop)
+            if (editable && idx === 0) {
+                html += `<tr class="jt-add-stop-row"><td colspan="4"><button class="jt-add-activity-btn" style="max-width:200px;" onclick="insertStop(0)">＋ Add Stop Before</button></td></tr>`;
             }
 
-            html += `
-                <div class="pn-stop">
-                    <div class="pn-circle-row">
-                        <div class="pn-circle ${circleClass}">
-                            ${initials}
-                            ${editBtnHtml}
+            html += `<tr>
+                <td class="jt-stop-cell">
+                    <div class="jt-stop-indicator">
+                        <div class="jt-stop-line-col">
+                            <div class="jt-stop-dot ${dotClass}"></div>
+                            ${!isLast ? '<div class="jt-stop-line"></div>' : ''}
+                        </div>
+                        <div class="jt-stop-info">
+                            <div class="jt-stop-name">${stopName}</div>
+                            ${editable ? `
+                            <div class="jt-stop-actions">
+                                <button class="btn btn-ghost btn-sm" style="font-size:0.7rem; padding:2px 6px;" onclick="openStopModal(${idx})">✏ Edit</button>
+                                <button class="btn-delete" onclick="deleteStop(${idx})" title="Delete stop">🗑</button>
+                            </div>` : ''}
                         </div>
                     </div>
-                    <div class="pn-stop-name" title="${stopName}">${stopName}</div>
-                    <div class="pn-times">${timesHtml || '–'}</div>
-                    <div class="pn-activities">
-                        ${activitiesHtml}
-                        ${addActivityBtn}
-                    </div>
-                </div>
-            `;
+                </td>
+                <td class="jt-act-cell">${renderActCells(rsActs, idx, 'rs', editable)}</td>
+                <td class="jt-act-cell">${renderActCells(staffActs, idx, 'staff', editable)}</td>
+                <td class="jt-act-cell">${renderActCells(planActs, idx, 'plan', editable)}</td>
+            </tr>`;
 
-            // Connector + add-after button
-            if (idx < locs.length - 1) {
-                html += `<div class="pn-connector"></div>`;
-                if (editable) {
-                    html += `<div class="pn-add-btn-vert"><button class="pn-add-btn" onclick="insertStop(${idx + 1})" title="Add stop here">＋</button></div><div class="pn-connector"></div>`;
-                }
-            } else if (editable) {
-                html += `<div class="pn-add-btn-vert"><button class="pn-add-btn" onclick="insertStop(${idx + 1})" title="Add stop after">＋</button></div>`;
+            // Add-stop-after row (editable only)
+            if (editable) {
+                html += `<tr class="jt-add-stop-row"><td colspan="4"><button class="jt-add-activity-btn" style="max-width:200px;" onclick="insertStop(${idx + 1})">＋ Add Stop After</button></td></tr>`;
             }
         });
 
-        container.innerHTML = html;
+        tbody.innerHTML = html || '<tr><td colspan="4" class="text-muted text-center" style="padding:2rem;">No journey stops defined.</td></tr>';
+    }
+
+    function renderActCells(acts, stopIdx, colType, editable) {
+        const colTypeLabel = { rs: 'Rolling Stock', staff: 'Staff/Journey', plan: 'Planning' }[colType];
+        let html = '<div class="jt-act-list">';
+        acts.forEach((act, aIdx) => {
+            const globalAIdx = /* find index in original array */ -1; // not used in read-only
+            const arr = act.timings?.find(t => t.type === 'arrival')?.time?.slice(0,5);
+            const dep = act.timings?.find(t => t.type === 'departure')?.time?.slice(0,5);
+            const timesHtml = [arr ? `Arr: ${arr}` : null, dep ? `Dep: ${dep}` : null].filter(Boolean).join(' / ');
+            const statusDot = `<span class="status-dot ${planStatusColorClass(act.responsibility.status)}" title="${act.responsibility.status}"></span>`;
+            html += `
+                <div class="jt-act-item act-${colType}">
+                    <div class="jt-act-header">
+                        <span>${statusDot}</span>
+                        <span style="flex:1; font-weight:600; font-size:0.7rem; margin-left:4px;">${act.responsibility.id}</span>
+                    </div>
+                    <div class="jt-act-resp">${act.responsibility.type} · <span class="badge badge-${act.responsibility.status}" style="font-size:0.6rem;">${act.responsibility.status}</span></div>
+                    ${timesHtml ? `<div class="jt-act-times">${timesHtml}</div>` : ''}
+                </div>`;
+        });
+        html += '</div>';
+        return html;
     }
 
     /* ── Branches Render ────────────────────────────────────────── */
