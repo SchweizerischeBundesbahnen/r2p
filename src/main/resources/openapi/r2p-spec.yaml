@@ -78,7 +78,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: './schemas/train.yaml#/Train'
+              $ref: './schemas/train.yaml#/components/schemas/Train'
       responses:
         '200':
           description: Successful operation
@@ -300,7 +300,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: './schemas/train.yaml#/Train'
+              $ref: './schemas/train.yaml#/components/schemas/Train'
       responses:
         '200':
           description: Created
@@ -407,7 +407,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: './schemas/train.yaml#/Train'
+              $ref: './schemas/train.yaml#/components/schemas/Train'
       responses:
         '200':
           description: Updated
@@ -688,7 +688,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './schemas/train.yaml#/Train'
+                $ref: './schemas/train.yaml#/components/schemas/Train'
           description: Successful operation
         '403':
           description: Not authorized to access train

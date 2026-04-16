@@ -1,60 +1,73 @@
 {
-  "id": "minimal-train-001",
-  "references": [],
+  "id": "72",
+  "references": [
+    {
+      "type": "tttReferenceTrain",
+      "name": "TR2185990010000000000021"
+    }
+  ],
   "links": [],
-  "name": "Minimal Train",
-  "startdate": "2026-04-10",
-  "timestamp": "2026-04-10T10:00:00.000Z",
+  "name": "Zug 11062 Buchs Dällikon – Brugg AG",
+  "startdate": "2026-04-16",
+  "timestamp": "2026-03-12T12:00:00+01:00",
   "journey": {
+    "featuresets": [],
     "journeylocations": [
       {
         "locations": [
           {
             "type": "PLC",
-            "code": "CH02113",
-            "name": "Aarau"
-          },
-          {
-            "type": "PLC",
-            "code": "CH00218",
-            "name": "Olten"
+            "code": "CH-3527",
+            "name": "Buchs Dällikon"
           }
         ],
         "activities": [
           {
-            "type": "commercial",
+            "id": "a1-01",
+            "type": "path.halt.11",
             "timings": [
               {
-                "type": "departure",
-                "time": "10:00:00",
-                "offset": 0,
+                "type": "earliestdeparture",
+                "duration": "PT8H30M",
                 "focus": "planning"
               }
             ],
             "responsibility": {
-              "type": "rru",
-              "id": "BLS",
-              "status": "requested"
-            }
+              "type": "rim",
+              "id": "0085",
+              "status": "confirmed"
+            },
+            "relations": []
           }
-        ],
-        "requirements": []
+        ]
       },
       {
         "locations": [
           {
             "type": "PLC",
-            "code": "CH00218",
-            "name": "Olten"
-          },
-          {
-            "type": "PLC",
-            "code": "CH07000",
-            "name": "Bern"
+            "code": "CH-309",
+            "name": "Brugg AG"
           }
         ],
-        "activities": [],
-        "requirements": []
+        "activities": [
+          {
+            "id": "a2-01",
+            "type": "path.halt.11",
+            "timings": [
+              {
+                "type": "arrival",
+                "duration": "PT4H2M",
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rim",
+              "id": "0085",
+              "status": "confirmed"
+            },
+            "relations": []
+          }
+        ]
       }
     ]
   }
