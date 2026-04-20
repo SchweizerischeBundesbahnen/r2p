@@ -426,7 +426,7 @@ components:
         activities:
           description: |
             The Activities taking place at this operational point.
-            A Journeylocation may carry zero or more Activities.
+            A Journeylocation may carry .
             The execution order of Activities is determined by
             their Relations, not by their position in this array.
           type: array

@@ -151,4 +151,5 @@ class TestDataServiceTests {
         // Every train must have at least a CREATED entry
         assertThat(changelogSpringDataRepository.count()).isGreaterThanOrEqualTo(10);
     }
+
 }
