@@ -45,6 +45,7 @@ jobs:
           cache: 'maven'
 
       - name: Make mvnw executable
+        if: ${{ steps.release.outputs.pr }}
         run: chmod +x ./mvnw
 
       - name: Generate THIRD-PARTY.txt
