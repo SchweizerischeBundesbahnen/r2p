@@ -36,10 +36,6 @@ commitlint.config.js
 release-please-config.json
 .release-please-manifest.json
 
-# Licenses
-gpl-3.0.txt
-LICENSE
-
 # Node
 node_modules/
 package.json

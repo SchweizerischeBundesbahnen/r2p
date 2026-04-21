@@ -102,5 +102,5 @@ Deploy to OpenShift - see `docs/manual.adoc` for details.
 
 ## License
 
-See [gpl-3.0.txt](gpl-3.0.txt)
+See [LICENSE](LICENSE)
 

@@ -25,11 +25,45 @@ jobs:
         id: release
         uses: googleapis/release-please-action@v4
         with:
-          # Use PAT to trigger other workflows (automerge)
-          # If RELEASE_PLEASE_TOKEN is not set, falls back to GITHUB_TOKEN
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
         # Note: Configuration is managed via release-please-config.json
         # and .release-please-manifest.json files
+
+      - name: Checkout release-please branch
+        if: ${{ steps.release.outputs.pr }}
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ fromJSON(steps.release.outputs.pr).headBranchName }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up JDK
+        if: ${{ steps.release.outputs.pr }}
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Make mvnw executable
+        if: ${{ steps.release.outputs.pr }}
+        run: chmod +x ./mvnw
+
+      - name: Generate THIRD-PARTY.txt
+        if: ${{ steps.release.outputs.pr }}
+        run: ./mvnw license:add-third-party
+
+      - name: Commit and push THIRD-PARTY.txt if changed
+        if: ${{ steps.release.outputs.pr }}
+        run: |
+          if ! git diff --quiet THIRD-PARTY.txt; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add THIRD-PARTY.txt
+            git commit -m "chore: update THIRD-PARTY.txt"
+            git push
+          else
+            echo "THIRD-PARTY.txt unchanged, skipping commit."
+          fi
 
   # Build for Linux
   build-linux:

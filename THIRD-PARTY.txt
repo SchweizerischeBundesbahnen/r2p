@@ -1,0 +1,4 @@
+
+Lists of 116 third-party dependencies.
+     (Apache License, Version 2.0) spring-boot (org.springframework.boot:spring-boot:4.0.5 - https://spring.io/projects/spring-boot)
+# Cutting here to verify that release-please updates the file

@@ -59,6 +59,7 @@ When you push commits to the `main` branch:
 2. Creates/updates a **Release PR** with:
    - Automatically generated CHANGELOG
    - Updated version in `pom.xml`
+   - Updated licenses of third-party dependencies in `THIRD-PARTY.txt`
 3. When you merge the Release PR:
    - A new **GitHub Release** is created with the changelog
    - A **Git Tag** is created
