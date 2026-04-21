@@ -341,7 +341,7 @@
                     <excludedScopes>test,system</excludedScopes>
                     <outputDirectory>${project.basedir}</outputDirectory>
                     <thirdPartyFilename>THIRD-PARTY.txt</thirdPartyFilename>
-                    <failOnMissing>false</failOnMissing>
+                    <failOnMissing>true</failOnMissing>
                     <sortArtifactByName>true</sortArtifactByName>
                     <includedLicenses>
                         <!-- all licenses – leave empty to include everything -->
