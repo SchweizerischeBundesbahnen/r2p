@@ -247,12 +247,14 @@ public class ChangelogTests {
             java.util.List.of(),  // references
             java.util.List.of(),  // links
             "Test Train", // name
-            operationalDay,  // startdate
             OffsetDateTime.now(),  // timestamp
-            new Journey(java.util.List.of(
-                new Journeylocation(),  // minimal first location
-                new Journeylocation()   // minimal second location (min 2 required)
-            ))
+            new Journey(
+                java.util.List.of(),  // featuresets
+                java.util.List.of(
+                    new Journeylocation(),  // minimal first location
+                    new Journeylocation()   // minimal second location (min 2 required)
+                )
+            )
         );
 
         TrainVersion trainVersion = TrainVersion.builder()

@@ -1,205 +1,216 @@
 {
-  "id": "sample-train-001",
+  "id": "72",
   "references": [
     {
-      "type": "tttreftrain",
-      "startdate": "2025-12-01",
-      "name": "TR2185900000127853012025"
-    }
-  ],
-  "links": [
+      "type": "tttReferenceTrain",
+      "name": "TR2185990010000000000021"
+    },
     {
-      "type": "doc",
-      "name": "train/to/other-file.json#/Attachment/MyDocument1.docx"
+      "type": "tttRoute",
+      "name": "RO2185990010000000000026"
+    },
+    {
+      "type": "plannedTrainNumber",
+      "name": "11062"
     }
   ],
-  "name": "Train for oil traffic",
-  "startdate": "2025-12-01",
-  "timestamp": "2025-12-01T12:51:26.632Z",
+  "links": [],
+  "name": "Zug 11062 Buchs Dällikon – Brugg AG",
+  "startdate": "2026-04-16",
+  "timestamp": "2026-03-12T12:00:00+01:00",
   "journey": {
+    "featuresets": [],
     "journeylocations": [
       {
         "locations": [
           {
+            "type": "PLC",
+            "code": "CH-3527",
+            "name": "Buchs Dällikon"
+          },
+          {
             "type": "SLC",
-            "typeCode": "37",
-            "code": "1966700002",
-            "name": "FVL BielMett"
+            "code": "51",
+            "name": "Gleis 3"
           }
         ],
         "activities": [
           {
-            "type": "train.halt.1",
+            "id": "a1-01",
+            "type": "path.halt.11",
             "timings": [
               {
-                "type": "arrival",
-                "time": "08:30:00",
-                "offset": 0,
-                "focus": "planning",
-                "source": "2187"
+                "type": "earliestdeparture",
+                "duration": "PT8H30M",
+                "focus": "planning"
               },
               {
-                "type": "departure",
-                "time": "08:45:00",
-                "offset": 0,
-                "focus": "planning",
-                "source": "2187"
+                "type": "dwelltime",
+                "duration": "PT30M",
+                "focus": "planning"
               }
             ],
             "responsibility": {
               "type": "rim",
-              "id": "ID-12-234-34-1",
+              "id": "0085",
               "status": "confirmed"
             },
-            "alignment": {
+            "relations": []
+          },
+          {
+            "id": "a1-02",
+            "type": "rollingStock",
+            "timings": [],
+            "responsibility": {
+              "type": "tru",
+              "id": "2185",
               "status": "confirmed"
             },
             "capability": {
-              "features": [
-                {
-                  "feature": {
-                    "type": "WIFI on board",
-                    "offeredservice": "Passenger WiFi",
-                    "capacity": "200"
-                  },
-                  "restriction": {
-                    "type": "temporary restriction",
-                    "restrictedvalue": 80,
-                    "creator": "SBB",
-                    "creationtime": "2025-11-15T10:00:00.000Z",
-                    "starttime": "2025-12-01T06:00:00.000Z",
-                    "endtime": "2025-12-01T18:00:00.000Z",
-                    "freetext": "Limited capacity during construction",
-                    "resolution": "Restriction lifted",
-                    "resolutiontime": "2025-12-01T18:00:00.000Z"
-                  }
-                }
-              ],
-              "staff": [
-                {
-                  "type": "conductor",
-                  "action": "passenger service"
-                }
-              ],
+              "type": "rollingStock",
+              "capabilityFeatures": [],
+              "featuresetRefs": [],
               "rollingStock": {
-                "weight": 450000,
-                "length": 185000,
-                "maxSpeed": 160,
-                "brakingRatio": 115.0,
-                "routeClass": "B2",
-                "features": [
-                  {
-                    "feature": {
-                      "type": "electric traction",
-                      "offeredservice": "15kV AC",
-                      "capacity": "6400"
-                    }
-                  }
-                ],
+                "weight": 2868000,
+                "length": 438000,
+                "maxSpeed": 100,
+                "brakingRatio": 70.0,
+                "brakeType": "G",
                 "units": [
                   {
-                    "position": 1,
-                    "type": "Re420",
+                    "id": "u1-loco-1",
                     "carbodies": [
                       {
-                        "position": 1,
-                        "type": "Re 420",
+                        "type": "6185",
+                        "vehiclenumber": "918061850020",
+                        "weight": 84000,
+                        "length": 18900,
                         "traction": "electric",
-                        "vehiclenumber": "420294",
-                        "frontcoupling": "automaticTypeX",
-                        "backcoupling": "automaticTypeX",
-                        "profile": "EBO",
-                        "features": [
-                          {
-                            "feature": {
-                              "type": "traction power",
-                              "offeredservice": "6400 kW",
-                              "capacity": "6400"
-                            }
-                          }
-                        ]
+                        "capabilityFeatures": []
                       }
                     ],
-                    "features": [
-                      {
-                        "feature": {
-                          "type": "locomotive",
-                          "offeredservice": "electric traction",
-                          "capacity": "1"
-                        }
-                      }
-                    ]
+                    "capabilityFeatures": [],
+                    "featuresetRefs": []
                   },
                   {
-                    "position": 2,
-                    "type": "passenger coach",
+                    "id": "u1-loco-2",
                     "carbodies": [
                       {
-                        "position": 1,
-                        "type": "EW IV",
-                        "traction": "none",
-                        "vehiclenumber": "999999999962",
-                        "frontcoupling": "automaticTypeX",
-                        "backcoupling": "automaticTypeX",
-                        "profile": "UIC-C",
-                        "features": [
-                          {
-                            "feature": {
-                              "type": "passenger seats",
-                              "offeredservice": "2nd class",
-                              "capacity": "72"
-                            }
-                          }
-                        ]
+                        "type": "6185",
+                        "vehiclenumber": "918061850037",
+                        "weight": 84000,
+                        "length": 18900,
+                        "traction": "electric",
+                        "capabilityFeatures": []
                       }
                     ],
-                    "features": [
-                      {
-                        "feature": {
-                          "type": "passenger coach",
-                          "offeredservice": "seating",
-                          "capacity": "72"
-                        }
-                      }
-                    ]
+                    "capabilityFeatures": [],
+                    "featuresetRefs": []
+                  },
+                  {
+                    "id": "u1-wagons",
+                    "wagoncount": 10,
+                    "weight": 2700000,
+                    "length": 400000,
+                    "carbodies": [],
+                    "capabilityFeatures": [],
+                    "featuresetRefs": []
                   }
                 ]
               }
             },
-            "requirement": {
-              "features": [
+            "relations": []
+          },
+          {
+            "id": "a1-03",
+            "type": "rollingStock.traction",
+            "timings": [],
+            "responsibility": {
+              "type": "pru",
+              "id": "2185",
+              "status": "confirmed"
+            },
+            "capability": {
+              "type": "staff",
+              "capabilityFeatures": [],
+              "featuresetRefs": [],
+              "staffs": [
                 {
-                  "feature": {
-                    "type": "platform length",
-                    "offeredservice": "minimum platform",
-                    "capacity": "185"
-                  },
-                  "condition": {
-                    "conditiontype": "gte",
-                    "comparetype": "number",
-                    "reference": "185",
-                    "mandatory": true
-                  }
+                  "type": "driver"
                 }
               ]
-            }
-          }
-        ],
-        "requirements": [
+            },
+            "relations": []
+          },
           {
-            "features": [
+            "id": "a1-04",
+            "type": "inspect.train.technical",
+            "timings": [
               {
-                "feature": {
-                  "type": "electrification",
-                  "offeredservice": "15kV AC",
-                  "capacity": "15000"
-                },
-                "condition": {
-                  "conditiontype": "eq",
-                  "comparetype": "string",
-                  "reference": "15kV AC",
-                  "mandatory": true
-                }
+                "type": "dwelltime",
+                "duration": "PT30M",
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rru",
+              "id": "2185",
+              "status": "confirmed"
+            },
+            "relations": [
+              {
+                "activityid": "a1-05",
+                "type": "end-start",
+                "focus": "planning",
+                "lag": "PT30M"
+              }
+            ]
+          },
+          {
+            "id": "a1-05",
+            "type": "inspect.train.operational",
+            "timings": [
+              {
+                "type": "dwelltime",
+                "duration": "PT30M",
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rru",
+              "id": "2185",
+              "status": "confirmed"
+            },
+            "relations": [
+              {
+                "activityid": "a1-01",
+                "type": "end-end",
+                "focus": "planning",
+                "lag": "PT45M"
+              }
+            ]
+          },
+          {
+            "id": "a1-06",
+            "type": "move",
+            "timings": [
+              {
+                "type": "dwelltime",
+                "duration": "PT1H30M",
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rru",
+              "id": "2185",
+              "status": "confirmed"
+            },
+            "relations": [
+              {
+                "activityid": "a1-04",
+                "type": "end-start",
+                "focus": "planning",
+                "lag": "PT5M"
               }
             ]
           }
@@ -209,107 +220,78 @@
         "locations": [
           {
             "type": "PLC",
-            "code": "CH00123",
-            "name": "Basel SBB"
+            "code": "CH-309",
+            "name": "Brugg AG"
+          },
+          {
+            "type": "SLC",
+            "code": "51",
+            "name": "Gleis 2"
           }
         ],
         "activities": [
           {
-            "type": "train.halt.1",
+            "id": "a2-01",
+            "type": "path.halt.11",
             "timings": [
               {
                 "type": "arrival",
-                "time": "10:15:00",
-                "offset": 0,
-                "focus": "planning",
-                "source": "R2P"
+                "duration": "PT4H2M",
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rim",
+              "id": "0085",
+              "status": "confirmed"
+            },
+            "relations": []
+          },
+          {
+            "id": "a2-02",
+            "type": "move",
+            "timings": [
+              {
+                "type": "dwelltime",
+                "duration": "PT30M",
+                "focus": "planning"
               }
             ],
             "responsibility": {
               "type": "rru",
-              "id": "ID-98-765-43-2",
-              "status": "requested"
+              "id": "2185",
+              "status": "confirmed"
             },
-            "alignment": {
-              "status": "proposed"
-            },
-            "capability": {
-              "features": [
-                {
-                  "feature": {
-                    "type": "passenger service",
-                    "offeredservice": "regional train",
-                    "capacity": "150"
-                  }
-                }
-              ],
-              "staff": [
-                {
-                  "type": "driver",
-                  "action": "train operation"
-                }
-              ],
-              "rollingStock": {
-                "weight": 450000,
-                "length": 185000,
-                "maxSpeed": 160,
-                "brakingRatio": 115.0,
-                "routeClass": "B2",
-                "wagonGroups": [
-                  {
-                    "id": "WG-001",
-                    "position": 1,
-                    "length": 185000,
-                    "weight": 450000,
-                    "profile": "UIC-C",
-                    "wagoncount": 5,
-                    "features": [
-                      {
-                        "feature": {
-                          "type": "freight",
-                          "offeredservice": "general cargo",
-                          "capacity": "100"
-                        }
-                      }
-                    ]
-                  }
-                ]
-              }
-            },
-            "requirement": {
-              "features": [
-                {
-                  "feature": {
-                    "type": "track gauge",
-                    "offeredservice": "standard gauge",
-                    "capacity": "1435"
-                  },
-                  "condition": {
-                    "conditiontype": "eq",
-                    "comparetype": "number",
-                    "reference": "1435",
-                    "mandatory": true
-                  }
-                }
-              ]
-            }
-          }
-        ],
-        "requirements": [
-          {
-            "features": [
+            "relations": [
               {
-                "feature": {
-                  "type": "signaling system",
-                  "offeredservice": "ETCS Level 2",
-                  "capacity": "1"
-                },
-                "condition": {
-                  "conditiontype": "in",
-                  "comparetype": "string",
-                  "reference": "ETCS Level 1,ETCS Level 2",
-                  "mandatory": false
-                }
+                "activityid": "a2-03",
+                "type": "end-start",
+                "focus": "planning",
+                "lag": "PT10M"
+              }
+            ]
+          },
+          {
+            "id": "a2-03",
+            "type": "shunting",
+            "timings": [
+              {
+                "type": "dwelltime",
+                "duration": "PT5M",
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rru",
+              "id": "2185",
+              "status": "confirmed"
+            },
+            "relations": [
+              {
+                "activityid": "a2-01",
+                "type": "start-start",
+                "focus": "planning",
+                "lag": "PT1H"
               }
             ]
           }

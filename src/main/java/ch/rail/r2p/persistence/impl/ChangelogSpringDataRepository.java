@@ -20,13 +20,13 @@ public interface ChangelogSpringDataRepository extends CrudRepository<Changelog,
           AND (EXISTS (SELECT 1 FROM train_partner WHERE train_partner.train_id=changelog.train_id AND train_partner.partner=:partner)
               OR affected_partner=:partner
               )
-          ORDER BY timestamp, id
+          ORDER BY seq
         """)
     List<Changelog> find(String partner, OffsetDateTime from, OffsetDateTime to, UUID trainId);
 
     @Query("""
         SELECT c.* FROM (
-            SELECT *, ROW_NUMBER() OVER (PARTITION BY branch_id ORDER BY timestamp DESC, id DESC) AS rn
+            SELECT *, ROW_NUMBER() OVER (PARTITION BY branch_id ORDER BY seq DESC) AS rn
             FROM changelog
             WHERE train_id = :trainId
               AND action IN ('MERGE_REQUESTED', 'MERGE_REJECTED', 'MERGED')
@@ -34,7 +34,7 @@ public interface ChangelogSpringDataRepository extends CrudRepository<Changelog,
         ) c
         WHERE c.rn = 1
           AND EXISTS (SELECT 1 FROM train_partner WHERE train_partner.train_id = c.train_id AND train_partner.partner = :partner)
-        ORDER BY c.timestamp DESC
+        ORDER BY c.seq DESC
         """)
     List<Changelog> findLatestMergeRelatedPerBranch(String partner, UUID trainId);
 
