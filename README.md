@@ -42,7 +42,9 @@ Access the application:
 - **Application**: http://localhost:8080/
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
 - **OpenAPI Spec**: http://localhost:8080/v3/api-docs
-- **Documentation**: `target/docs/` (HTML + PDF)
+- **Documentation**: `target/docs/`
+  - `r2p-manual.html` / `r2p-manual.pdf` - User manual
+  - `r2p-api.html` / `r2p-api.pdf` - API documentation
 
 **Note:** To access secured endpoints, you must be a member of AD group `DG_SEC_DEV_R2P_Admin`.
 
@@ -61,21 +63,13 @@ DATABASE_STORAGE=file:C:/devsbb/h2/r2p
 
 ## Development
 
+### Design decisions
+
+See Architecture Decision Records (ADRs) in [docs/adr/](docs/adr/) for detailed explanations of key design choices.
+
 ### Commit Messages
-All commits **must** follow [Conventional Commits](https://www.conventionalcommits.org/) format:
-```
-type(scope): description
 
-Examples:
-- feat(api): add new train endpoint
-- fix(persistence): correct null handling
-- docs: update README
-```
-
-To enable automatic validation, run:
-```bash
-npm install
-```
+See [Commit Message Guidelines](CONTRIBUTING.md#commit-message-guidelines).
 
 ### Release Process
 - Releases are automated via [release-please](https://github.com/googleapis/release-please-action)
@@ -85,11 +79,11 @@ npm install
   - Native executables for Linux, Windows, and macOS
   - Documentation (HTML + PDF)
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+See [RELEASE.md](RELEASE.md) for more details.
 
 ## Deployment
 
-Deploy to OpenShift - see `docs/manual.adoc` for details.
+Deploy to OpenShift - see [docs/manual.adoc](docs/manual.adoc) for details.
 
 ## Project Structure
 

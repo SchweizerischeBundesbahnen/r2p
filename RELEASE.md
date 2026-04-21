@@ -15,41 +15,8 @@ For most use cases, the default `GITHUB_TOKEN` is sufficient. You only need a PA
 
 ### 1. Conventional Commits
 
-Release-please is based on [Conventional Commits](https://www.conventionalcommits.org/). Use the following prefixes when committing:
-
-- `feat:` - New features (bumps MINOR version)
-- `fix:` - Bug fixes (bumps PATCH version)
-- `docs:` - Documentation changes
-- `style:` - Code formatting (no functional changes)
-- `refactor:` - Code refactoring
-- `perf:` - Performance improvements
-- `test:` - Adding or modifying tests
-- `build:` - Build system or dependencies
-- `ci:` - CI/CD changes
-- `chore:` - Other changes
-
-**Breaking Changes:** Add `BREAKING CHANGE:` in the commit body or use `!` after the type (e.g., `feat!:`) to bump the MAJOR version.
-
-Examples:
-```bash
-git commit -m "feat: Add new API endpoint for train data"
-git commit -m "fix: Correct authentication issue"
-git commit -m "feat!: API change - removed old format"
-```
-
-You can also use scopes for better organization:
-```bash
-git commit -m "feat(api): Add new train data endpoint"
-git commit -m "fix(auth): Correct JWT token validation"
-```
-
-For breaking changes with detailed explanation:
-```bash
-git commit -m "feat!: Change API response format
-
-BREAKING CHANGE: The API now returns data in a new format.
-Old clients will need to update their integration."
-```
+Release-please is based on [Conventional Commits](https://www.conventionalcommits.org/).
+See [Commit Message Guidelines](CONTRIBUTING.md#commit-message-guidelines) for details.
 
 ### 2. Release-Please Workflow
 
