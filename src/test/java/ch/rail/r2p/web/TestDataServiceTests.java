@@ -151,4 +151,20 @@ class TestDataServiceTests {
         // Every train must have at least a CREATED entry
         assertThat(changelogSpringDataRepository.count()).isGreaterThanOrEqualTo(10);
     }
+
+    @Test
+    void should_reject_numberOfTrains_exceeding_capacity_for_single_day() {
+        // Only 1 day → max 9 000 numbers; requesting 9 001 must fail immediately.
+        LocalDate singleDay = LocalDate.of(2026, 6, 1);
+        var badRequest = new TestDataRequest(
+            TestDataGenerator.TRAIN_NUMBERS_PER_DAY + 1,
+            singleDay,
+            singleDay,
+            List.of()
+        );
+
+        assertThrows(IllegalArgumentException.class,
+            () -> testDataController.generate(badRequest));
+    }
+
 }

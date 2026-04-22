@@ -25,8 +25,9 @@ public class TestDataController {
      */
     @PostMapping("/generate")
     public ResponseEntity<TestDataResult> generate(@RequestBody @Valid TestDataRequest request) {
-        TestDataResult result = testDataService.generate(request);
+        TestDataResult result = testDataService.generateTrains(request);
         return ResponseEntity.ok(result);
     }
+
 }
 

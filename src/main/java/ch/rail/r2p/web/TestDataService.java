@@ -2,12 +2,8 @@ package ch.rail.r2p.web;
 
 import ch.rail.r2p.api.dto.Train;
 import ch.rail.r2p.domain.TrainVersionEnriched;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import jakarta.validation.Valid;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,7 +14,6 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,31 +21,17 @@ import org.springframework.stereotype.Service;
 public class TestDataService {
 
     private final TrainService trainService;
-    private final ObjectMapper objectMapper;
     private final String instanceOwner;
 
-    private Train sampleTrain;
-
-    public TestDataService(TrainService trainService, ObjectMapper objectMapper,
+    public TestDataService(TrainService trainService,
                            @Value("${r2p.instance-owner}") String instanceOwner) {
         this.trainService = trainService;
-        this.objectMapper = objectMapper;
         this.instanceOwner = instanceOwner;
     }
 
-    @PostConstruct
-    void loadSampleTrain() {
-        try {
-            var resource = new ClassPathResource("openapi/sampleTrain.json");
-            sampleTrain = objectMapper.readValue(resource.getInputStream(), Train.class);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to load sampleTrain.json", e);
-        }
-    }
-
-    public TestDataResult generate(TestDataRequest request) {
+    public TestDataResult generateTrains(@Valid TestDataRequest request) {
+        validateCapacity(request);
         Random random = new Random();
-        // Track used train numbers per date to ensure uniqueness within this generation run
         Map<LocalDate, Set<String>> usedTrainNumbers = new HashMap<>();
 
         int trainsCreated = 0;
@@ -60,26 +41,15 @@ public class TestDataService {
         int versionsCreated = 0;
         int mergeRequestsCreated = 0;
 
-        long rangeDays = request.dateFrom().toEpochDay();
-        long rangeEnd = request.dateTo().toEpochDay();
-        long rangeLength = rangeEnd - rangeDays + 1;
-        if (rangeLength <= 0) {
-            throw new IllegalArgumentException("dateTo must be on or after dateFrom");
-        }
-
         for (int i = 0; i < request.numberOfTrains(); i++) {
             // 1a. Pick a random operational day in the range
-            LocalDate operationalDay = LocalDate.ofEpochDay(rangeDays + (long) (random.nextDouble() * rangeLength));
+            LocalDate operationalDay = TestDataGenerator.createOperationDay(random, request.dateFrom(), request.dateTo());
 
             // 1b. Generate a unique train number for this day
-            Set<String> usedForDay = usedTrainNumbers.computeIfAbsent(operationalDay, _ -> new HashSet<>());
-            String trainNumber;
-            do {
-                trainNumber = String.valueOf((1000 + random.nextInt(9000)));
-            } while (!usedForDay.add(trainNumber));
+            String trainNumber = TestDataGenerator.createUniqueTrainNumber(random, operationalDay, usedTrainNumbers);
 
             // 1c. Build the train payload from the sample
-            Train payload = cloneTrain(operationalDay, trainNumber);
+            Train payload = createRandomTrain(random, operationalDay, trainNumber);
 
             // 1d. Create the train (main branch, owned by instanceOwner)
             TrainVersionEnriched created = trainService.createTrain(instanceOwner, "Test data", payload);
@@ -116,7 +86,7 @@ public class TestDataService {
                 do {
                     branchName = "branch-" + (100 + random.nextInt(900));
                 } while (!usedBranchNames.add(branchName));
-                Train branchPayload = cloneTrain(operationalDay, trainNumber);
+                Train branchPayload = createRandomTrain(random, operationalDay, trainNumber);
 
                 TrainVersionEnriched branch = trainService.createTrainBranch(
                     branchOwner, trainId, branchName, "Test data", branchPayload);
@@ -127,7 +97,7 @@ public class TestDataService {
                 // 1–3 additional updates on this branch
                 int updateCount = 1 + random.nextInt(3); // 1, 2 or 3
                 for (int u = 0; u < updateCount; u++) {
-                    Train updatePayload = cloneTrain(operationalDay, trainNumber);
+                    Train updatePayload = createRandomTrain(random, operationalDay, trainNumber);
                     trainService.updateTrainBranch(branchOwner, trainId, branchId, "Update " + (u + 1), updatePayload);
                     versionsCreated++;
                 }
@@ -147,21 +117,36 @@ public class TestDataService {
 
         return new TestDataResult(trainsCreated, branchesCreated, branchesDeleted, mainBranchesDeleted, versionsCreated, mergeRequestsCreated);
     }
-
-    /**
-     * Returns a deep copy of the sample Train with the given operational day and train number applied.
-     */
-    private Train cloneTrain(LocalDate operationalDay, String trainNumber) {
-        // Deep copy via JSON round-trip
-        Train copy = objectMapper.convertValue(sampleTrain, Train.class);
-        copy.setId(trainNumber);
-        copy.setStartdate(operationalDay);
-        copy.setTimestamp(OffsetDateTime.now());
-        return copy;
+    
+    private Train createRandomTrain(Random random, LocalDate operationalDay, String trainNumber) {
+        return TestDataGenerator.createTrain(random, operationalDay, trainNumber);
     }
 
     /**
-     * Randomly picks 1 or 2 partners from the provided list.
+     * Fails fast if the requested number of trains cannot possibly be satisfied by the available
+     * date range and the fixed pool of 9 000 train numbers (1000–9999) per operational day.
+     *
+     * <p>Without this check {@link TestDataGenerator#createUniqueTrainNumber} would throw an
+     * {@link IllegalStateException} once the pool for a given day is exhausted, but only after
+     * potentially many costly retry attempts as the pool nears exhaustion. Validating upfront
+     * provides a clearer error message before any trains are created.
+     */
+    private static void validateCapacity(TestDataRequest request) {
+        long rangeDays = request.dateTo().toEpochDay() - request.dateFrom().toEpochDay() + 1;
+        if (rangeDays <= 0) {
+            // date-range validation is handled elsewhere; nothing to check here
+            return;
+        }
+        long maxTrains = rangeDays * TestDataGenerator.TRAIN_NUMBERS_PER_DAY;
+        if (request.numberOfTrains() > maxTrains) {
+            throw new IllegalArgumentException(
+                "numberOfTrains (" + request.numberOfTrains() + ") exceeds the maximum capacity of " +
+                maxTrains + " for the given date range (" + rangeDays + " day(s) × " +
+                TestDataGenerator.TRAIN_NUMBERS_PER_DAY + " numbers/day).");
+        }
+    }
+
+    /**
      * Returns an empty list if the provided list is empty.
      */
     private List<String> choosePartners(List<String> available, Random random) {
@@ -177,7 +162,5 @@ public class TestDataService {
         int count = 1 + random.nextInt(2);
         return shuffled.subList(0, count);
     }
+
 }
-
-
-
