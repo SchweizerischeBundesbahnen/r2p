@@ -20,10 +20,17 @@ import org.junit.jupiter.api.Test;
 
 class TestDataGeneratorTests {
 
-    private static final Set<String> POC_ORGANISATION_CODES = TestDataGenerator.POC_RESPONSIBILITY_TYPES
-        .stream()
-        .map(TestDataGenerator.KnownResponsibilityType::getOrganisationCode)
-        .collect(Collectors.toUnmodifiableSet());
+    /**
+     * Hard-coded contract: exactly these three organisation codes are allowed in PoC data.
+     * If the production constant {@link TestDataGenerator#POC_RESPONSIBILITY_TYPES} is changed
+     * the test {@code poc_responsibility_types_must_match_contract} will catch the drift.
+     * <ul>
+     *   <li>1385 – SBB Personenverkehr</li>
+     *   <li>1163 – BLS</li>
+     *   <li>5458 – SOB Transport EVU</li>
+     * </ul>
+     */
+    private static final Set<String> EXPECTED_POC_ORGANISATION_CODES = Set.of("1385", "1163", "5458");
 
     @Test
     void activity_ids_within_a_train_must_be_unique_and_not_blank() {
@@ -86,11 +93,23 @@ class TestDataGeneratorTests {
         train.getJourney().getJourneylocations().forEach(jl ->
             jl.getActivities().forEach(activity -> {
                 String orgCode = activity.getResponsibility().getId();
-                assertThat(POC_ORGANISATION_CODES)
-                    .as("organisation code '%s' is not in the PoC set (SBB, BLS, SOB)", orgCode)
+                assertThat(EXPECTED_POC_ORGANISATION_CODES)
+                    .as("organisation code '%s' is not in the PoC contract set {1385=SBB, 1163=BLS, 5458=SOB}", orgCode)
                     .contains(orgCode);
             })
         );
+    }
+
+    @Test
+    void poc_responsibility_types_must_match_contract() {
+        Set<String> actual = TestDataGenerator.POC_RESPONSIBILITY_TYPES
+            .stream()
+            .map(TestDataGenerator.KnownResponsibilityType::getOrganisationCode)
+            .collect(Collectors.toUnmodifiableSet());
+
+        assertThat(actual)
+            .as("POC_RESPONSIBILITY_TYPES organisation codes must exactly match the contract set")
+            .containsExactlyInAnyOrderElementsOf(EXPECTED_POC_ORGANISATION_CODES);
     }
 
     @Test

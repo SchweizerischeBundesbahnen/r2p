@@ -126,8 +126,10 @@ public class TestDataService {
      * Fails fast if the requested number of trains cannot possibly be satisfied by the available
      * date range and the fixed pool of 9 000 train numbers (1000–9999) per operational day.
      *
-     * <p>Without this check {@link TestDataGenerator#createUniqueTrainNumber} would loop forever
-     * once all numbers for a given day are exhausted.
+     * <p>Without this check {@link TestDataGenerator#createUniqueTrainNumber} would throw an
+     * {@link IllegalStateException} once the pool for a given day is exhausted, but only after
+     * potentially many costly retry attempts as the pool nears exhaustion. Validating upfront
+     * provides a clearer error message before any trains are created.
      */
     private static void validateCapacity(TestDataRequest request) {
         long rangeDays = request.dateTo().toEpochDay() - request.dateFrom().toEpochDay() + 1;

@@ -111,7 +111,7 @@ public final class TestDataGenerator {
         }
         
         static RandomTrain of(Random random, LocalDate operationalDay, String trainNumber) {
-            // references und links werden später implementiert und daher hier nicht berücksichtigt.
+            // references and links are not yet implemented and are therefore omitted here.
             return new RandomTrain(trainNumber, Collections.emptyList(), Collections.emptyList(), randomName(random), operationalDay, OffsetDateTime.now(), RandomJourney.of(random));
         }
 
@@ -136,7 +136,7 @@ public final class TestDataGenerator {
         }
 
         static RandomJourney of(Random random) {
-            // featuresets werden später implementiert und daher hier nicht berücksichtigt.
+            // featuresets are not yet implemented and are therefore omitted here.
             return new RandomJourney(Collections.emptyList(), RandomJourneylocation.listOf(random));
         }
 
@@ -149,15 +149,15 @@ public final class TestDataGenerator {
         }
 
         static List<Journeylocation> listOf(Random random) {
-            var strecke = Strecken.values()[random.nextInt(Strecken.values().length)];
+            var route = Route.values()[random.nextInt(Route.values().length)];
             List<Journeylocation> locations = new ArrayList<>();
-            // offsetMinutes[0] enthält den kumulierten Offset in Minuten ab Mitternacht des Betriebstags.
-            // Er wird von RandomTiming.listOf() pro Halt fortgeschrieben.
+            // offsetMinutes[0] holds the cumulative offset in minutes from midnight of the operational day.
+            // It is advanced by RandomTiming.listOf() for each stop.
             int[] offsetMinutes = {0};
-            for (int i = 0; i < strecke.getHaltepunkte().size(); i++) {
-                Halt halt = strecke.getHaltepunkte().get(i);
-                List<Location> location = RandomLocation.listOf(halt);
-                locations.add(new RandomJourneylocation(location, RandomActivity.listOf(random, halt, i, strecke.getHaltepunkte().size(), offsetMinutes)));
+            for (int i = 0; i < route.getStops().size(); i++) {
+                Stop stop = route.getStops().get(i);
+                List<Location> location = RandomLocation.listOf(stop);
+                locations.add(new RandomJourneylocation(location, RandomActivity.listOf(random, stop, i, route.getStops().size(), offsetMinutes)));
             }
             return locations;
         }
@@ -170,8 +170,8 @@ public final class TestDataGenerator {
             super(type, code, name);
         }
 
-        static List<Location> listOf(Halt halt) {
-            return List.of(new RandomLocation(LocationType.UIC, halt.getDidokCode(), halt.getName()));
+        static List<Location> listOf(Stop stop) {
+            return List.of(new RandomLocation(LocationType.UIC, stop.getUicCode(), stop.getName()));
         }
     }
 
@@ -182,38 +182,36 @@ public final class TestDataGenerator {
             setCapability(capability);
         }
 
-        static List<Activity> listOf(Random random, Halt halt, int haltestellePosition, int laengeDerStrecke, int[] offsetMinutes) {
-            /*
-            beim ersten punkt wird ein path, ein rolling stock und ein staff erstellt. bei allen wird nur ein departure timing angegeben.
-            bei allen punkten dazwischen wird zufällig ein staff, path oder rolling stock generiert. es wird sowohl die arrival, als auch die departure time angegeben.
-            beim letzten punkt wird nur ein staff generiert und nur ein arrival timing angegeben.
-             */
+        static List<Activity> listOf(Random random, Stop stop, int stopPosition, int routeLength, int[] offsetMinutes) {
+            // At the first stop: create a path, a rolling stock, and a staff entry; only a departure timing is recorded.
+            // At intermediate stops: randomly create one of staff, path, or rolling stock; both arrival and departure timings are recorded.
+            // At the last stop: only a staff entry is created; only an arrival timing is recorded.
             List<RandomCapability> capabilities = new ArrayList<>();
-            if (haltestellePosition == 0) {
+            if (stopPosition == 0) {
                 capabilities.add(RandomCapability.path(random));
                 capabilities.add(RandomCapability.rollingStock(random));
                 capabilities.add(RandomCapability.staff(random));
-            } else if (haltestellePosition == laengeDerStrecke - 1) {
+            } else if (stopPosition == routeLength - 1) {
                 capabilities.add(RandomCapability.staff(random));
             } else {
                 capabilities.add(RandomCapability.of(random));
             }
 
-            // Timings werden einmal pro Halt berechnet und für alle Capabilities wiederverwendet,
-            // damit alle Activities desselben Halts konsistente Zeitangaben haben.
-            List<Timing> timings = RandomTiming.listOf(random, haltestellePosition, laengeDerStrecke, offsetMinutes);
+            // Timings are computed once per stop and reused for all capabilities so that
+            // all activities at the same stop share consistent time values.
+            List<Timing> timings = RandomTiming.listOf(random, stopPosition, routeLength, offsetMinutes);
 
             List<Activity> activities = new ArrayList<>();
             for (int i = 0; i < capabilities.size(); i++) {
-                activities.add(of(random, halt, haltestellePosition, capabilities.get(i), timings, i));
+                activities.add(of(random, stop, stopPosition, capabilities.get(i), timings, i));
             }
             return activities;
         }
 
-        private static RandomActivity of(Random random, Halt halt, int haltestellePosition, RandomCapability capability, List<Timing> timings, int activityIndex) {
+        private static RandomActivity of(Random random, Stop stop, int stopPosition, RandomCapability capability, List<Timing> timings, int activityIndex) {
             return new RandomActivity(
-                generateId(halt, capability.getType(), haltestellePosition, activityIndex),
-                // ActivityType wird voraussichtlich entfernt – temporär mit rollingStock belegt
+                generateId(stop, capability.getType(), stopPosition, activityIndex),
+                // ActivityType is expected to be removed – temporarily set to rollingStock
                 ActivityType.ROLLING_STOCK,
                 timings,
                 RandomResponsibility.of(random),
@@ -222,8 +220,8 @@ public final class TestDataGenerator {
             );
         }
 
-        private static String generateId(Halt halt, CapabilityType capabilityType, int haltestellePosition, int activityIndex) {
-            return halt.name() + "-" + haltestellePosition + "-" + capabilityType.getValue() + "-" + activityIndex;
+        private static String generateId(Stop stop, CapabilityType capabilityType, int stopPosition, int activityIndex) {
+            return stop.name() + "-" + stopPosition + "-" + capabilityType.getValue() + "-" + activityIndex;
         }
     }
 
@@ -233,14 +231,13 @@ public final class TestDataGenerator {
             super(type, duration, focus);
         }
 
-        static List<Timing> listOf(Random random, int haltestellePosition, int laengeDerStrecke, int[] offsetMinutes) {
-            // Jede Timing-Dauer ist ein absoluter Offset ab Mitternacht des Betriebstags (ISO 8601).
-            // offsetMinutes[0] wird pro Halt fortgeschrieben und vom Aufrufer (RandomJourneylocation)
-            // über alle Halte hinweg weitergegeben.
+        static List<Timing> listOf(Random random, int stopPosition, int routeLength, int[] offsetMinutes) {
+            // Each timing duration is an absolute offset from midnight of the operational day (ISO 8601).
+            // offsetMinutes[0] is advanced per stop and shared across all stops by the caller (RandomJourneylocation).
             List<Timing> timings = new ArrayList<>();
-            if (haltestellePosition == 0) {
+            if (stopPosition == 0) {
                 timings.add(firstDeparture(random, offsetMinutes));
-            } else if (haltestellePosition == laengeDerStrecke - 1) {
+            } else if (stopPosition == routeLength - 1) {
                 timings.add(arrival(random, offsetMinutes));
             } else {
                 timings.add(arrival(random, offsetMinutes));
@@ -331,7 +328,7 @@ public final class TestDataGenerator {
         }
 
         private static RandomCapability empty(CapabilityType type) {
-            // aktuell erstellen wir noch keine CapabilityFeatures
+            // CapabilityFeatures are not yet created
             return new RandomCapability(type, Collections.emptyList());
         }
 
@@ -427,27 +424,27 @@ public final class TestDataGenerator {
     }
 
     @Getter
-    enum Strecken {
-        BASEL_OLTEN(List.of(Halt.BASEL_SBB, Halt.OLTEN)),
-        BERN_OLTEN(List.of(Halt.BERN, Halt.OLTEN)),
-        ZUERICH_OLTEN(List.of(Halt.ZUERICH_HB, Halt.OLTEN)),
-        BASEL_ZUERICH(List.of(Halt.BASEL_SBB, Halt.OLTEN, Halt.ZUERICH_HB)),
-        BERN_ZUERICH(List.of(Halt.BERN, Halt.OLTEN, Halt.ZUERICH_HB)),
-        ZUERICH_ROMANSHORN(List.of(Halt.ZUERICH_HB, Halt.WINTERTHUR, Halt.WEINFELDEN, Halt.ROMANSHORN)),
-        BASEL_LUGANO(List.of(Halt.BASEL_SBB, Halt.OLTEN, Halt.LUZERN, Halt.ARTH_GOLDAU, Halt.BELLINZONA, Halt.LUGANO)),
-        GENEVE_BERN(List.of(Halt.GENEVE, Halt.RENENS_VD, Halt.FRIBOURG_FREIBURG, Halt.BERN)),
-        LAUSANNE_AARAU(List.of(Halt.LAUSANNE, Halt.RENENS_VD, Halt.YVERDON_LES_BAINS, Halt.NEUCHATEL, Halt.BIEL_BIENNE, Halt.SOLOTHURN, Halt.OLTEN, Halt.AARAU)),
+    enum Route {
+        BASEL_OLTEN(List.of(Stop.BASEL_SBB, Stop.OLTEN)),
+        BERN_OLTEN(List.of(Stop.BERN, Stop.OLTEN)),
+        ZUERICH_OLTEN(List.of(Stop.ZUERICH_HB, Stop.OLTEN)),
+        BASEL_ZUERICH(List.of(Stop.BASEL_SBB, Stop.OLTEN, Stop.ZUERICH_HB)),
+        BERN_ZUERICH(List.of(Stop.BERN, Stop.OLTEN, Stop.ZUERICH_HB)),
+        ZUERICH_ROMANSHORN(List.of(Stop.ZUERICH_HB, Stop.WINTERTHUR, Stop.WEINFELDEN, Stop.ROMANSHORN)),
+        BASEL_LUGANO(List.of(Stop.BASEL_SBB, Stop.OLTEN, Stop.LUZERN, Stop.ARTH_GOLDAU, Stop.BELLINZONA, Stop.LUGANO)),
+        GENEVE_BERN(List.of(Stop.GENEVE, Stop.RENENS_VD, Stop.FRIBOURG_FREIBURG, Stop.BERN)),
+        LAUSANNE_AARAU(List.of(Stop.LAUSANNE, Stop.RENENS_VD, Stop.YVERDON_LES_BAINS, Stop.NEUCHATEL, Stop.BIEL_BIENNE, Stop.SOLOTHURN, Stop.OLTEN, Stop.AARAU)),
         ;
 
-        private final List<Halt> haltepunkte;
+        private final List<Stop> stops;
 
-        Strecken(List<Halt> haltepunkte) {
-            this.haltepunkte = haltepunkte;
+        Route(List<Stop> stops) {
+            this.stops = stops;
         }
     }
 
     @Getter
-    enum Halt {
+    enum Stop {
         AARAU("8502113", "Aarau"),
         ARTH_GOLDAU("8505004", "Arth-Goldau"),
         BASEL_SBB("8500010", "Basel SBB"),
@@ -469,11 +466,11 @@ public final class TestDataGenerator {
         YVERDON_LES_BAINS("8504200", "Yverdon-les-Bains"),
         ZUERICH_HB("8503000", "Zürich HB");
 
-        private final String didokCode;
+        private final String uicCode;
         private final String name;
 
-        Halt(String didokCode, String name) {
-            this.didokCode = didokCode;
+        Stop(String uicCode, String name) {
+            this.uicCode = uicCode;
             this.name = name;
         }
     }
