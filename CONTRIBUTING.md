@@ -27,7 +27,7 @@ By participating, you are expected to uphold this code.
 
 Please ask the questions in the discussions page.
 
-* [Github Discussions, the official message board](https://github.com/SchweizerischeBundesbahnen/r2p/discussions)
+* [GitHub Discussions, the official message board](https://github.com/SchweizerischeBundesbahnen/r2p/discussions)
 
 ## What should I know before I get started?
 
@@ -156,7 +156,7 @@ BREAKING CHANGE: The API now returns data in a new format.
 Old clients will need to update their integration."
 ```
 
-This is checked by a github action and by Husky pre-commit hooks.
+This is checked by a GitHub action and by Husky pre-commit hooks.
 To enable the pre-commit hook, run:
 ```bash
 npm install
