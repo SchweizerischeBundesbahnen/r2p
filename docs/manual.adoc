@@ -14,29 +14,16 @@ the prototype uses Java and H2 (no need for a dedicated database server).
 
 == Quick Start
 
-=== Test and execute the prototype
+=== Test and execute the release on Windows, Linux or MacOS
 
-Define the environment variable `R2P_AZURE_CLIENT_SECRET`
+* Download the latest https://github.com/SchweizerischeBundesbahnen/r2p/releases[R2P release] for your platform from the GitHub repository and extract it.
+* Define the environment variable `R2P_AZURE_CLIENT_SECRET` (and `R2P_AZURE_CLIENT_ID` if necessary) for Azure AD authentication.
+* Start the application, e.g. `r2p.exe`.
+* Visit: http://localhost:8080/
+* Swagger UI: http://localhost:8080/swagger-ui/index.html
+* OpenAPI Spec: http://localhost:8080/v3/api-docs
 
-[source,bash]
-----
-mvn clean verify
-mvn spring-boot:run
-----
-
-Visit: http://localhost:8080/
-
-**Interactive API Testing:**
-
-- Swagger UI: http://localhost:8080/swagger-ui/index.html
-- OpenAPI Spec: http://localhost:8080/v3/api-docs
-
-**Documentation:** Available in `target/docs/` after building:
-
-- `r2p-manual.html` / `r2p-manual.pdf` - User manual
-- `r2p-api.html` / `r2p-api.pdf` - API documentation
-
-Note: in order to access secured endpoints, you need to be a member of the AD-group DG_SEC_DEV_R2P_Admin.
+Note: in order to access secured endpoints, you need to be a member of the AD-group `DG_SEC_DEV_R2P_Admin`.
 
 ==== Database
 
@@ -78,42 +65,6 @@ include::domain-model.adoc[leveloffset=+1]
 include::rest-endpoints.adoc[leveloffset=+1]
 
 include::user-interface.adoc[leveloffset=+1]
-
-== Development
-
-The https://github.com/googleapis/release-please-action[release-please GitHub Action] is used to create releases.
-A release includes a docker image as well as portable application (jpackage app-image) for linux, mac and windows.
-These portable applications are directly executable without docker or java installed (e. g. exe on Windows).
-Furthermore the api documentation and manual are added as PDF.
-
-All commits must follow the  https://www.conventionalcommits.org/en/v1.0.0/[Conventional Commits specification]. This is checked by a github action
-and by Husky pre-commit hooks.
-
-To enable the pre-commit hook, run:
-[source,bash]
-----
-npm install
-----
-
-In short every commit message must start with a type, followed by an optional scope and a short description, e.g. `feat(train): add new endpoint to share train with partner`.
-
-Supported types are:
-
-- feat
-- fix
-- docs
-- chore
-- refactor
-- test
-- build
-- ci
-
-== Open Issues
-
-Here questions are listed to be clarified with the project team. After clarification, an issue should
-be created in the issue tracker and the questions here can be removed.
-
-- The default behavior of Jackson is to ignore all unknown properties. This means that if the RU sends additional properties to the partner, they will be ignored and not stored in the database. This can be misleading. Should we instead validate the schema "hard" fail or at least warn the caller that the data structure is not correct? (options: FAIL_ON_UNKNOWN_PROPERTIES add a DeserializationProblemHandler and log a warning)
 
 == Limitations of current implementation
 * Performance of train list endpoint is not optimized (n+1 pattern to get partners, no paging)
