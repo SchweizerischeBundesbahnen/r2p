@@ -14,9 +14,9 @@ the prototype uses Java and H2 (no need for a dedicated database server).
 
 == Quick Start
 
-=== Test and execute the release on Windows or Linux
+=== Test and execute the release on Windows, Linux or MacOS
 
-* Download the R2P release for your platform from the GitHub repository and extract it.
+* Download the latest [R2P release](https://github.com/SchweizerischeBundesbahnen/r2p/releases) for your platform from the GitHub repository and extract it.
 * Define the environment variable `R2P_AZURE_CLIENT_SECRET` (and `R2P_AZURE_CLIENT_ID` if necessary) for Azure AD authentication.
 * Start the application, e.g. `r2p.exe`.
 * Visit: http://localhost:8080/
