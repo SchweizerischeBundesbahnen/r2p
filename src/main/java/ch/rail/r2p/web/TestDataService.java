@@ -5,8 +5,10 @@ import ch.rail.r2p.domain.TrainVersionEnriched;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -28,7 +30,9 @@ public class TestDataService {
     }
 
     public TestDataResult generateTrains(@Valid TestDataRequest request) {
+        validateCapacity(request);
         Random random = new Random();
+        Map<LocalDate, Set<String>> usedTrainNumbers = new HashMap<>();
 
         int trainsCreated = 0;
         int branchesCreated = 0;
@@ -42,10 +46,10 @@ public class TestDataService {
             LocalDate operationalDay = TestDataGenerator.createOperationDay(random, request.dateFrom(), request.dateTo());
 
             // 1b. Generate a unique train number for this day
-            String trainNumber = TestDataGenerator.createUniqueTrainNumber(random, operationalDay);
+            String trainNumber = TestDataGenerator.createUniqueTrainNumber(random, operationalDay, usedTrainNumbers);
 
             // 1c. Build the train payload from the sample
-            Train payload = createRandomTrain(operationalDay, trainNumber);
+            Train payload = createRandomTrain(random, operationalDay, trainNumber);
 
             // 1d. Create the train (main branch, owned by instanceOwner)
             TrainVersionEnriched created = trainService.createTrain(instanceOwner, "Test data", payload);
@@ -82,7 +86,7 @@ public class TestDataService {
                 do {
                     branchName = "branch-" + (100 + random.nextInt(900));
                 } while (!usedBranchNames.add(branchName));
-                Train branchPayload = createRandomTrain(operationalDay, trainNumber);
+                Train branchPayload = createRandomTrain(random, operationalDay, trainNumber);
 
                 TrainVersionEnriched branch = trainService.createTrainBranch(
                     branchOwner, trainId, branchName, "Test data", branchPayload);
@@ -93,7 +97,7 @@ public class TestDataService {
                 // 1–3 additional updates on this branch
                 int updateCount = 1 + random.nextInt(3); // 1, 2 or 3
                 for (int u = 0; u < updateCount; u++) {
-                    Train updatePayload = createRandomTrain(operationalDay, trainNumber);
+                    Train updatePayload = createRandomTrain(random, operationalDay, trainNumber);
                     trainService.updateTrainBranch(branchOwner, trainId, branchId, "Update " + (u + 1), updatePayload);
                     versionsCreated++;
                 }
@@ -114,12 +118,33 @@ public class TestDataService {
         return new TestDataResult(trainsCreated, branchesCreated, branchesDeleted, mainBranchesDeleted, versionsCreated, mergeRequestsCreated);
     }
     
-    private Train createRandomTrain(LocalDate operationalDay, String trainNumber) {
-        return TestDataGenerator.createTrain(operationalDay, trainNumber);
+    private Train createRandomTrain(Random random, LocalDate operationalDay, String trainNumber) {
+        return TestDataGenerator.createTrain(random, operationalDay, trainNumber);
     }
 
     /**
-     * Randomly picks 1 or 2 partners from the provided list.
+     * Fails fast if the requested number of trains cannot possibly be satisfied by the available
+     * date range and the fixed pool of 9 000 train numbers (1000–9999) per operational day.
+     *
+     * <p>Without this check {@link TestDataGenerator#createUniqueTrainNumber} would loop forever
+     * once all numbers for a given day are exhausted.
+     */
+    private static void validateCapacity(TestDataRequest request) {
+        long rangeDays = request.dateTo().toEpochDay() - request.dateFrom().toEpochDay() + 1;
+        if (rangeDays <= 0) {
+            // date-range validation is handled elsewhere; nothing to check here
+            return;
+        }
+        long maxTrains = rangeDays * TestDataGenerator.TRAIN_NUMBERS_PER_DAY;
+        if (request.numberOfTrains() > maxTrains) {
+            throw new IllegalArgumentException(
+                "numberOfTrains (" + request.numberOfTrains() + ") exceeds the maximum capacity of " +
+                maxTrains + " for the given date range (" + rangeDays + " day(s) × " +
+                TestDataGenerator.TRAIN_NUMBERS_PER_DAY + " numbers/day).");
+        }
+    }
+
+    /**
      * Returns an empty list if the provided list is empty.
      */
     private List<String> choosePartners(List<String> available, Random random) {

@@ -1,15 +1,21 @@
 package ch.rail.r2p.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ch.rail.r2p.api.dto.Activity;
 import ch.rail.r2p.api.dto.TimingType;
 import ch.rail.r2p.api.dto.Train;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 class TestDataGeneratorTests {
@@ -29,12 +35,12 @@ class TestDataGeneratorTests {
             .toList();
 
         allIds.forEach(id ->
-            assertThat(id).as("Activity-ID darf nicht leer sein").isNotBlank()
+            assertThat(id).as("activity ID must not be blank").isNotBlank()
         );
 
         Set<String> uniqueIds = Set.copyOf(allIds);
         assertThat(uniqueIds)
-            .as("Alle Activity-IDs innerhalb eines Zuges müssen eindeutig sein")
+            .as("all activity IDs within a train must be unique")
             .hasSize(allIds.size());
     }
 
@@ -59,7 +65,7 @@ class TestDataGeneratorTests {
         Train train = TestDataGenerator.createTrain(LocalDate.of(2026, 5, 1), "9001");
         var locations = train.getJourney().getJourneylocations();
 
-        // Alle Timings müssen gültiges ISO-8601-Format haben und monoton steigen
+        // All timings must be valid ISO-8601 durations and must increase monotonically
         List<Duration> offsets = locations.stream()
             .flatMap(jl -> jl.getActivities().stream())
             .flatMap(a -> a.getTimings().stream())
@@ -68,7 +74,7 @@ class TestDataGeneratorTests {
 
         for (int i = 1; i < offsets.size(); i++) {
             assertThat(offsets.get(i))
-                .as("Offset bei Index %d muss >= Vorgänger sein", i)
+                .as("offset at index %d must be >= its predecessor", i)
                 .isGreaterThanOrEqualTo(offsets.get(i - 1));
         }
     }
@@ -81,10 +87,26 @@ class TestDataGeneratorTests {
             jl.getActivities().forEach(activity -> {
                 String orgCode = activity.getResponsibility().getId();
                 assertThat(POC_ORGANISATION_CODES)
-                    .as("Organisations-Code '%s' ist nicht im PoC-Set (SBB, BLS, SOB)", orgCode)
+                    .as("organisation code '%s' is not in the PoC set (SBB, BLS, SOB)", orgCode)
                     .contains(orgCode);
             })
         );
+    }
+
+    @Test
+    void createUniqueTrainNumber_throws_when_pool_exhausted() {
+        LocalDate day = LocalDate.of(2026, 1, 1);
+        Map<LocalDate, Set<String>> usedTrainNumbers = new HashMap<>();
+        // Pre-fill all 9 000 numbers (1000–9999)
+        Set<String> full = IntStream.rangeClosed(1000, 9999)
+            .mapToObj(Integer::toString)
+            .collect(Collectors.toCollection(HashSet::new));
+        usedTrainNumbers.put(day, full);
+
+        assertThatThrownBy(() -> TestDataGenerator.createUniqueTrainNumber(new Random(), day, usedTrainNumbers))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("exhausted")
+            .hasMessageContaining(day.toString());
     }
 
 }

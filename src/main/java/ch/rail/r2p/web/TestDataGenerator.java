@@ -33,7 +33,6 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +48,6 @@ public final class TestDataGenerator {
         KnownResponsibilityType.SOB_TRANSPORT_EVU
     );
 
-    private static final Map<LocalDate, Set<String>> usedTrainNumbers = new HashMap<>();
 
     private TestDataGenerator() {
     }
@@ -64,17 +62,29 @@ public final class TestDataGenerator {
         return LocalDate.ofEpochDay(rangeDays + (long) (random.nextDouble() * rangeLength));
     }
 
-    public static String createUniqueTrainNumber(@NotNull Random random, @NotNull LocalDate operationalDay) {
+    /** Total number of distinct train numbers available per operational day (1000–9999). */
+    static final int TRAIN_NUMBERS_PER_DAY = 9000;
+
+    public static String createUniqueTrainNumber(@NotNull Random random, @NotNull LocalDate operationalDay,
+                                                  @NotNull Map<LocalDate, Set<String>> usedTrainNumbers) {
         Set<String> usedForDay = usedTrainNumbers.computeIfAbsent(operationalDay, _ -> new HashSet<>());
+        if (usedForDay.size() >= TRAIN_NUMBERS_PER_DAY) {
+            throw new IllegalStateException(
+                "All " + TRAIN_NUMBERS_PER_DAY + " train numbers (1000–9999) have been exhausted for operational day " + operationalDay);
+        }
         String trainNumber;
         do {
-            trainNumber = String.valueOf((1000 + random.nextInt(9000)));
+            trainNumber = String.valueOf((1000 + random.nextInt(TRAIN_NUMBERS_PER_DAY)));
         } while (!usedForDay.add(trainNumber));
         return trainNumber;
     }
 
+    public static Train createTrain(@NotNull Random random, LocalDate operationalDay, String trainNumber) {
+        return RandomTrain.of(random, operationalDay, trainNumber);
+    }
+
     public static Train createTrain(LocalDate operationalDay, String trainNumber) {
-        return RandomTrain.of(new Random(), operationalDay, trainNumber);
+        return createTrain(new Random(), operationalDay, trainNumber);
     }
 
     private static int randomInt(Random random, int min, int max) {
@@ -195,18 +205,18 @@ public final class TestDataGenerator {
 
             List<Activity> activities = new ArrayList<>();
             for (int i = 0; i < capabilities.size(); i++) {
-                activities.add(of(halt, haltestellePosition, capabilities.get(i), timings, i));
+                activities.add(of(random, halt, haltestellePosition, capabilities.get(i), timings, i));
             }
             return activities;
         }
 
-        private static RandomActivity of(Halt halt, int haltestellePosition, RandomCapability capability, List<Timing> timings, int activityIndex) {
+        private static RandomActivity of(Random random, Halt halt, int haltestellePosition, RandomCapability capability, List<Timing> timings, int activityIndex) {
             return new RandomActivity(
                 generateId(halt, capability.getType(), haltestellePosition, activityIndex),
                 // ActivityType wird voraussichtlich entfernt – temporär mit rollingStock belegt
                 ActivityType.ROLLING_STOCK,
                 timings,
-                RandomResponsibility.of(new Random()),
+                RandomResponsibility.of(random),
                 capability,
                 Collections.emptyList()
             );
