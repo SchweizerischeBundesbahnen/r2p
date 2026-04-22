@@ -43,6 +43,12 @@ import lombok.Getter;
 
 public final class TestDataGenerator {
 
+    static final Set<KnownResponsibilityType> POC_RESPONSIBILITY_TYPES = Set.of(
+        KnownResponsibilityType.SBB_PERSONENVERKEHR,
+        KnownResponsibilityType.BLS,
+        KnownResponsibilityType.SOB_TRANSPORT_EVU
+    );
+
     private static final Map<LocalDate, Set<String>> usedTrainNumbers = new HashMap<>();
 
     private TestDataGenerator() {
@@ -135,10 +141,13 @@ public final class TestDataGenerator {
         static List<Journeylocation> listOf(Random random) {
             var strecke = Strecken.values()[random.nextInt(Strecken.values().length)];
             List<Journeylocation> locations = new ArrayList<>();
+            // offsetMinutes[0] enthält den kumulierten Offset in Minuten ab Mitternacht des Betriebstags.
+            // Er wird von RandomTiming.listOf() pro Halt fortgeschrieben.
+            int[] offsetMinutes = {0};
             for (int i = 0; i < strecke.getHaltepunkte().size(); i++) {
                 Halt halt = strecke.getHaltepunkte().get(i);
                 List<Location> location = RandomLocation.listOf(halt);
-                locations.add(new RandomJourneylocation(location, RandomActivity.listOf(random, halt, i, strecke.getHaltepunkte().size())));
+                locations.add(new RandomJourneylocation(location, RandomActivity.listOf(random, halt, i, strecke.getHaltepunkte().size(), offsetMinutes)));
             }
             return locations;
         }
@@ -163,7 +172,7 @@ public final class TestDataGenerator {
             setCapability(capability);
         }
 
-        static List<Activity> listOf(Random random, Halt halt, int haltestellePosition, int laengeDerStrecke) {
+        static List<Activity> listOf(Random random, Halt halt, int haltestellePosition, int laengeDerStrecke, int[] offsetMinutes) {
             /*
             beim ersten punkt wird ein path, ein rolling stock und ein staff erstellt. bei allen wird nur ein departure timing angegeben.
             bei allen punkten dazwischen wird zufällig ein staff, path oder rolling stock generiert. es wird sowohl die arrival, als auch die departure time angegeben.
@@ -180,28 +189,31 @@ public final class TestDataGenerator {
                 capabilities.add(RandomCapability.of(random));
             }
 
+            // Timings werden einmal pro Halt berechnet und für alle Capabilities wiederverwendet,
+            // damit alle Activities desselben Halts konsistente Zeitangaben haben.
+            List<Timing> timings = RandomTiming.listOf(random, haltestellePosition, laengeDerStrecke, offsetMinutes);
+
             List<Activity> activities = new ArrayList<>();
-            for (RandomCapability capability : capabilities) {
-                activities.add(of(random, halt, haltestellePosition, laengeDerStrecke, capability));
+            for (int i = 0; i < capabilities.size(); i++) {
+                activities.add(of(halt, haltestellePosition, capabilities.get(i), timings, i));
             }
             return activities;
         }
 
-        private static RandomActivity of(Random random, Halt halt, int haltestellePosition, int laengeDerStrecke, RandomCapability capability) {
+        private static RandomActivity of(Halt halt, int haltestellePosition, RandomCapability capability, List<Timing> timings, int activityIndex) {
             return new RandomActivity(
-                generateId(halt, capability.getType()),
+                generateId(halt, capability.getType(), haltestellePosition, activityIndex),
                 // ActivityType wird voraussichtlich entfernt
                 null,
-                RandomTiming.listOf(random, haltestellePosition, laengeDerStrecke),
-                RandomResponsibility.of(random),
+                timings,
+                RandomResponsibility.of(new Random()),
                 capability,
                 Collections.emptyList()
             );
         }
 
-        private static String generateId(Halt halt, CapabilityType capabilityType) {
-            // TODO eindeutig machen
-            return halt.name + " " + capabilityType.getValue();
+        private static String generateId(Halt halt, CapabilityType capabilityType, int haltestellePosition, int activityIndex) {
+            return halt.name() + "-" + haltestellePosition + "-" + capabilityType.getValue() + "-" + activityIndex;
         }
     }
 
@@ -211,48 +223,46 @@ public final class TestDataGenerator {
             super(type, duration, focus);
         }
 
-        static List<Timing> listOf(Random random, int haltestellePosition, int laengeDerStrecke) {
-            /*
-            TODO diese Zeiten sollten eigentlich die differenz zum betriebstag des zuges darstellen.
-            aktuell werden die Zeiten so generiert, als würden sie sich auf die fachlich vorherige zeit beziehen.
-            bspw. eine departure zeit ist nur eine kurze differenz von ein paar minuten.
-             */
+        static List<Timing> listOf(Random random, int haltestellePosition, int laengeDerStrecke, int[] offsetMinutes) {
+            // Jede Timing-Dauer ist ein absoluter Offset ab Mitternacht des Betriebstags (ISO 8601).
+            // offsetMinutes[0] wird pro Halt fortgeschrieben und vom Aufrufer (RandomJourneylocation)
+            // über alle Halte hinweg weitergegeben.
             List<Timing> timings = new ArrayList<>();
             if (haltestellePosition == 0) {
-                timings.add(firstDeparture(random));
+                timings.add(firstDeparture(random, offsetMinutes));
             } else if (haltestellePosition == laengeDerStrecke - 1) {
-                timings.add(arrival(random));
+                timings.add(arrival(random, offsetMinutes));
             } else {
-                timings.add(arrival(random));
-                timings.add(departure(random));
+                timings.add(arrival(random, offsetMinutes));
+                timings.add(departure(random, offsetMinutes));
             }
             return timings;
         }
 
-        private static RandomTiming firstDeparture(Random random) {
-            TimingType type = TimingType.DEPARTURE;
+        private static RandomTiming firstDeparture(Random random, int[] offsetMinutes) {
             int hours = TestDataGenerator.randomInt(random, 7, 10);
             int minutes = TestDataGenerator.randomInt(random, 0, 30);
-            String duration = "PT" + hours + "H" + minutes + "M";
-            return of(random, type, duration);
+            offsetMinutes[0] = hours * 60 + minutes;
+            return of(random, TimingType.DEPARTURE, offsetMinutes[0]);
         }
 
-        private static RandomTiming departure(Random random) {
-            TimingType type = TimingType.DEPARTURE;
-            int minutes = TestDataGenerator.randomInt(random, 1, 6);
-            String duration = "PT" + minutes + "M";
-            return of(random, type, duration);
+        private static RandomTiming departure(Random random, int[] offsetMinutes) {
+            int dwell = TestDataGenerator.randomInt(random, 1, 5);
+            offsetMinutes[0] += dwell;
+            return of(random, TimingType.DEPARTURE, offsetMinutes[0]);
         }
 
-        private static RandomTiming arrival(Random random) {
-            TimingType type = TimingType.ARRIVAL;
-            int minutes = TestDataGenerator.randomInt(random, 20, 50);
-            String duration = "PT" + minutes + "M";
-            return of(random, type, duration);
+        private static RandomTiming arrival(Random random, int[] offsetMinutes) {
+            int travel = TestDataGenerator.randomInt(random, 20, 50);
+            offsetMinutes[0] += travel;
+            return of(random, TimingType.ARRIVAL, offsetMinutes[0]);
         }
 
-        private static RandomTiming of(Random random, TimingType type, String duration) {
+        private static RandomTiming of(Random random, TimingType type, int totalMinutes) {
             Focus focus = Focus.values()[random.nextInt(Focus.values().length)];
+            int h = totalMinutes / 60;
+            int m = totalMinutes % 60;
+            String duration = (h > 0) ? "PT" + h + "H" + m + "M" : "PT" + m + "M";
             return new RandomTiming(type, duration, focus);
         }
 
@@ -265,10 +275,9 @@ public final class TestDataGenerator {
         }
 
         static RandomResponsibility of(Random random) {
-            // TODO im PoC wird bisher nur mit den werten SBB, BLS und SOB gearbeitet. muss das hier auch gemacht werden?
             ResponsibilityType type = ResponsibilityType.values()[random.nextInt(ResponsibilityType.values().length)];
-            KnownResponsibilityType[] knownTypes = KnownResponsibilityType.values();
-            String id = knownTypes[random.nextInt(knownTypes.length)].getOrganisationCode();
+            KnownResponsibilityType[] pocTypes = POC_RESPONSIBILITY_TYPES.toArray(KnownResponsibilityType[]::new);
+            String id = pocTypes[random.nextInt(pocTypes.length)].getOrganisationCode();
             PlanStatus status = PlanStatus.values()[random.nextInt(PlanStatus.values().length)];
             return new RandomResponsibility(type, id, status);
         }
