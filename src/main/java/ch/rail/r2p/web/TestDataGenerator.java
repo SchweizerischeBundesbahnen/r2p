@@ -81,7 +81,7 @@ public final class TestDataGenerator {
         return min + random.nextInt(max-min+1);
     }
 
-    private static int randomCapitalLetter(Random random) {
+    private static char randomCapitalLetter(Random random) {
         return (char) ('A' + random.nextInt(26));
     }
 
@@ -203,8 +203,8 @@ public final class TestDataGenerator {
         private static RandomActivity of(Halt halt, int haltestellePosition, RandomCapability capability, List<Timing> timings, int activityIndex) {
             return new RandomActivity(
                 generateId(halt, capability.getType(), haltestellePosition, activityIndex),
-                // ActivityType wird voraussichtlich entfernt
-                null,
+                // ActivityType wird voraussichtlich entfernt – temporär mit rollingStock belegt
+                ActivityType.ROLLING_STOCK,
                 timings,
                 RandomResponsibility.of(new Random()),
                 capability,
@@ -352,8 +352,11 @@ public final class TestDataGenerator {
                 units.add(RandomUnit.of(random, i + 1));
             }
             var rollingStock = new RandomRollingStock(units);
-            rollingStock.setLength(TestDataGenerator.randomInt(random, 50000, 500000));
-            rollingStock.setWeight(TestDataGenerator.randomInt(random, 100000, 2000000));
+            // Aggregate length and weight are derived from units to satisfy the spec invariant
+            int totalLength = units.stream().mapToInt(u -> u.getLength() != null ? u.getLength() : 0).sum();
+            int totalWeight = units.stream().mapToInt(u -> u.getWeight() != null ? u.getWeight() : 0).sum();
+            rollingStock.setLength(totalLength);
+            rollingStock.setWeight(totalWeight);
             rollingStock.setMaxSpeed(TestDataGenerator.randomInt(random, 80, 200));
             rollingStock.setBrakeType(BrakeType.values()[random.nextInt(BrakeType.values().length)]);
             rollingStock.setBrakeWeight(TestDataGenerator.randomInt(random, 50000, 500000));
