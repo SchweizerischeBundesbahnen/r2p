@@ -376,6 +376,7 @@ paths:
         - **Partner branches**: Partners can only update branches they own 
         - **Lead RU**: Can update any branch including the main branch
         
+        Updates are only allowed while the branch is in state OPEN (not merged, deleted, or merge already requested).
         Each update creates a new version with a new version ID, timestamp, and comment. The previous 
         version is retained in the version history, maintaining a full audit trail of all changes made to the branch.
       operationId: updateTrainBranch
@@ -434,11 +435,12 @@ paths:
         - R2P
       summary: Delete train branch
       description: |
-        Marks a branch as deleted by setting its state to DELETED. **The main branch cannot be deleted.** 
-        Partners can only delete branches they own. The Lead RU has permissions to delete any partner branch. 
-        Deleted branches are retained in the system for audit purposes but are no longer actively used. 
-        The branch data and version history remain accessible even after deletion. A comment is required 
-        to document the reason for deletion.
+        Marks a branch as deleted by setting its state to DELETED. **The main branch cannot be deleted.**
+        Partners can only delete branches they own. The Lead RU has permissions to delete any partner branch.
+        Deleted branches are retained in the system for audit purposes but are no longer actively used.
+        The branch data and version history remain accessible even after deletion. A comment is required
+        to document the reason for deletion. **If the main branch is deleted, all other non-deleted branches
+        of the same train are also cascadingly deleted.**
       operationId: deleteTrainBranch
       parameters:
         - name: token
@@ -491,8 +493,8 @@ paths:
       summary: Request a merge of a branch into main
       description: |
         Creates a merge request for a branch to be merged into the main branch. **Only the branch owner (creator)
-        can create a merge request.** The merge request is recorded in the change history and becomes visible to
-        the Lead RU and all other partners. The branch state changes to MERGE_REQUESTED.
+        can create a merge request.** The merge request (including its comment) is recorded in the change history and becomes visible to
+        the Lead RU via the list merge requests endpoint and to all other partners. The branch state changes to MERGE_REQUESTED.
       operationId: requestMerge
       parameters:
         - name: token
@@ -515,6 +517,7 @@ paths:
         - name: comment
           in: query
           required: false
+          description: optional comment for the merge request
           schema:
             type: string
       responses:
@@ -578,6 +581,7 @@ paths:
         - name: comment
           in: query
           required: false
+          description: optional comment for the merge action
           schema:
             type: string
       responses:
@@ -611,8 +615,9 @@ paths:
       summary: Reject a merge request
       description: |
         Rejects an open merge request for a branch. **Only the Lead RU can reject a merge request.**
-        The rejection is recorded in the change history with the provided comment. The branch remains
-        open (state reverts to OPEN) and the main branch is unchanged.
+        The rejection is recorded in the change history with the provided comment. The branch state reverts
+        to OPEN and the branch data remains unchanged, allowing the partner to continue working on it.
+        The main branch is unchanged.
       operationId: rejectMerge
       parameters:
         - name: token
@@ -635,6 +640,7 @@ paths:
         - name: comment
           in: query
           required: false
+          description: optional comment with the reason for rejecting the merge request
           schema:
             type: string
       responses:
@@ -796,7 +802,9 @@ paths:
 components:
   schemas:
     TrainListElement:
-      description: 'Summary information about a train when searching for or listing trains'
+      description: |
+        Summary information about a train when searching for or listing trains, including trainId, partners,
+        branches and main branch timestamp
       type: object
       required:
         - trainId
