@@ -12,6 +12,7 @@ import ch.rail.r2p.api.dto.Branch;
 import ch.rail.r2p.api.dto.BranchState;
 import ch.rail.r2p.api.dto.TrainListElement;
 import ch.rail.r2p.persistence.TrainPersistence;
+import ch.rail.r2p.persistence.impl.BranchSpringDataRepository;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -33,6 +34,9 @@ class BranchTests {
 
     @MockitoSpyBean
     private TrainPersistence trainPersistence;
+
+    @Autowired
+    private BranchSpringDataRepository branchSpringDataRepository;
 
     @BeforeEach
     void setUp() {
@@ -112,10 +116,16 @@ class BranchTests {
         TrainListElement train = actor.createTrain(SBB, "new train");
         actor.createBranch(SBB, train.getTrainId(), branchName, "test");
         trainController.deleteTrainBranch(SBB, train.getTrainId(), train.getBranches().getFirst().getBranchId(), "delete main branch");
-        var result = trainController.getTrainById(SBB, train.getTrainId());
-        assertThat(result.getBody()).isNotNull();
-        assertThat(result.getBody().getBranches().stream().map(Branch::getBranchName)).containsExactlyInAnyOrder(PREFIXED_MAIN_BRANCH_NAME, Actor.getPrefixedBranchName(SBB, branchName));
-        assertThat(result.getBody().getBranches()).allMatch(b -> b.getTechnical().getBranchState() == BranchState.DELETED, "branch is deleted");
+
+        assertThat(branchSpringDataRepository.findTrainBranchByTrainId(train.getTrainId()).stream()
+            .filter(b -> b.getName().equals(branchName))
+            .findAny()
+            .orElseThrow(() -> new AssertionError("Deleted branch not found in repository"))
+            .getState()).isEqualTo(BranchState.DELETED);
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+            () -> trainController.getTrainById(SBB, train.getTrainId()));
+        assertThat(exception.getMessage()).startsWith("No main branch found for " + train.getTrainId());
     }
 
     @Test

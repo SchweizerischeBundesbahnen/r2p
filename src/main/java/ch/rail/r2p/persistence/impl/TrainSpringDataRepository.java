@@ -13,9 +13,13 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, UUID>, CustomInsertRepository<TrainVersion> {
 
-    @Query("""
-        SELECT * FROM train_version
-        WHERE train_id=:trainId AND head=true
+    @Query(value = """
+            SELECT tv.* FROM train_version tv
+            JOIN branch b
+                ON b.branch_id = tv.branch_id
+            WHERE tv.train_id = :trainId 
+              AND tv.head = true
+              AND NOT (b.name = 'main' AND b.state = 'DELETED')
         """)
     List<TrainVersion> findHeadVersionsByTrainId(UUID trainId);
 
@@ -26,10 +30,13 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
     Optional<TrainVersion> findHeadVersionByTrainIdAndBranchId(UUID trainId, UUID branchId);
 
     @Query("""
-        SELECT * FROM train_version
-        WHERE (:operationalDayFrom IS NULL OR operational_day>=:operationalDayFrom)
-          AND (:operationalDayTo IS NULL OR operational_day<=:operationalDayTo)
-          AND EXISTS (SELECT 1 FROM train_partner WHERE train_partner.train_id=train_version.train_id AND train_partner.partner=:partner)
+        SELECT tv.* FROM train_version tv
+                 JOIN branch b ON b.branch_id = tv.branch_id
+        WHERE (:operationalDayFrom IS NULL OR tv.operational_day>=:operationalDayFrom)
+          AND (:operationalDayTo IS NULL OR tv.operational_day<=:operationalDayTo)
+          AND EXISTS (SELECT 1 FROM train_partner WHERE train_partner.train_id=tv.train_id AND train_partner.partner=:partner)
+          AND tv.head = true
+          AND NOT (b.name = 'main' AND b.state = 'DELETED')
         """)
     List<TrainVersion> findHeadVersions(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo);
 
@@ -75,9 +82,15 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
     void deleteAllTrainPartners();
 
     @Query("""
-        SELECT partner, COUNT(DISTINCT train_id) AS cnt
-        FROM train_partner
-        GROUP BY partner
+        SELECT tp.partner, COUNT(DISTINCT tp.train_id) AS cnt
+        FROM train_partner tp
+        WHERE NOT EXISTS (
+            SELECT 1 FROM branch b
+            WHERE b.train_id = tp.train_id
+              AND b.name = 'main'
+              AND b.state = 'DELETED'
+        )
+        GROUP BY tp.partner
         """)
     List<PartnerCount> countTrainsPerPartner();
 
