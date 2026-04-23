@@ -2,7 +2,7 @@
 
 ## Code Language
 
-Is always english. Never use german for names, comments, description, documentation or anything else.
+Code language is always English. Never use German for names, comments, descriptions, documentation, or anything else.
 
 ## AsciiDoc – Escaping Path Parameters
 
