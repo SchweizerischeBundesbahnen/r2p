@@ -274,7 +274,7 @@ class TrainTests {
             .as("SBB should have no stats entry or 0 trains")
             .satisfiesAnyOf(
                 opt -> assertThat(opt).isEmpty(),
-                opt -> assertThat(opt.get().trains()).isZero()
+                opt -> assertThat(opt).hasValueSatisfying(stat -> assertThat(stat.trains()).isZero())
             );
     }
 }
