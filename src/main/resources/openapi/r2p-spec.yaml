@@ -371,11 +371,13 @@ paths:
         - R2P
       summary: Update train branch
       description: |
-        Creates a new version of a branch with updated train data. **Important access control:** 
+        Creates a new version of a branch with updated train data.
+        **Important access control:** 
         - **Main branch**: Only the Lead RU can update the main branch 
         - **Partner branches**: Partners can only update branches they own 
-        - **Lead RU**: Can update any branch including the main branch
+        - **Lead RU**: Can update the main branch (and other branches they own)
         
+        Updates are only allowed while the branch is in state OPEN (not merged, deleted, or merge already requested).
         Each update creates a new version with a new version ID, timestamp, and comment. The previous 
         version is retained in the version history, maintaining a full audit trail of all changes made to the branch.
       operationId: updateTrainBranch
@@ -434,11 +436,13 @@ paths:
         - R2P
       summary: Delete train branch
       description: |
-        Marks a branch as deleted by setting its state to DELETED. **The main branch cannot be deleted.** 
-        Partners can only delete branches they own. The Lead RU has permissions to delete any partner branch. 
-        Deleted branches are retained in the system for audit purposes but are no longer actively used. 
-        The branch data and version history remain accessible even after deletion. A comment is required 
+        Marks a branch as deleted by setting its state to DELETED.
+        Partners can only delete branches they own.
+        Deleted branches are retained in the system for audit purposes but are no longer actively used.
+        The branch data and version history remain accessible even after deletion. A comment is required
         to document the reason for deletion.
+        Only the Lead UR can delete the main branch (and other branches it owns).
+        **If the main branch is deleted, all other non-deleted branches of the same train are also cascadingly deleted.**
       operationId: deleteTrainBranch
       parameters:
         - name: token
@@ -490,9 +494,11 @@ paths:
         - R2P
       summary: Request a merge of a branch into main
       description: |
-        Creates a merge request for a branch to be merged into the main branch. **Only the branch owner (creator)
-        can create a merge request.** The merge request is recorded in the change history and becomes visible to
-        the Lead RU and all other partners. The branch state changes to MERGE_REQUESTED.
+        Creates a merge request for a branch to be merged into the main branch.
+        **Only the branch owner (creator) can create a merge request.**
+        The branch state changes to MERGE_REQUESTED.
+        The merge request (including its comment) is recorded in the change history.
+        The merge request is then visible to the Lead RU (and to all other partners) via the list merge requests endpoint.
       operationId: requestMerge
       parameters:
         - name: token
@@ -515,6 +521,7 @@ paths:
         - name: comment
           in: query
           required: false
+          description: comment for the merge request, recorded with the merge request in the change history
           schema:
             type: string
       responses:
@@ -578,6 +585,7 @@ paths:
         - name: comment
           in: query
           required: false
+          description: comment for the merge action, recorded with the merge action in the change history
           schema:
             type: string
       responses:
@@ -611,8 +619,9 @@ paths:
       summary: Reject a merge request
       description: |
         Rejects an open merge request for a branch. **Only the Lead RU can reject a merge request.**
-        The rejection is recorded in the change history with the provided comment. The branch remains
-        open (state reverts to OPEN) and the main branch is unchanged.
+        The rejection is recorded in the change history with the provided comment. The branch state reverts
+        to OPEN and the branch data remains unchanged, allowing the partner to continue working on it.
+        The main branch is unchanged.
       operationId: rejectMerge
       parameters:
         - name: token
@@ -635,6 +644,7 @@ paths:
         - name: comment
           in: query
           required: false
+          description: comment with the reason for rejecting the merge request, recorded with the merge rejection in the change history
           schema:
             type: string
       responses:
@@ -796,7 +806,9 @@ paths:
 components:
   schemas:
     TrainListElement:
-      description: 'Summary information about a train when searching for or listing trains'
+      description: |
+        Summary information about a train when searching for or listing trains, including trainId, partners,
+        branches and main branch timestamp
       type: object
       required:
         - trainId
