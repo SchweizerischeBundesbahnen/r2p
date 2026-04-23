@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.0.19](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.18...r2p-v0.0.19) (2026-04-23)
+
+
+### Features
+
+* add information about third party license ([5b37a2d](https://github.com/SchweizerischeBundesbahnen/r2p/commit/5b37a2dc9790db0c932b990f3debd3655d2f1fb4))
+* add r2p webclient testdatengenerator ([18f6702](https://github.com/SchweizerischeBundesbahnen/r2p/commit/18f6702a04795e2157c061d5d08198e1c9237e0a))
+* design draft of the webclient ([80f9f2b](https://github.com/SchweizerischeBundesbahnen/r2p/commit/80f9f2b102e8d500c1fd6c652b4d0259f4c5cd63))
+
+
+### Documentation
+
+* document silent ignoring of properties as open point and add a minimal train ([#105](https://github.com/SchweizerischeBundesbahnen/r2p/issues/105)) ([5f65598](https://github.com/SchweizerischeBundesbahnen/r2p/commit/5f65598d4b9dcef7331d4ce9caf1530753f9ef03))
+* remove redundant documentation, other improvements ([f125035](https://github.com/SchweizerischeBundesbahnen/r2p/commit/f12503515aea9cd310732fb036d7d9444dc9f215))
+* update openapi specs, publish generated api doc as html ([10c55b9](https://github.com/SchweizerischeBundesbahnen/r2p/commit/10c55b959140d0e1fcd1209087949d8b5a6eae37))
+* update the documentation ([#101](https://github.com/SchweizerischeBundesbahnen/r2p/issues/101)) ([08e959b](https://github.com/SchweizerischeBundesbahnen/r2p/commit/08e959ba15f6d66bcd9739f17cf6ad88ac538e28))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.19-SNAPSHOT ([#100](https://github.com/SchweizerischeBundesbahnen/r2p/issues/100)) ([f014a79](https://github.com/SchweizerischeBundesbahnen/r2p/commit/f014a7910281314536880c8d324ecb365a2c9c27))
+
+
+### Build System
+
+* **deps-dev:** bump org.openapitools:openapi-generator-maven-plugin ([#103](https://github.com/SchweizerischeBundesbahnen/r2p/issues/103)) ([c766a75](https://github.com/SchweizerischeBundesbahnen/r2p/commit/c766a75d8bc80ababa405fab46699652ddf517eb))
+* **deps:** bump org.springdoc:springdoc-openapi-starter-webmvc-ui ([#108](https://github.com/SchweizerischeBundesbahnen/r2p/issues/108)) ([47ac02e](https://github.com/SchweizerischeBundesbahnen/r2p/commit/47ac02ed57da21ce8e17725909092c98f8e14a5b))
+* **deps:** bump org.springframework.boot:spring-boot-starter-parent ([#102](https://github.com/SchweizerischeBundesbahnen/r2p/issues/102)) ([b335b1a](https://github.com/SchweizerischeBundesbahnen/r2p/commit/b335b1a174dc1846ebc0cfa77539ac6b8dad4fcc))
+* **deps:** bump org.webjars.npm:alpinejs from 3.15.8 to 3.15.11 ([#106](https://github.com/SchweizerischeBundesbahnen/r2p/issues/106)) ([8aa669a](https://github.com/SchweizerischeBundesbahnen/r2p/commit/8aa669a569da6f40de370f0ed9965aabbe760cab))
+
 ## [0.0.18](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.17...r2p-v0.0.18) (2026-03-25)
 
 
