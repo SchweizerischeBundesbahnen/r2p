@@ -236,6 +236,18 @@ class TrainTests {
     }
 
     @Test
+    void should_not_list_deleted_train_when_other_branch_exists() {
+        TrainListElement train = actor.createTrain(SBB, "train with feature branch");
+        actor.createBranch(SBB, train.getTrainId(), "featureBranch", "extra branch");
+        UUID mainBranchId = train.getBranches().getFirst().getBranchId();
+
+        trainController.deleteTrainBranch(SBB, train.getTrainId(), mainBranchId, "delete main");
+
+        List<TrainListElement> result = trainController.listTrains(SBB, null, null).getBody();
+        assertThat(result).as("deleted train must not appear in listTrains").isEmpty();
+    }
+
+    @Test
     void should_not_return_deleted_trains_in_get_list_and_stats() {
         TrainListElement train1 = actor.createTrain(SBB, "train 1");
         UUID trainId1 = train1.getTrainId();

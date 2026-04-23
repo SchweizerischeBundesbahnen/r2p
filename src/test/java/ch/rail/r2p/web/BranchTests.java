@@ -117,15 +117,12 @@ class BranchTests {
         actor.createBranch(SBB, train.getTrainId(), branchName, "test");
         trainController.deleteTrainBranch(SBB, train.getTrainId(), train.getBranches().getFirst().getBranchId(), "delete main branch");
 
-        assertThat(branchSpringDataRepository.findTrainBranchByTrainId(train.getTrainId()).stream()
-            .filter(b -> b.getName().equals(branchName))
-            .findAny()
-            .orElseThrow(() -> new AssertionError("Deleted branch not found in repository"))
-            .getState()).isEqualTo(BranchState.DELETED);
+        var branches = branchSpringDataRepository.findTrainBranchByTrainId(train.getTrainId());
+        assertThat(branches).hasSize(2);
+        assertThat(branches).allMatch(b -> b.getState() == BranchState.DELETED, "all branches should be DELETED");
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        assertThrows(NoSuchElementException.class,
             () -> trainController.getTrainById(SBB, train.getTrainId()));
-        assertThat(exception.getMessage()).startsWith("No main branch found for " + train.getTrainId());
     }
 
     @Test
