@@ -371,10 +371,11 @@ paths:
         - R2P
       summary: Update train branch
       description: |
-        Creates a new version of a branch with updated train data. **Important access control:** 
+        Creates a new version of a branch with updated train data.
+        **Important access control:** 
         - **Main branch**: Only the Lead RU can update the main branch 
         - **Partner branches**: Partners can only update branches they own 
-        - **Lead RU**: Can update any branch including the main branch
+        - **Lead RU**: Can update the main branch (and other branches they own)
         
         Updates are only allowed while the branch is in state OPEN (not merged, deleted, or merge already requested).
         Each update creates a new version with a new version ID, timestamp, and comment. The previous 
@@ -436,11 +437,12 @@ paths:
       summary: Delete train branch
       description: |
         Marks a branch as deleted by setting its state to DELETED.
-        Partners can only delete branches they own. The Lead RU has permissions to delete any partner branch.
+        Partners can only delete branches they own.
         Deleted branches are retained in the system for audit purposes but are no longer actively used.
         The branch data and version history remain accessible even after deletion. A comment is required
-        to document the reason for deletion. **If the main branch is deleted, all other non-deleted branches
-        of the same train are also cascadingly deleted.**
+        to document the reason for deletion.
+        Only the Lead UR can delete the main branch (and other branches it owns).
+        **If the main branch is deleted, all other non-deleted branches of the same train are also cascadingly deleted.**
       operationId: deleteTrainBranch
       parameters:
         - name: token
