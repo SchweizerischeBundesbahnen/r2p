@@ -47,6 +47,7 @@ After the release is created by release-please:
    - **Uploads directly to the GitHub Release** using `gh` CLI
 3. **Final job** combines and uploads:
    - Documentation archive (`r2p-documentation.zip`)
+   - API documentation (`r2p-api.html`)
    - Combined test results from all platforms (`r2p-test-results.zip`)
 
 All artifacts are automatically attached to the GitHub Release:
@@ -54,6 +55,7 @@ All artifacts are automatically attached to the GitHub Release:
 - `r2p-windows.zip` - Windows distribution
 - `r2p-macos.tar.gz` - macOS distribution
 - `r2p-documentation.zip` - API and manual documentation (HTML + PDF)
+- `r2p-api.html` - API documentation in HTML format (for viewing online in browser)
 - `r2p-test-results.zip` - Test reports from all platforms
 
 ## Manual Release
