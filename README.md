@@ -71,6 +71,14 @@ See Architecture Decision Records (ADRs) in [docs/adr/](docs/adr/) for detailed 
 
 See [Commit Message Guidelines](CONTRIBUTING.md#commit-message-guidelines).
 
+### REST endpoints
+
+See [R2P Server REST Endpoints](https://github.com/SchweizerischeBundesbahnen/r2p/wiki/R2P-Server-REST-Endpoints)
+
+### Domain model
+
+See [R2P Server Domain Model](https://github.com/SchweizerischeBundesbahnen/r2p/wiki/R2P-Server-Domain-Model)
+
 ### Release Process
 - Releases are automated via [release-please](https://github.com/googleapis/release-please-action)
 - Merging to `main` triggers release creation based on commit messages

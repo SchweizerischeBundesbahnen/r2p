@@ -60,10 +60,6 @@ oc project r2p
 oc apply -f deployment.yaml
 ----
 
-include::domain-model.adoc[leveloffset=+1]
-
-include::rest-endpoints.adoc[leveloffset=+1]
-
 include::user-interface.adoc[leveloffset=+1]
 
 == Limitations of current implementation
