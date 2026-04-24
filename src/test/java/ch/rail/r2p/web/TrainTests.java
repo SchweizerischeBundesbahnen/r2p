@@ -15,6 +15,7 @@ import ch.rail.r2p.persistence.TrainPersistence;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -232,5 +233,48 @@ class TrainTests {
     @Test
     void should_not_get_nonexistent_train_version() {
         assertThrows(NoSuchElementException.class, () -> trainController.getTrainVersion(SBB, UUID.randomUUID()));
+    }
+
+    @Test
+    void should_not_list_deleted_train_when_other_branch_exists() {
+        TrainListElement train = actor.createTrain(SBB, "train with feature branch");
+        actor.createBranch(SBB, train.getTrainId(), "featureBranch", "extra branch");
+        UUID mainBranchId = train.getBranches().getFirst().getBranchId();
+
+        trainController.deleteTrainBranch(SBB, train.getTrainId(), mainBranchId, "delete main");
+
+        List<TrainListElement> result = trainController.listTrains(SBB, null, null).getBody();
+        assertThat(result).as("deleted train must not appear in listTrains").isEmpty();
+    }
+
+    @Test
+    void should_not_return_deleted_trains_in_get_list_and_stats() {
+        TrainListElement train1 = actor.createTrain(SBB, "train 1");
+        UUID trainId1 = train1.getTrainId();
+        UUID mainBranchId1 = train1.getBranches().getFirst().getBranchId();
+
+        TrainListElement train2 = actor.createTrain(SBB, "train 2");
+        UUID trainId2 = train2.getTrainId();
+        UUID mainBranchId2 = train2.getBranches().getFirst().getBranchId();
+
+        trainController.deleteTrainBranch(SBB, trainId1, mainBranchId1, "delete train 1");
+        trainController.deleteTrainBranch(SBB, trainId2, mainBranchId2, "delete train 2");
+
+        assertThrows(NoSuchElementException.class, () -> trainController.getTrainById(SBB, trainId1));
+        assertThrows(NoSuchElementException.class, () -> trainController.getTrainById(SBB, trainId2));
+
+        List<TrainListElement> sbbTrains = trainController.listTrains(SBB, null, null).getBody();
+        assertThat(sbbTrains).hasSize(0);
+
+        List<PartnerStats> stats = actor.getStats();
+
+        assertThat(stats.stream()
+            .filter(s -> SBB.name().equals(s.partner()))
+            .findFirst())
+            .as("SBB should have no stats entry or 0 trains")
+            .satisfiesAnyOf(
+                opt -> assertThat(opt).isEmpty(),
+                opt -> assertThat(opt).hasValueSatisfying(stat -> assertThat(stat.trains()).isZero())
+            );
     }
 }

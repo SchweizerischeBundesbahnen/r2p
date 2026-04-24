@@ -14,9 +14,12 @@ import ch.rail.r2p.persistence.TrainPersistence;
 import ch.rail.r2p.persistence.impl.BranchSpringDataRepository;
 import ch.rail.r2p.persistence.impl.ChangelogSpringDataRepository;
 import ch.rail.r2p.persistence.impl.TrainSpringDataRepository;
+import ch.rail.r2p.web.PartnerStats;
+import ch.rail.r2p.web.StatsController;
 import ch.rail.r2p.web.TrainController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -33,6 +36,9 @@ public class Actor {
 
     @Autowired
     private TrainController trainController;
+
+    @Autowired
+    private StatsController statsController;
 
     @Autowired
     private TrainSpringDataRepository trainSpringDataRepository;
@@ -100,5 +106,9 @@ public class Actor {
             branchSpringDataRepository.deleteBranchesByTrainId(trainId);
         });
         trainIdsForCleanup.clear();
+    }
+
+    public List<PartnerStats> getStats() {
+        return statsController.getStats();
     }
 }
