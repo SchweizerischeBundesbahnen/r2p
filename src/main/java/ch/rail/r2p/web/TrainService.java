@@ -288,8 +288,6 @@ public class TrainService {
         return new TrainVersionEnriched(branch.trainVersion(), updatedBranch, branch.partners());
     }
 
-    // TODO is it possible to implement these checks in a better and safer way (e.g. using Spring Security), making sure they are not forgotten
-
     private void checkSharing(String partner, TrainVersionEnriched train) {
         if (!train.partners().contains(partner)) {
             throw new AuthorizationDeniedException("Train not shared with partner");

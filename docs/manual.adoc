@@ -65,3 +65,5 @@ include::user-interface.adoc[leveloffset=+1]
 == Limitations of current implementation
 * Performance of train list endpoint is not optimized (n+1 pattern to get partners, no paging)
 * Concurrent modifications/merging/deleting of a train may lead to problems (no optimistic or pessimistic locking implemented yet)
+* Strong authorization checks are not yet fully implemented
+** Authorization relies on manual check methods in TrainService (e.g. checkInstanceOwner), which are prone to being omitted at call sites
