@@ -16,7 +16,7 @@
     </a>
     <ul class="top-nav-links">
         <li><a href="overview.html">Traffic Overview</a></li>
-        <li><a href="settings.html">Settings</a></li>
+        <li><a href="#" onclick="openSettingsModal(); return false;">Settings</a></li>
     </ul>
     <div class="top-nav-right">
         <div class="top-nav-partner">
@@ -294,6 +294,7 @@
 </div>
 
 <script src="sampleData.js"></script>
+<script src="settings-modal.js"></script>
 <script>
     const settings = JSON.parse(localStorage.getItem('r2p_settings') || JSON.stringify(defaultSettings));
     const params = new URLSearchParams(window.location.search);

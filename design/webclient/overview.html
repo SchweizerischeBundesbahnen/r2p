@@ -16,7 +16,7 @@
     </a>
     <ul class="top-nav-links">
         <li><a href="overview.html" class="active">Traffic Overview</a></li>
-        <li><a href="settings.html">Settings</a></li>
+        <li><a href="#" onclick="openSettingsModal(); return false;">Settings</a></li>
     </ul>
     <div class="top-nav-right">
         <div class="top-nav-partner">
@@ -114,6 +114,7 @@
 <div class="toast-container" id="toast-container"></div>
 
 <script src="sampleData.js"></script>
+<script src="settings-modal.js"></script>
 <script>
     /* ── State ──────────────────────────────────────────────────── */
     let currentSort = { field: 'lastChange', dir: 'desc' };

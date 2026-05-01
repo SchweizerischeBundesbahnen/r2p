@@ -19,7 +19,7 @@
 
             <!-- Info alert shown only on first visit -->
             <div class="alert alert-info" id="first-run-hint">
-                👋 Welcome! Please configure your server connection and partner before continuing.
+                👋 <strong>Welcome to R2P!</strong> This is the initial setup. Please configure your server connection and organization before continuing to the application.
             </div>
 
             <!-- Settings Form -->
@@ -38,39 +38,33 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label required" for="partner-select">Your Partner</label>
+                    <label class="form-label required" for="partner-select">Your Organization</label>
                     <select id="partner-select" class="form-select" required>
-                        <option value="" disabled>Select a partner…</option>
+                        <option value="" disabled>Select an organization…</option>
                         <option value="SBB" selected>SBB – Schweizerische Bundesbahnen</option>
                         <option value="BLS">BLS – BLS AG</option>
                         <option value="SOB">SOB – Schweizerische Südostbahn</option>
                     </select>
-                    <p class="form-hint">All requests will be sent on behalf of this partner.</p>
+                    <p class="form-hint">All requests will be sent on behalf of this organization.</p>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="language-select">Language</label>
                     <div class="lang-switcher-settings" id="language-select" role="group" aria-label="Language selection">
                         <button type="button" class="lang-option-btn active" data-lang="en" onclick="selectLang('en', this)">
-                            🇬🇧 English
+                            English
                         </button>
                         <button type="button" class="lang-option-btn" data-lang="de" onclick="selectLang('de', this)">
-                            🇩🇪 Deutsch
+                            Deutsch
                         </button>
                     </div>
                     <p class="form-hint">Display language for the web client interface.</p>
                 </div>
 
                 <button type="submit" class="btn btn-primary" style="width:100%; justify-content: center; margin-top: 0.5rem;">
-                    💾 Save &amp; Continue
+                    Save
                 </button>
             </form>
-
-            <!-- Already configured: link to overview -->
-            <p class="text-center" style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-muted);">
-                Already configured?
-                <a href="overview.html" style="color: var(--accent-color); font-weight: 600;">Go to Traffic Overview →</a>
-            </p>
         </div>
     </div>
 
