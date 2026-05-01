@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -129,7 +130,8 @@ public class TrainService {
     }
 
     @Transactional
-    public void shareTrain(String partner, UUID trainId, String shareWith) {
+    public void shareTrain(String partner, UUID trainId, String shareWith, String comment) {
+        Objects.requireNonNull(comment, "comment must not be null");
         TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkSharing(partner, main);
@@ -138,17 +140,18 @@ public class TrainService {
             return;
         }
         trainPersistence.addPartner(trainId, shareWith);
-        Changelog changelog = Changelog.forSharing(partner, shareWith, main.trainVersion(), "Train shared");
+        Changelog changelog = Changelog.forSharing(partner, shareWith, main.trainVersion(), comment);
         changelogPersistence.insert(changelog);
     }
 
     @Transactional
-    public void unshareTrain(String partner, UUID trainId, String unshareWith) {
+    public void unshareTrain(String partner, UUID trainId, String unshareWith, String comment) {
+        Objects.requireNonNull(comment, "comment must not be null");
         TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkUnsharingAuthorization(main.partners(), partner, unshareWith);
         trainPersistence.removePartner(trainId, unshareWith);
-        Changelog changelog = Changelog.forUnsharing(partner, unshareWith, main.trainVersion(), "Train unshared");
+        Changelog changelog = Changelog.forUnsharing(partner, unshareWith, main.trainVersion(), comment);
         changelogPersistence.insert(changelog);
         List<Branch> branches = trainPersistence.findBranchesByTrainId(trainId);
         for (Branch branch : branches) {
@@ -264,7 +267,7 @@ public class TrainService {
         trainPersistence.updateVersion(mainEnriched.trainVersion());
         // Create new main version from branch content
         TrainVersion newMainVersion = mainEnriched.trainVersion().createNewVersion(branchEnriched.trainVersion().getPayload(),
-            comment != null ? comment : "");
+            comment);
         newMainVersion.setTrainNumber(branchEnriched.trainVersion().getTrainNumber());
         newMainVersion.setOperationalDay(branchEnriched.trainVersion().getOperationalDay());
         trainPersistence.insertVersion(newMainVersion);

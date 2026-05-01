@@ -46,7 +46,7 @@ class TrainLifecycleChangeLogTests {
         UUID trainId = train.getTrainId();
 
         // --- 2. SBB shares the train with BLS ---
-        actor.shareTrain(SBB, trainId, BLS);
+        actor.shareTrain(SBB, trainId, BLS, "Sharing with BLS for rollmaterial review");
 
         // --- 3. BLS creates a branch ---
         String branchName = "rollmaterial-proposal";
@@ -92,7 +92,7 @@ class TrainLifecycleChangeLogTests {
             .toList();
 
         assertThat(String.join("\n", trainLevelLog)).isEqualTo("""
-            [SBB] - shared - [BLS] - Train shared""");
+            [SBB] - shared - [BLS] - Sharing with BLS for rollmaterial review""");
 
         // --- Assert changelog for the main branch (SBB-main) ---
         List<String> mainBranchLog = allChanges.stream()

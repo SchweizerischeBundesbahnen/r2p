@@ -97,6 +97,7 @@ paths:
         Revokes access to a train from a specified partner. The Lead RU (train owner) can unshare the train with 
         any partner. Partners can unshare the train with themselves (remove their own access). After unsharing, 
         the affected partner will no longer be able to view or modify the train.
+        A mandatory comment is recorded in the change history.
       operationId: unshareTrain
       parameters:
         - name: token
@@ -114,6 +115,12 @@ paths:
           in: query
           required: true
           description: Partner name to unshare the train with
+          schema:
+            type: string
+        - name: comment
+          in: query
+          required: true
+          description: Comment recorded in the change history for this unsharing action.
           schema:
             type: string
       responses:
@@ -141,6 +148,7 @@ paths:
         the train.** Once shared, the partner can view the train, all its branches and their history, and may create 
         their own branches to propose changes. **Shared partners cannot update the main branch** - only the Lead RU 
         has permission to modify the main branch.
+        A mandatory comment is recorded in the change history.
       operationId: shareTrain
       parameters:
         - name: token
@@ -158,6 +166,12 @@ paths:
           in: query
           required: true
           description: Partner name to share the train with
+          schema:
+            type: string
+        - name: comment
+          in: query
+          required: true
+          description: Comment recorded in the change history for this sharing action.
           schema:
             type: string
       responses:
@@ -520,8 +534,8 @@ paths:
             format: uuid
         - name: comment
           in: query
-          required: false
-          description: comment for the merge request, recorded with the merge request in the change history
+          required: true
+          description: Mandatory comment for the merge request, recorded with the merge request in the change history.
           schema:
             type: string
       responses:
@@ -584,8 +598,8 @@ paths:
             format: uuid
         - name: comment
           in: query
-          required: false
-          description: comment for the merge action, recorded with the merge action in the change history
+          required: true
+          description: Mandatory comment for the merge action, recorded with the merge action in the change history.
           schema:
             type: string
       responses:
@@ -643,8 +657,8 @@ paths:
             format: uuid
         - name: comment
           in: query
-          required: false
-          description: comment with the reason for rejecting the merge request, recorded with the merge rejection in the change history
+          required: true
+          description: Mandatory comment with the reason for rejecting the merge request, recorded with the merge rejection in the change history.
           schema:
             type: string
       responses:

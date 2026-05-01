@@ -61,7 +61,7 @@ public class TestDataService {
             // 1e. Share with 1 or 2 partners from the request list
             List<String> chosenPartners = choosePartners(request.partners(), random);
             for (String partner : chosenPartners) {
-                trainService.shareTrain(instanceOwner, trainId, partner);
+                trainService.shareTrain(instanceOwner, trainId, partner, "Test data – shared");
             }
             // All partners that have access (for branch creation)
             List<String> allPartners = new ArrayList<>();

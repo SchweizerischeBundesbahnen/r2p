@@ -74,15 +74,15 @@ public class TrainController implements V1Api {
     }
 
     @Override
-    public ResponseEntity<TrainListElement> shareTrain(PartnerToken token, UUID trainId, String shareWith) {
-        trainService.shareTrain(token.name(), trainId, shareWith);
+    public ResponseEntity<TrainListElement> shareTrain(PartnerToken token, UUID trainId, String shareWith, String comment) {
+        trainService.shareTrain(token.name(), trainId, shareWith, comment);
         List<TrainVersionEnriched> train = trainService.getTrainById(token.name(), trainId);
         return ResponseEntity.ok(trainMapper.toTrainListElement(train));
     }
 
     @Override
-    public ResponseEntity<TrainListElement> unshareTrain(PartnerToken token, UUID trainId, String unshareWith) {
-        trainService.unshareTrain(token.name(), trainId, unshareWith);
+    public ResponseEntity<TrainListElement> unshareTrain(PartnerToken token, UUID trainId, String unshareWith, String comment) {
+        trainService.unshareTrain(token.name(), trainId, unshareWith, comment);
         List<TrainVersionEnriched> train = trainService.getTrainById(token.name(), trainId);
         return ResponseEntity.ok(trainMapper.toTrainListElement(train));
     }

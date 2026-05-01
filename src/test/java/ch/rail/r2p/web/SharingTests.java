@@ -48,7 +48,7 @@ class SharingTests {
     @Test
     void should_share_train() {
         TrainListElement train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var result = trainController.getTrainById(SOB, train.getTrainId());
         assertThat(result).isNotNull();
     }
@@ -56,11 +56,11 @@ class SharingTests {
     @Test
     void should_unshare_train() {
         TrainListElement train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var sharedTrains = trainController.listTrains(SOB, null, null);
         assertThat(sharedTrains.getBody()).hasSize(1);
 
-        trainController.unshareTrain(SBB, train.getTrainId(), "SOB");
+        trainController.unshareTrain(SBB, train.getTrainId(), "SOB", "revoking access");
 
         assertThat(trainController.listTrains(SOB, null, null).getBody()).isEmpty();
         assertThrows(AuthorizationDeniedException.class, () -> trainController.getTrainById(SOB, train.getTrainId()));
@@ -69,10 +69,10 @@ class SharingTests {
     @Test
     void should_delete_owned_branches_when_unsharing_train() {
         TrainListElement train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
 
-        trainController.unshareTrain(SBB, train.getTrainId(), "SOB");
+        trainController.unshareTrain(SBB, train.getTrainId(), "SOB", "revoking access");
 
         var result = trainController.getTrainById(SBB, train.getTrainId());
         assertThat(result.getBody()).isNotNull();
@@ -88,10 +88,10 @@ class SharingTests {
     @Test
     void should_not_allow_unsharing_for_other_partners() {
         TrainListElement train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
-        trainController.shareTrain(SOB, train.getTrainId(), "BLS");
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
+        trainController.shareTrain(SOB, train.getTrainId(), "BLS", "sharing with BLS");
 
-        assertThrows(AuthorizationDeniedException.class, () -> trainController.unshareTrain(SOB, train.getTrainId(), "BLS"));
+        assertThrows(AuthorizationDeniedException.class, () -> trainController.unshareTrain(SOB, train.getTrainId(), "BLS", "not allowed"));
     }
 
     @Test
@@ -99,7 +99,7 @@ class SharingTests {
         TrainListElement train = actor.createTrain(SBB, "new train");
 
         var exception = assertThrows(AuthorizationDeniedException.class,
-            () -> trainController.unshareTrain(SBB, train.getTrainId(), "SOB"));
+            () -> trainController.unshareTrain(SBB, train.getTrainId(), "SOB", "revoking"));
         assertThat(exception.getMessage()).contains("Train is not shared with partner 'SOB'");
     }
 
@@ -110,11 +110,11 @@ class SharingTests {
         TrainListElement train = actor.createTrain(SBB, "initial creation");
         UUID trainId = train.getTrainId();
         UUID mainBranchId = train.getBranches().getFirst().getBranchId();
-        actor.shareTrain(SBB, trainId, SOB);
+        actor.shareTrain(SBB, trainId, SOB, "Train shared");
         trainController.updateTrainBranch(SBB, trainId, mainBranchId, "update main branch", actor.loadSampleTrain());
         UUID branchId = actor.createBranch(SOB, trainId, branchName, "create branch").getBranchId();
         trainController.updateTrainBranch(SOB, trainId, branchId, "update branch", actor.loadSampleTrain());
-        trainController.unshareTrain(SBB, trainId, "SOB");
+        trainController.unshareTrain(SBB, trainId, "SOB", "Train unshared");
 
         var sobChangelog = trainController.getTrainChangesById(SOB, trainId, null, null).getBody();
         assertThat(sobChangelog).hasSize(2);
@@ -136,7 +136,7 @@ class SharingTests {
         UUID nonExistentTrainId = UUID.randomUUID();
 
         var exception = assertThrows(NoSuchElementException.class,
-            () -> trainController.shareTrain(SBB, nonExistentTrainId, "SOB"));
+            () -> trainController.shareTrain(SBB, nonExistentTrainId, "SOB", "sharing"));
         assertThat(exception.getMessage()).isEqualTo("Train or Branch not found");
     }
 
@@ -145,19 +145,19 @@ class SharingTests {
         UUID nonExistentTrainId = UUID.randomUUID();
 
         var exception = assertThrows(NoSuchElementException.class,
-            () -> trainController.unshareTrain(SBB, nonExistentTrainId, "SOB"));
+            () -> trainController.unshareTrain(SBB, nonExistentTrainId, "SOB", "unsharing"));
         assertThat(exception.getMessage()).isEqualTo("Train or Branch not found");
     }
 
     @Test
     void should_implicitly_reject_merge_request_when_unsharing_train() {
         TrainListElement train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
 
         // Unsharing should implicitly reject the open merge request before deleting the branch
-        trainController.unshareTrain(SBB, train.getTrainId(), SOB.toString());
+        trainController.unshareTrain(SBB, train.getTrainId(), SOB.toString(), "revoking access");
 
         var changes = trainController.getTrainChangesById(SBB, train.getTrainId(), null, null).getBody();
         assertThat(changes).isNotNull();
@@ -169,3 +169,4 @@ class SharingTests {
         assertThat(rejectedIdx).isLessThan(deletedIdx);
     }
 }
+
