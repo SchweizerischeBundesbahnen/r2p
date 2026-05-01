@@ -145,6 +145,10 @@
                     <!-- Populated by JS -->
                 </select>
             </div>
+            <div class="form-group">
+                <label class="form-label required" for="share-comment-input">Comment</label>
+                <textarea id="share-comment-input" class="form-textarea" placeholder="Reason for sharing this train…"></textarea>
+            </div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-ghost" onclick="closeModal('modal-share')">Cancel</button>
@@ -191,13 +195,61 @@
                 The branch name is: <strong id="mr-branch-name-display">–</strong>
             </p>
             <div class="form-group">
-                <label class="form-label" for="mr-comment-input">Comment (optional)</label>
+                <label class="form-label required" for="mr-comment-input">Comment</label>
                 <textarea id="mr-comment-input" class="form-textarea" placeholder="Describe what you changed and why…"></textarea>
             </div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-ghost" onclick="closeModal('modal-merge-request')">Cancel</button>
             <button class="btn btn-primary" onclick="confirmMergeRequest()">⇐ Open Merge Request</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════ MODAL: Accept Merge ════════════════════════ -->
+<div class="modal-overlay hidden" id="modal-accept-merge">
+    <div class="modal-card">
+        <div class="modal-header">
+            <span class="modal-title">✔ Accept Merge Request</span>
+            <button class="modal-close" onclick="closeModal('modal-accept-merge')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom:1rem; color:var(--text-secondary); font-size:0.9rem;">
+                Merging branch <strong id="accept-branch-name-display">–</strong> into <strong>main</strong>.
+                This action cannot be undone.
+            </p>
+            <div class="form-group">
+                <label class="form-label required" for="accept-comment-input">Comment</label>
+                <textarea id="accept-comment-input" class="form-textarea" placeholder="Reason for accepting this merge request…"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('modal-accept-merge')">Cancel</button>
+            <button class="btn btn-success" onclick="confirmAcceptMerge()">✔ Merge</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════ MODAL: Reject Merge ════════════════════════ -->
+<div class="modal-overlay hidden" id="modal-reject-merge">
+    <div class="modal-card">
+        <div class="modal-header">
+            <span class="modal-title">✗ Reject Merge Request</span>
+            <button class="modal-close" onclick="closeModal('modal-reject-merge')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom:1rem; color:var(--text-secondary); font-size:0.9rem;">
+                Rejecting merge request for branch <strong id="reject-branch-name-display">–</strong>.
+                The branch will revert to <em>Open</em> state and the partner can continue working on it.
+            </p>
+            <div class="form-group">
+                <label class="form-label required" for="reject-comment-input">Comment</label>
+                <textarea id="reject-comment-input" class="form-textarea" placeholder="Reason for rejecting this merge request…"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('modal-reject-merge')">Cancel</button>
+            <button class="btn btn-danger" onclick="confirmRejectMerge()">✗ Reject</button>
         </div>
     </div>
 </div>
@@ -355,6 +407,8 @@
                 MERGE_REQUESTED: '⇐ MR Open'
             }[state] || state;
 
+            const isLeadRU = currentTrain.partners[0] === currentPartner;
+
             let actionBtns = '';
             // Edit button: only for own OPEN branches (Lead RU can edit main, partners their own)
             if (isOwn && state === 'OPEN') {
@@ -365,6 +419,11 @@
             // Merge request: only for own OPEN non-main branches
             if (isOwn && state === 'OPEN' && !isMain) {
                 actionBtns += `<button class="btn btn-outline btn-sm" onclick="openMergeRequestModal('${b.branchId}', '${b.branchName}')">⇐ Merge Request</button>`;
+            }
+            // Accept / Reject: only for Lead RU, only for MERGE_REQUESTED non-main branches
+            if (isLeadRU && state === 'MERGE_REQUESTED' && !isMain) {
+                actionBtns += `<button class="btn btn-success btn-sm" onclick="openAcceptMergeModal('${b.branchName}')">✔ Accept</button>`;
+                actionBtns += `<button class="btn btn-danger btn-sm" onclick="openRejectMergeModal('${b.branchName}')">✗ Reject</button>`;
             }
 
             return `
@@ -408,8 +467,13 @@
 
     function confirmShare() {
         const partner = document.getElementById('share-partner-select').value;
-        if (!partner) return;
+        const comment = document.getElementById('share-comment-input').value.trim();
+        if (!partner || !comment) {
+            showToast('Please select a partner and enter a comment.', 'error');
+            return;
+        }
         showToast(`Train shared with ${partner} successfully.`, 'success');
+        document.getElementById('share-comment-input').value = '';
         closeModal('modal-share');
     }
 
@@ -442,8 +506,47 @@
     }
 
     function confirmMergeRequest() {
+        const comment = document.getElementById('mr-comment-input').value.trim();
+        if (!comment) {
+            showToast('Please enter a comment for the merge request.', 'error');
+            return;
+        }
         showToast('Merge request opened successfully.', 'success');
         closeModal('modal-merge-request');
+    }
+
+    function openAcceptMergeModal(branchName) {
+        document.getElementById('accept-branch-name-display').textContent = branchName;
+        document.getElementById('accept-comment-input').value = '';
+        openModal('modal-accept-merge');
+    }
+
+    function confirmAcceptMerge() {
+        const comment = document.getElementById('accept-comment-input').value.trim();
+        if (!comment) {
+            showToast('Please enter a comment for accepting the merge request.', 'error');
+            return;
+        }
+        showToast('Merge request accepted. Branch merged into main.', 'success');
+        closeModal('modal-accept-merge');
+        // In the real app, perform the merge action and refresh the branches
+    }
+
+    function openRejectMergeModal(branchName) {
+        document.getElementById('reject-branch-name-display').textContent = branchName;
+        document.getElementById('reject-comment-input').value = '';
+        openModal('modal-reject-merge');
+    }
+
+    function confirmRejectMerge() {
+        const comment = document.getElementById('reject-comment-input').value.trim();
+        if (!comment) {
+            showToast('Please enter a comment for rejecting the merge request.', 'error');
+            return;
+        }
+        showToast('Merge request rejected. Branch status set to Open.', 'success');
+        closeModal('modal-reject-merge');
+        // In the real app, perform the reject action and refresh the branches
     }
 
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
