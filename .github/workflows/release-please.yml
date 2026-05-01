@@ -21,11 +21,18 @@ jobs:
       minor: ${{ steps.release.outputs.minor }}
       patch: ${{ steps.release.outputs.patch }}
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.R2P_APP_ID }}
+          private-key: ${{ secrets.R2P_APP_PRIVATE_KEY }}
+
       - name: Run release-please
         id: release
         uses: googleapis/release-please-action@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
         # Note: Configuration is managed via release-please-config.json
         # and .release-please-manifest.json files
 
@@ -34,7 +41,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: ${{ fromJSON(steps.release.outputs.pr).headBranchName }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Set up JDK
         if: ${{ steps.release.outputs.pr }}
