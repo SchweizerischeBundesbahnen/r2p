@@ -50,7 +50,7 @@
                             🔗 Share Train
                         </button>
                         <button class="btn btn-primary" onclick="openCreateBranchModal()">
-                            ⎇ New Branch
+                            ⎇ New Variant
                         </button>
                     </div>
                 </div>
@@ -95,10 +95,10 @@
             </div>
         </div>
 
-        <!-- Journey (main branch – read-only table) -->
+        <!-- Journey (main variant – read-only table) -->
         <div class="card">
             <div class="card-header">
-                <span class="card-title">🗺️ Journey Route (main branch)</span>
+                <span class="card-title">🗺️ Journey Route (main variant)</span>
             </div>
             <div class="card-body" style="padding-top:0.5rem; padding-bottom:0.5rem;">
                 <div class="journey-table-wrapper">
@@ -119,10 +119,10 @@
             </div>
         </div>
 
-        <!-- Branches Section -->
+        <!-- Variants Section -->
         <div class="card">
             <div class="card-header">
-                <span class="card-title">⎇ Branches</span>
+                <span class="card-title">⎇ Variants</span>
             </div>
             <div id="branches-list">
                 <!-- Rendered by JS -->
@@ -161,22 +161,22 @@
     </div>
 </div>
 
-<!-- ══════════════════ MODAL: Create Branch ════════════════════════ -->
+<!-- ══════════════════ MODAL: Create Variant ════════════════════════ -->
 <div class="modal-overlay hidden" id="modal-create-branch">
     <div class="modal-card">
         <div class="modal-header">
-            <span class="modal-title">⎇ Create New Branch</span>
+            <span class="modal-title">⎇ Create New Variant</span>
             <button class="modal-close" onclick="closeModal('modal-create-branch')">✕</button>
         </div>
         <div class="modal-body">
             <div class="form-group">
-                <label class="form-label required" for="branch-name-input">Branch Name</label>
+                <label class="form-label required" for="branch-name-input">Variant Name</label>
                 <input type="text" id="branch-name-input" class="form-input" placeholder="e.g., sbb/rolling-stock-update" maxlength="255">
                 <p class="form-hint">Lowercase, hyphens and slashes allowed. Max 255 characters.</p>
             </div>
             <div class="form-group">
                 <label class="form-label required" for="branch-comment-input">Comment</label>
-                <textarea id="branch-comment-input" class="form-textarea" placeholder="Describe the purpose of this branch…"></textarea>
+                <textarea id="branch-comment-input" class="form-textarea" placeholder="Describe the purpose of this variant…"></textarea>
             </div>
         </div>
         <div class="modal-footer">
@@ -195,8 +195,8 @@
         </div>
         <div class="modal-body">
             <p style="margin-bottom:1rem; color:var(--text-secondary); font-size:0.9rem;">
-                Opening a merge request proposes your branch changes to be merged into <strong>main</strong>.
-                The branch name is: <strong id="mr-branch-name-display">–</strong>
+                Opening a merge request proposes your variant changes to be merged into <strong>main</strong>.
+                The variant name is: <strong id="mr-branch-name-display">–</strong>
             </p>
             <div class="form-group">
                 <label class="form-label required" for="mr-comment-input">Comment</label>
@@ -219,7 +219,7 @@
         </div>
         <div class="modal-body">
             <p style="margin-bottom:1rem; color:var(--text-secondary); font-size:0.9rem;">
-                Merging branch <strong id="accept-branch-name-display">–</strong> into <strong>main</strong>.
+                Merging variant <strong id="accept-branch-name-display">–</strong> into <strong>main</strong>.
                 This action cannot be undone.
             </p>
             <div class="form-group">
@@ -243,8 +243,8 @@
         </div>
         <div class="modal-body">
             <p style="margin-bottom:1rem; color:var(--text-secondary); font-size:0.9rem;">
-                Rejecting merge request for branch <strong id="reject-branch-name-display">–</strong>.
-                The branch will revert to <em>Open</em> state and the partner can continue working on it.
+                Rejecting merge request for variant <strong id="reject-branch-name-display">–</strong>.
+                The variant will revert to <em>Open</em> state and the partner can continue working on it.
             </p>
             <div class="form-group">
                 <label class="form-label required" for="reject-comment-input">Comment</label>
@@ -409,7 +409,7 @@
                 OPEN: '● Open',
                 MERGED: '✓✓ Merged',
                 DELETED: '✗ Deleted',
-                MERGE_REQUESTED: '⇐ MR Open'
+                MERGE_REQUESTED: '⇐ Merge Request Open'
             }[state] || state;
 
             const isLeadRU = currentTrain.partners[0] === currentPartner;
@@ -451,7 +451,7 @@
             `;
         }).join('');
 
-        container.innerHTML = html || '<div class="empty-state">No branches found.</div>';
+        container.innerHTML = html || '<div class="empty-state">No variants found.</div>';
     }
 
     /* ── Modals ─────────────────────────────────────────────────── */

@@ -41,18 +41,18 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title" id="page-title">Read View</h1>
-                <p class="page-subtitle" id="page-subtitle">Branch: –</p>
+                <p class="page-subtitle" id="page-subtitle">Variant: –</p>
             </div>
             <div class="btn-group">
-                <!-- Edit button: only for own branches -->
-                <a href="#" class="btn btn-primary" id="edit-btn" style="display:none;">✏ Edit Branch</a>
+                <!-- Edit button: only for own variants -->
+                <a href="#" class="btn btn-primary" id="edit-btn" style="display:none;">✏ Edit Variant</a>
                 <button class="btn btn-outline" onclick="openJsonModal()">{ } View JSON</button>
             </div>
         </div>
 
         <!-- Read-only notice -->
         <div class="alert alert-info">
-            👁️ This is a <strong>read-only view</strong> of the branch. No changes can be made here.
+            👁️ This is a <strong>read-only view</strong> of the variant. No changes can be made here.
         </div>
 
         <!-- ── Train Details Card ────────────────────────────────── -->
@@ -175,7 +175,7 @@
         document.getElementById('back-btn').href = backUrl;
 
         document.getElementById('page-title').textContent = currentBranch.business.trainNumber;
-        document.getElementById('page-subtitle').textContent = `Branch: ${currentBranch.branchName}`;
+        document.getElementById('page-subtitle').textContent = `Variant: ${currentBranch.branchName}`;
         document.title = `R2P – ${currentBranch.business.trainNumber} (${currentBranch.branchName})`;
 
         document.getElementById('detail-train-number').textContent = currentBranch.business.trainNumber;

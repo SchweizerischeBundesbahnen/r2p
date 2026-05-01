@@ -35,7 +35,7 @@
 <div class="sticky-edit-bar" id="sticky-edit-bar">
     <div class="sticky-edit-bar-inner">
         <div class="sticky-edit-bar-title">
-            <span id="sticky-title">Edit Branch</span>
+            <span id="sticky-title">Edit Variant</span>
             <span class="unsaved-indicator hidden" id="unsaved-indicator">● Unsaved changes</span>
         </div>
         <div class="sticky-edit-bar-actions">
@@ -51,18 +51,18 @@
 
         <a href="#" class="back-link" id="back-link">Traffic View</a>
 
-        <!-- Page Header with branch info -->
+        <!-- Page Header with variant info -->
         <div class="page-header">
             <div>
-                <h1 class="page-title" id="page-title">Edit Branch</h1>
-                <p class="page-subtitle" id="page-subtitle">Editing branch: –</p>
+                <h1 class="page-title" id="page-title">Edit Variant</h1>
+                <p class="page-subtitle" id="page-subtitle">Editing variant: –</p>
             </div>
         </div>
 
-        <!-- Branch context info -->
+        <!-- Variant context info -->
         <div class="alert alert-info" id="branch-alert">
-            ✏️ You are editing branch <strong id="branch-name-display">–</strong>.
-            Changes will be saved as a new version of this branch.
+            ✏️ You are editing variant <strong id="branch-name-display">–</strong>.
+            Changes will be saved as a new version of this variant.
         </div>
 
         <!-- ── Basic Info Card ──────────────────────────────────── -->
@@ -345,7 +345,7 @@
         document.getElementById('cancel-btn') && (document.getElementById('cancel-btn').href = `traffic-view.html?trainId=${currentTrain.trainId}`);
         document.getElementById('sticky-cancel-btn').href = `traffic-view.html?trainId=${currentTrain.trainId}`;
         document.getElementById('page-title').textContent = `Edit: ${currentBranch.business.trainNumber}`;
-        document.getElementById('page-subtitle').textContent = `Branch: ${branchDisplayName}`;
+        document.getElementById('page-subtitle').textContent = `Variant: ${branchDisplayName}`;
         document.getElementById('branch-name-display').textContent = branchDisplayName;
         document.getElementById('sticky-title').textContent = `Edit: ${currentBranch.business.trainNumber}`;
 
