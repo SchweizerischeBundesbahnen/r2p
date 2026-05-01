@@ -3,6 +3,7 @@ package ch.rail.r2p.domain;
 import ch.rail.r2p.api.dto.Train;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,6 +29,7 @@ public class TrainVersion {
     boolean head;
 
     public TrainVersion createNewVersion(Train payload, String comment) {
+        Objects.requireNonNull(comment, "comment must not be null");
         return toBuilder()
             .version(UUID.randomUUID())
             .timestamp(OffsetDateTime.now())
