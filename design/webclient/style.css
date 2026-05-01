@@ -1357,6 +1357,27 @@ tbody td {
     margin-top: 2px;
 }
 
+.jt-act-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.jt-feature-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    background: var(--accent-color-light, #e8f0fe);
+    color: var(--accent-color, #1a73e8);
+    border: 1px solid var(--accent-color, #1a73e8);
+    border-radius: 4px;
+    padding: 1px 6px;
+    white-space: nowrap;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .jt-act-actions {
     display: flex;
     gap: 4px;

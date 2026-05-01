@@ -154,6 +154,13 @@
 <script src="sampleData.js"></script>
 <script src="settings-modal.js"></script>
 <script>
+    const RS_FEATURE_LABELS = {
+        WLAN_HOTSPOT: 'WLAN Hotspot available',
+        RESTAURANT: 'Restaurant',
+        QUIET_ZONE_1ST_CLASS: 'Quiet zone in 1st class',
+        LOW_FLOOR_ENTRY: 'Low-floor entry'
+    };
+
     const settings = JSON.parse(localStorage.getItem('r2p_settings') || JSON.stringify(defaultSettings));
     const params = new URLSearchParams(window.location.search);
     const trainId = params.get('trainId');
@@ -246,6 +253,10 @@
             const arr = act.timings?.find(t => t.type === 'arrival')?.time?.slice(0, 5);
             const dep = act.timings?.find(t => t.type === 'departure')?.time?.slice(0, 5);
             const timesHtml = [arr ? `Arr: ${arr}` : null, dep ? `Dep: ${dep}` : null].filter(Boolean).join(' / ');
+            const features = colType === 'rs' ? (act.capability?.features ?? []) : [];
+            const featuresHtml = features.length > 0
+                ? `<div class="jt-act-features">${features.map(f => `<span class="jt-feature-tag" title="${f.value || ''}">${RS_FEATURE_LABELS[f.type] ?? f.type}${f.value ? ': ' + f.value : ''}</span>`).join('')}</div>`
+                : '';
             html += `
                 <div class="jt-act-item act-${colType}">
                     <div class="jt-act-header">
@@ -253,6 +264,7 @@
                     </div>
                     <div class="jt-act-resp">${act.responsibility.type} · <span class="badge badge-${act.responsibility.status}" style="font-size:0.6rem;">${act.responsibility.status}</span></div>
                     ${timesHtml ? `<div class="jt-act-times">${timesHtml}</div>` : ''}
+                    ${featuresHtml}
                 </div>`;
         });
         html += '</div>';

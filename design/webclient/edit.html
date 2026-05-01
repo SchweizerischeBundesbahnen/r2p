@@ -249,6 +249,17 @@
                             <input type="text" id="rs-composition" class="form-input" placeholder="e.g., RABDe 502">
                         </div>
                     </div>
+
+                    <!-- Features -->
+                    <div style="margin-top:1rem; border-top:1px solid var(--border-color); padding-top:1rem;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+                            <label class="form-label" style="margin-bottom:0;">Features</label>
+                            <button type="button" class="btn btn-ghost btn-sm" onclick="addRsFeatureRow()">＋ Add Feature</button>
+                        </div>
+                        <div id="rs-features-list" style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <!-- Feature rows rendered by JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -301,6 +312,13 @@
     const trainId = params.get('trainId');
     const branchId = params.get('branchId');
     const branchNameParam = params.get('branchName');
+
+    const RS_FEATURE_TYPES = [
+        { value: 'WLAN_HOTSPOT', label: 'WLAN Hotspot available' },
+        { value: 'RESTAURANT', label: 'Restaurant' },
+        { value: 'QUIET_ZONE_1ST_CLASS', label: 'Quiet zone in 1st class' },
+        { value: 'LOW_FLOOR_ENTRY', label: 'Low-floor entry' }
+    ];
 
     let currentTrain = null;
     let currentBranch = null;
@@ -512,6 +530,7 @@
                 document.getElementById('rs-length').value = act.capability?.rollingStock?.length ?? '';
                 document.getElementById('rs-weight').value = act.capability?.rollingStock?.weight ?? '';
                 document.getElementById('rs-composition').value = act.capability?.rollingStock?.composition ?? '';
+                renderRsFeatures(act.capability?.features ?? []);
             } else if (colType === 'staff') {
                 document.getElementById('staff-role').value = act.capability?.staff?.[0]?.type ?? '';
                 document.getElementById('staff-function').value = act.capability?.staff?.[0]?.action ?? '';
@@ -527,6 +546,7 @@
             document.getElementById('rs-length').value = '';
             document.getElementById('rs-weight').value = '';
             document.getElementById('rs-composition').value = '';
+            renderRsFeatures([]);
             document.getElementById('staff-role').value = '';
             document.getElementById('staff-function').value = '';
             document.getElementById('plan-passthrough').checked = false;
@@ -563,7 +583,8 @@
             const len = parseInt(document.getElementById('rs-length').value);
             const wgt = parseInt(document.getElementById('rs-weight').value);
             const comp = document.getElementById('rs-composition').value.trim();
-            act.capability = { features: [], rollingStock: { length: len || null, weight: wgt || null, composition: comp || null } };
+            const features = collectRsFeatures();
+            act.capability = { features, rollingStock: { length: len || null, weight: wgt || null, composition: comp || null } };
         } else if (pendingActivityColType === 'staff') {
             const role = document.getElementById('staff-role').value.trim();
             const fn = document.getElementById('staff-function').value.trim();
@@ -600,6 +621,41 @@
         clearDirty();
         showToast('Branch updated successfully!', 'success');
         setTimeout(() => { window.location.href = `traffic-view.html?trainId=${currentTrain.trainId}`; }, 1200);
+    }
+
+    function renderRsFeatures(features) {
+        const list = document.getElementById('rs-features-list');
+        list.innerHTML = '';
+        features.forEach((f, i) => addRsFeatureRow(f.type, f.value));
+    }
+
+    function addRsFeatureRow(type = '', value = '') {
+        const list = document.getElementById('rs-features-list');
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; gap:0.5rem; align-items:center;';
+        const typeOptions = RS_FEATURE_TYPES.map(ft =>
+            `<option value="${ft.value}"${ft.value === type ? ' selected' : ''}>${ft.label}</option>`
+        ).join('');
+        row.innerHTML = `
+            <select class="form-select rs-feature-type" style="flex:2;">
+                <option value="">– Select type –</option>
+                ${typeOptions}
+            </select>
+            <input type="text" class="form-input rs-feature-value" placeholder="Value (optional)" value="${value}" style="flex:2;">
+            <button type="button" class="btn btn-ghost-danger btn-sm" onclick="this.parentElement.remove()" title="Remove feature">✕</button>
+        `;
+        list.appendChild(row);
+    }
+
+    function collectRsFeatures() {
+        const rows = document.querySelectorAll('#rs-features-list > div');
+        const features = [];
+        rows.forEach(row => {
+            const type = row.querySelector('.rs-feature-type').value;
+            const value = row.querySelector('.rs-feature-value').value.trim();
+            if (type) features.push({ type, value });
+        });
+        return features;
     }
 
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
