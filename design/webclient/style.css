@@ -157,6 +157,71 @@ body {
     letter-spacing: 0.05em;
 }
 
+/* Language Switcher (toolbar) */
+.lang-switcher {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    background-color: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.lang-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.lang-btn:hover {
+    background-color: rgba(255,255,255,0.15);
+    color: white;
+}
+
+.lang-btn.active {
+    background-color: rgba(255,255,255,0.25);
+    color: white;
+}
+
+/* Language Switcher (settings page) */
+.lang-switcher-settings {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.lang-option-btn {
+    flex: 1;
+    background: var(--background-color);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: border-color 0.15s, background-color 0.15s, color 0.15s;
+    text-align: center;
+}
+
+.lang-option-btn:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.lang-option-btn.active {
+    border-color: var(--primary-color);
+    background-color: #ebf4ff;
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
 /* ========================================
    Main Content Layout
    ======================================== */

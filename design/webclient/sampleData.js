@@ -489,4 +489,18 @@ const defaultSettings = {
     partner: 'SBB'
 };
 
+/* ── Language Switcher ──────────────────────────────────────────── */
+/**
+ * Toggles the active state of the language switcher buttons.
+ * No actual translation is performed – this is a pure UI visualisation.
+ * @param {string} lang - Language code, e.g. 'en' or 'de'
+ * @param {HTMLElement} clickedBtn - The button element that was clicked
+ */
+function setLang(lang, clickedBtn) {
+    const switcher = clickedBtn.closest('.lang-switcher');
+    if (!switcher) return;
+    switcher.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+    clickedBtn.classList.add('active');
+}
+
 
