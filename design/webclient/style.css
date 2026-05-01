@@ -498,14 +498,34 @@ tbody td {
 .tl-dot {
     width: 14px;
     height: 14px;
-    border-radius: 50%;
     display: inline-block;
     flex-shrink: 0;
 }
 
-.tl-green .tl-dot { background-color: var(--tl-green); box-shadow: 0 0 4px rgba(56,161,105,0.5); }
-.tl-yellow .tl-dot { background-color: var(--tl-yellow); box-shadow: 0 0 4px rgba(214,158,46,0.5); }
-.tl-red .tl-dot { background-color: var(--tl-red); box-shadow: 0 0 4px rgba(229,62,62,0.5); }
+/* Green → circle */
+.tl-green .tl-dot {
+    background-color: var(--tl-green);
+    border-radius: 50%;
+    box-shadow: 0 0 4px rgba(56,161,105,0.5);
+}
+
+/* Yellow/Orange → square */
+.tl-yellow .tl-dot {
+    background-color: var(--tl-yellow);
+    border-radius: 2px;
+    box-shadow: 0 0 4px rgba(214,158,46,0.5);
+}
+
+/* Red → triangle (via clip-path) */
+.tl-red .tl-dot {
+    background-color: var(--tl-red);
+    border-radius: 0;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    box-shadow: none;
+    /* slightly larger so the triangle reads well at small size */
+    width: 16px;
+    height: 14px;
+}
 
 .tl-label {
     font-size: 0.75rem;
