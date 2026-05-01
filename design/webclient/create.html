@@ -247,6 +247,26 @@
                             <input type="text" id="rs-composition" class="form-input" placeholder="e.g., RABDe 502">
                         </div>
                     </div>
+
+                    <!-- Local only -->
+                    <div style="margin-top:1rem; border-top:1px solid var(--border-color); padding-top:1rem;">
+                        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                            <input type="checkbox" id="rs-local-only" style="width:16px; height:16px;">
+                            <span class="form-label" style="margin-bottom:0;">Local only (vor Ort)</span>
+                        </label>
+                        <p class="form-hint" style="margin-top:0.25rem;">If unchecked, this rolling stock activity spans forward to the end of the journey or until a new rolling stock activity starts.</p>
+                    </div>
+
+                    <!-- Features -->
+                    <div style="margin-top:1rem; border-top:1px solid var(--border-color); padding-top:1rem;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+                            <label class="form-label" style="margin-bottom:0;">Features</label>
+                            <button type="button" class="btn btn-ghost btn-sm" onclick="addRsFeatureRow()">＋ Add Feature</button>
+                        </div>
+                        <div id="rs-features-list" style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <!-- Feature rows rendered by JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -296,6 +316,13 @@
 <script>
     /* ── State ──────────────────────────────────────────────────── */
     const settings = JSON.parse(localStorage.getItem('r2p_settings') || JSON.stringify(defaultSettings));
+
+    const RS_FEATURE_TYPES = [
+        { value: 'WLAN_HOTSPOT', label: 'WLAN Hotspot available' },
+        { value: 'RESTAURANT', label: 'Restaurant' },
+        { value: 'QUIET_ZONE_1ST_CLASS', label: 'Quiet zone in 1st class' },
+        { value: 'LOW_FLOOR_ENTRY', label: 'Low-floor entry' }
+    ];
 
     let workingJourney = { journeylocations: [] };
 
@@ -353,22 +380,54 @@
         wrapper.style.display = '';
         empty.style.display = 'none';
 
+        // Pre-compute spanning RS state
+        const spanningRs = new Array(locs.length).fill(null);
+        const spanningRsOrigin = new Array(locs.length).fill(null);
+        let activeRsAct = null, activeRsOrigin = null;
+        for (let i = 0; i < locs.length; i++) {
+            const ownRsActs = locs[i].activities.filter(a => activityColumnType(a.type) === 'rs');
+            if (ownRsActs.length > 0) {
+                const nonLocal = ownRsActs.filter(a => !(a.capability?.localOnly ?? false));
+                if (nonLocal.length > 0) { activeRsAct = nonLocal[nonLocal.length - 1]; activeRsOrigin = i; }
+                else { activeRsAct = null; activeRsOrigin = null; }
+                spanningRs[i] = null;
+            } else {
+                spanningRs[i] = activeRsAct;
+                spanningRsOrigin[i] = activeRsOrigin;
+            }
+        }
+        // Compute span role
+        const spanRole = new Array(locs.length).fill('none');
+        for (let i = 0; i < locs.length; i++) {
+            const ownRsActs = locs[i].activities.filter(a => activityColumnType(a.type) === 'rs');
+            if (ownRsActs.length > 0) {
+                const nonLocal = ownRsActs.filter(a => !(a.capability?.localOnly ?? false));
+                if (nonLocal.length > 0) {
+                    spanRole[i] = (i + 1 < locs.length && spanningRs[i + 1] !== null) ? 'start' : 'solo';
+                } else { spanRole[i] = 'solo'; }
+            } else if (spanningRs[i]) {
+                spanRole[i] = (i + 1 < locs.length && spanningRs[i + 1] !== null) ? 'mid' : 'end';
+            }
+        }
+
         let html = '';
         locs.forEach((jl, idx) => {
             const stopName = jl.locations[0]?.name ?? '?';
             const isFirst = idx === 0;
             const isLast = idx === locs.length - 1;
+            const role = spanRole[idx];
 
             const rsActs = jl.activities.filter(a => activityColumnType(a.type) === 'rs');
             const staffActs = jl.activities.filter(a => activityColumnType(a.type) === 'staff');
             const planActs = jl.activities.filter(a => activityColumnType(a.type) === 'plan');
 
-            // Add-before row for first stop
             if (idx === 0) {
                 html += `<tr class="jt-add-stop-row"><td colspan="4"><button class="jt-add-activity-btn" style="max-width:200px;" onclick="insertStop(0)">＋ Add Stop Before</button></td></tr>`;
             }
 
-            html += `<tr>
+            const rsCellHtml = renderRsActivityCell(rsActs, jl.activities, idx, spanningRs[idx], spanningRsOrigin[idx], role);
+
+            html += `<tr class="jt-row-rs-${role}">
                 <td class="jt-stop-cell">
                     <div class="jt-stop-indicator">
                         <div class="jt-stop-line-col">
@@ -385,16 +444,60 @@
                         </div>
                     </div>
                 </td>
-                <td class="jt-act-cell">${renderActCells(rsActs, jl.activities, idx, 'rs', true)}</td>
+                <td class="jt-act-cell jt-rs-cell" data-rs-span="${role}">${rsCellHtml}</td>
                 <td class="jt-act-cell">${renderActCells(staffActs, jl.activities, idx, 'staff', true)}</td>
                 <td class="jt-act-cell">${renderActCells(planActs, jl.activities, idx, 'plan', true)}</td>
             </tr>`;
 
-            // Add-after row
-            html += `<tr class="jt-add-stop-row"><td colspan="4"><button class="jt-add-activity-btn" style="max-width:200px;" onclick="insertStop(${idx + 1})">＋ Add Stop After</button></td></tr>`;
+            const nextRole = idx + 1 < locs.length ? spanRole[idx + 1] : 'none';
+            const addRowRsSpan = (role === 'start' || role === 'mid') && (nextRole === 'mid' || nextRole === 'end') ? 'through' : 'none';
+            html += `<tr class="jt-add-stop-row jt-row-rs-addrow-${addRowRsSpan}">
+                <td style="padding:0 !important; border-bottom:none !important;">
+                    <button class="jt-add-activity-btn" style="max-width:200px; margin: 0 var(--spacing-md);" onclick="insertStop(${idx + 1})">＋ Add Stop After</button>
+                </td>
+                <td class="jt-rs-cell-passthrough" data-rs-passthrough="${addRowRsSpan}" style="padding:0 !important; border-bottom:none !important;"></td>
+                <td colspan="2" style="padding:0 !important; border-bottom:none !important;"></td>
+            </tr>`;
         });
 
         tbody.innerHTML = html;
+    }
+
+    function renderRsActivityCell(ownRsActs, allActs, stopIdx, inheritedAct, inheritedOrigin, role) {
+        let html = '<div class="jt-rs-cell-inner">';
+        if (ownRsActs.length > 0) {
+            html += '<div class="jt-act-list jt-rs-own-acts">';
+            ownRsActs.forEach(act => {
+                const globalAIdx = allActs.indexOf(act);
+                const arr = act.timings?.find(t => t.type === 'arrival')?.time?.slice(0, 5);
+                const dep = act.timings?.find(t => t.type === 'departure')?.time?.slice(0, 5);
+                const timesHtml = [arr ? `Arr: ${arr}` : null, dep ? `Dep: ${dep}` : null].filter(Boolean).join(' / ');
+                const isLocalOnly = act.capability?.localOnly ?? false;
+                const localBadge = isLocalOnly
+                    ? `<span class="rs-local-badge" title="Local only (vor Ort)">📍 local</span>`
+                    : `<span class="rs-span-badge" title="Spans forward">↔ spans</span>`;
+                html += `
+                    <div class="jt-act-item act-rs">
+                        <div class="jt-act-header">
+                            <span style="flex:1;">${partnerBadgeHtml(act.responsibility.id)}</span>
+                            <div class="jt-act-actions">
+                                <button class="btn btn-ghost btn-sm" onclick="openActivityModal(${stopIdx}, ${globalAIdx}, 'rs')" title="Edit">Edit</button>
+                                <button class="btn btn-ghost-danger btn-sm" onclick="deleteActivity(${stopIdx}, ${globalAIdx})" title="Delete">Delete</button>
+                            </div>
+                        </div>
+                        <div class="jt-act-resp">${act.responsibility.type} · <span class="badge badge-${act.responsibility.status}" style="font-size:0.6rem;">${act.responsibility.status}</span> ${localBadge}</div>
+                        ${timesHtml ? `<div class="jt-act-times">${timesHtml}</div>` : ''}
+                    </div>`;
+            });
+            html += '</div>';
+        }
+        if (inheritedAct && ownRsActs.length === 0 && role === 'end') {
+            const originName = workingJourney.journeylocations[inheritedOrigin]?.locations[0]?.name ?? `Stop ${inheritedOrigin + 1}`;
+            html += `<div class="rs-span-end-label">ends here · started at ${originName}</div>`;
+        }
+        html += `<div class="jt-rs-add-btn-wrap"><button class="jt-add-activity-btn" onclick="openActivityModal(${stopIdx}, null, 'rs')">＋ Activity</button></div>`;
+        html += '</div>';
+        return html;
     }
 
     function renderActCells(colActs, allActs, stopIdx, colType, editable) {
@@ -504,6 +607,8 @@
                 document.getElementById('rs-length').value = act.capability?.rollingStock?.length ?? '';
                 document.getElementById('rs-weight').value = act.capability?.rollingStock?.weight ?? '';
                 document.getElementById('rs-composition').value = act.capability?.rollingStock?.composition ?? '';
+                document.getElementById('rs-local-only').checked = act.capability?.localOnly ?? false;
+                renderRsFeatures(act.capability?.features ?? []);
             } else if (colType === 'staff') {
                 document.getElementById('staff-role').value = act.capability?.staff?.[0]?.type ?? '';
                 document.getElementById('staff-function').value = act.capability?.staff?.[0]?.action ?? '';
@@ -519,6 +624,8 @@
             document.getElementById('rs-length').value = '';
             document.getElementById('rs-weight').value = '';
             document.getElementById('rs-composition').value = '';
+            document.getElementById('rs-local-only').checked = false;
+            renderRsFeatures([]);
             document.getElementById('staff-role').value = '';
             document.getElementById('staff-function').value = '';
             document.getElementById('plan-passthrough').checked = false;
@@ -560,7 +667,9 @@
             const len = parseInt(document.getElementById('rs-length').value);
             const wgt = parseInt(document.getElementById('rs-weight').value);
             const comp = document.getElementById('rs-composition').value.trim();
-            act.capability = { features: [], rollingStock: {
+            const localOnly = document.getElementById('rs-local-only').checked;
+            const features = collectRsFeatures();
+            act.capability = { features, localOnly, rollingStock: {
                 length: len || null, weight: wgt || null, composition: comp || null
             }};
         } else if (pendingActivityColType === 'staff') {
@@ -608,6 +717,42 @@
         clearDirty();
         showToast(`Train "${name}" saved successfully!`, 'success');
         setTimeout(() => { window.location.href = 'overview.html'; }, 1200);
+    }
+
+    /* ── RS Feature helpers ─────────────────────────────────────── */
+    function renderRsFeatures(features) {
+        const list = document.getElementById('rs-features-list');
+        list.innerHTML = '';
+        features.forEach(f => addRsFeatureRow(f.type, f.value));
+    }
+
+    function addRsFeatureRow(type = '', value = '') {
+        const list = document.getElementById('rs-features-list');
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; gap:0.5rem; align-items:center;';
+        const typeOptions = RS_FEATURE_TYPES.map(ft =>
+            `<option value="${ft.value}"${ft.value === type ? ' selected' : ''}>${ft.label}</option>`
+        ).join('');
+        row.innerHTML = `
+            <select class="form-select rs-feature-type" style="flex:2;">
+                <option value="">– Select type –</option>
+                ${typeOptions}
+            </select>
+            <input type="text" class="form-input rs-feature-value" placeholder="Value (optional)" value="${value}" style="flex:2;">
+            <button type="button" class="btn btn-ghost-danger btn-sm" onclick="this.parentElement.remove()" title="Remove feature">✕</button>
+        `;
+        list.appendChild(row);
+    }
+
+    function collectRsFeatures() {
+        const rows = document.querySelectorAll('#rs-features-list > div');
+        const features = [];
+        rows.forEach(row => {
+            const type = row.querySelector('.rs-feature-type').value;
+            const value = row.querySelector('.rs-feature-value').value.trim();
+            if (type) features.push({ type, value });
+        });
+        return features;
     }
 
     /* ── Helpers ────────────────────────────────────────────────── */

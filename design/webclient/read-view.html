@@ -216,14 +216,57 @@
         const tbody = document.getElementById('journey-tbody');
         let html = '';
 
+        // Pre-compute spanning RS state
+        const spanningRs = new Array(locs.length).fill(null);
+        const spanningRsOrigin = new Array(locs.length).fill(null);
+        let activeRsAct = null;
+        let activeRsOrigin = null;
+        for (let i = 0; i < locs.length; i++) {
+            const ownRsActs = locs[i].activities.filter(a => activityColumnType(a.type) === 'rs');
+            if (ownRsActs.length > 0) {
+                const nonLocalActs = ownRsActs.filter(a => !(a.capability?.localOnly ?? false));
+                if (nonLocalActs.length > 0) {
+                    activeRsAct = nonLocalActs[nonLocalActs.length - 1];
+                    activeRsOrigin = i;
+                } else {
+                    activeRsAct = null; activeRsOrigin = null;
+                }
+                spanningRs[i] = null;
+            } else {
+                spanningRs[i] = activeRsAct;
+                spanningRsOrigin[i] = activeRsOrigin;
+            }
+        }
+
+        // Compute span role
+        const spanRole = new Array(locs.length).fill('none');
+        for (let i = 0; i < locs.length; i++) {
+            const ownRsActs = locs[i].activities.filter(a => activityColumnType(a.type) === 'rs');
+            if (ownRsActs.length > 0) {
+                const nonLocalActs = ownRsActs.filter(a => !(a.capability?.localOnly ?? false));
+                if (nonLocalActs.length > 0) {
+                    const spansOnward = i + 1 < locs.length && spanningRs[i + 1] !== null;
+                    spanRole[i] = spansOnward ? 'start' : 'solo';
+                } else {
+                    spanRole[i] = 'solo';
+                }
+            } else if (spanningRs[i]) {
+                const continuesNext = i + 1 < locs.length && spanningRs[i + 1] !== null;
+                spanRole[i] = continuesNext ? 'mid' : 'end';
+            }
+        }
+
         locs.forEach((jl, idx) => {
             const stopName = jl.locations[0]?.name ?? '?';
             const isFirst = idx === 0;
             const isLast = idx === locs.length - 1;
+            const role = spanRole[idx];
 
             const rsActs = jl.activities.filter(a => activityColumnType(a.type) === 'rs');
             const staffActs = jl.activities.filter(a => activityColumnType(a.type) === 'staff');
             const planActs = jl.activities.filter(a => activityColumnType(a.type) === 'plan');
+
+            const rsCellHtml = renderRsCell(rsActs, idx, locs, spanningRs[idx], spanningRsOrigin[idx], role);
 
             html += `<tr>
                 <td class="jt-stop-cell">
@@ -238,7 +281,7 @@
                         </div>
                     </div>
                 </td>
-                <td class="jt-act-cell">${renderActCells(rsActs, 'rs')}</td>
+                <td class="jt-act-cell jt-rs-cell" data-rs-span="${role}">${rsCellHtml}</td>
                 <td class="jt-act-cell">${renderActCells(staffActs, 'staff')}</td>
                 <td class="jt-act-cell">${renderActCells(planActs, 'plan')}</td>
             </tr>`;
@@ -247,16 +290,51 @@
         tbody.innerHTML = html || '<tr><td colspan="4" class="text-muted text-center" style="padding:2rem;">No journey stops defined.</td></tr>';
     }
 
+    function renderRsCell(ownRsActs, stopIdx, locs, inheritedAct, inheritedOrigin, role) {
+        let html = '<div class="jt-rs-cell-inner">';
+
+        if (ownRsActs.length > 0) {
+            html += '<div class="jt-act-list jt-rs-own-acts">';
+            ownRsActs.forEach(act => {
+                const arr = act.timings?.find(t => t.type === 'arrival')?.time?.slice(0, 5);
+                const dep = act.timings?.find(t => t.type === 'departure')?.time?.slice(0, 5);
+                const timesHtml = [arr ? `Arr: ${arr}` : null, dep ? `Dep: ${dep}` : null].filter(Boolean).join(' / ');
+                const features = act.capability?.features ?? [];
+                const featuresHtml = features.length > 0
+                    ? `<div class="jt-act-features">${features.map(f => `<span class="jt-feature-tag" title="${f.value || ''}">${RS_FEATURE_LABELS[f.type] ?? f.type}${f.value ? ': ' + f.value : ''}</span>`).join('')}</div>`
+                    : '';
+                const isLocalOnly = act.capability?.localOnly ?? false;
+                const localBadge = isLocalOnly
+                    ? `<span class="rs-local-badge" title="Local only (vor Ort)">📍 local</span>`
+                    : `<span class="rs-span-badge" title="Spans forward">↔ spans</span>`;
+                html += `
+                    <div class="jt-act-item act-rs">
+                        <div class="jt-act-header">
+                            <span style="flex:1;">${partnerBadgeHtml(act.responsibility.id)}</span>
+                        </div>
+                        <div class="jt-act-resp">${act.responsibility.type} · <span class="badge badge-${act.responsibility.status}" style="font-size:0.6rem;">${act.responsibility.status}</span> ${localBadge}</div>
+                        ${timesHtml ? `<div class="jt-act-times">${timesHtml}</div>` : ''}
+                        ${featuresHtml}
+                    </div>`;
+            });
+            html += '</div>';
+        }
+
+        if (inheritedAct && ownRsActs.length === 0 && role === 'end') {
+            const originName = locs[inheritedOrigin]?.locations[0]?.name ?? `Stop ${inheritedOrigin + 1}`;
+            html += `<div class="rs-span-end-label">ends here · started at ${originName}</div>`;
+        }
+
+        html += '</div>';
+        return html;
+    }
+
     function renderActCells(acts, colType) {
         let html = '<div class="jt-act-list">';
         acts.forEach(act => {
             const arr = act.timings?.find(t => t.type === 'arrival')?.time?.slice(0, 5);
             const dep = act.timings?.find(t => t.type === 'departure')?.time?.slice(0, 5);
             const timesHtml = [arr ? `Arr: ${arr}` : null, dep ? `Dep: ${dep}` : null].filter(Boolean).join(' / ');
-            const features = colType === 'rs' ? (act.capability?.features ?? []) : [];
-            const featuresHtml = features.length > 0
-                ? `<div class="jt-act-features">${features.map(f => `<span class="jt-feature-tag" title="${f.value || ''}">${RS_FEATURE_LABELS[f.type] ?? f.type}${f.value ? ': ' + f.value : ''}</span>`).join('')}</div>`
-                : '';
             html += `
                 <div class="jt-act-item act-${colType}">
                     <div class="jt-act-header">
@@ -264,7 +342,6 @@
                     </div>
                     <div class="jt-act-resp">${act.responsibility.type} · <span class="badge badge-${act.responsibility.status}" style="font-size:0.6rem;">${act.responsibility.status}</span></div>
                     ${timesHtml ? `<div class="jt-act-times">${timesHtml}</div>` : ''}
-                    ${featuresHtml}
                 </div>`;
         });
         html += '</div>';
