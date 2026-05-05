@@ -545,10 +545,10 @@
         const name = document.getElementById('branch-name-input').value.trim();
         const comment = document.getElementById('branch-comment-input').value.trim();
         if (!name || !comment) {
-            showToast('Please fill in branch name and comment.', 'error');
+            showToast('Please fill in variant name and comment.', 'error');
             return;
         }
-        showToast(`Branch "${name}" created. Opening editor…`, 'success');
+        showToast(`Variant "${name}" created. Opening editor…`, 'success');
         closeModal('modal-create-branch');
         // In the real app, redirect to edit.html with new branch ID
         setTimeout(() => {
@@ -585,7 +585,7 @@
             showToast('Please enter a comment for accepting the merge request.', 'error');
             return;
         }
-        showToast('Merge request accepted. Branch merged into main.', 'success');
+        showToast('Merge request accepted. Variant merged into main.', 'success');
         closeModal('modal-accept-merge');
         // In the real app, perform the merge action and refresh the branches
     }
@@ -602,7 +602,7 @@
             showToast('Please enter a comment for rejecting the merge request.', 'error');
             return;
         }
-        showToast('Merge request rejected. Branch status set to Open.', 'success');
+        showToast('Merge request rejected. Variant status set to Open.', 'success');
         closeModal('modal-reject-merge');
         // In the real app, perform the reject action and refresh the branches
     }

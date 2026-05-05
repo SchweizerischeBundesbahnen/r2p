@@ -742,7 +742,7 @@
         if (!name) { showToast('Train name is required.', 'error'); return; }
         if (!comment) { showToast('A change comment is required.', 'error'); return; }
         clearDirty();
-        showToast('Branch updated successfully!', 'success');
+        showToast('Variant updated successfully!', 'success');
         setTimeout(() => { window.location.href = `traffic-view.html?trainId=${currentTrain.trainId}`; }, 1200);
     }
 
