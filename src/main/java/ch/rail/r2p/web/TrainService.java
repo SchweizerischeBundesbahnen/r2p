@@ -43,7 +43,8 @@ public class TrainService {
 
     @Transactional
     public TrainVersionEnriched createTrain(String owner, String comment, Train train) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
+        Objects.requireNonNull(train.getStartdate(), "Train startdate must not be null");
         UUID trainId = UUID.randomUUID();
         checkInstanceOwner(owner);
         Branch branch = Branch.createBranch(trainId, MAIN_BRANCH_NAME, owner);
@@ -69,7 +70,7 @@ public class TrainService {
 
     @Transactional
     public TrainVersionEnriched deleteTrainBranch(String partner, UUID trainId, UUID branchId, String comment) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
         var train = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkSharing(partner, train);
@@ -133,7 +134,7 @@ public class TrainService {
 
     @Transactional
     public void shareTrain(String partner, UUID trainId, String shareWith, String comment) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
         TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkSharing(partner, main);
@@ -148,7 +149,7 @@ public class TrainService {
 
     @Transactional
     public void unshareTrain(String partner, UUID trainId, String unshareWith, String comment) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
         TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkUnsharingAuthorization(main.partners(), partner, unshareWith);
@@ -173,7 +174,7 @@ public class TrainService {
 
     @Transactional
     public TrainVersionEnriched createTrainBranch(String partner, UUID trainId, String branchName, String comment, Train train) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
         TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkSharing(partner, main);
@@ -190,7 +191,8 @@ public class TrainService {
 
     @Transactional
     public TrainVersionEnriched updateTrainBranch(String partner, UUID trainId, UUID branchId, String comment, Train train) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
+        Objects.requireNonNull(train.getStartdate(), "Train startdate must not be null");
         TrainVersionEnriched branch = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkSharing(partner, branch);
@@ -237,7 +239,7 @@ public class TrainService {
 
     @Transactional
     public TrainVersionEnriched requestMerge(String partner, UUID trainId, UUID branchId, String comment) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
         TrainVersionEnriched branch = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkSharing(partner, branch);
@@ -254,7 +256,7 @@ public class TrainService {
 
     @Transactional
     public List<TrainVersionEnriched> merge(String partner, UUID trainId, UUID branchId, UUID reviewedVersion, String comment) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
         checkInstanceOwner(partner);
         TrainVersionEnriched branchEnriched = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
@@ -288,7 +290,7 @@ public class TrainService {
 
     @Transactional
     public TrainVersionEnriched rejectMerge(String partner, UUID trainId, UUID branchId, String comment) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
         checkInstanceOwner(partner);
         TrainVersionEnriched branch = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
@@ -329,6 +331,12 @@ public class TrainService {
         Set<BranchState> allowedStateSet = Arrays.stream(allowedStates).collect(Collectors.toSet());
         if (!allowedStateSet.contains(branch.getState())) {
             throw new InvalidBranchStateException("Branch state not allowed: " + branch.getState());
+        }
+    }
+
+    private static void validateComment(String comment) {
+        if (comment == null || comment.isBlank()) {
+            throw new IllegalArgumentException("comment must not be blank");
         }
     }
 }

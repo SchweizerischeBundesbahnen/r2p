@@ -3,7 +3,6 @@ package ch.rail.r2p.domain;
 import ch.rail.r2p.api.dto.Action;
 import jakarta.annotation.Nullable;
 import java.time.OffsetDateTime;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,57 +23,66 @@ public class Changelog {
     @Nullable
     private final String affectedPartner;
     private final UUID trainId;
+    @Nullable
     private final UUID branchId;
+    @Nullable
     private final String branchName;
+    @Nullable
     private final UUID version;
     private final OffsetDateTime timestamp;
     private final String comment;
 
     public static Changelog forCreation(String partner, TrainVersion trainVersion, Branch branch, String comment) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
         return new Changelog(UUID.randomUUID(), Action.CREATED, partner, null, trainVersion.trainId, trainVersion.branchId, branch.getPrefixedName(), trainVersion.version, trainVersion.timestamp,
             comment);
     }
 
     public static Changelog forUpdate(String partner, TrainVersion trainVersion, Branch branch, String comment) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
         return new Changelog(UUID.randomUUID(), Action.UPDATED, partner, null, trainVersion.trainId, trainVersion.branchId, branch.getPrefixedName(), trainVersion.version, trainVersion.timestamp,
             comment);
     }
 
     public static Changelog forDeletion(String partner, Branch branch, String comment) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
         return new Changelog(UUID.randomUUID(), Action.DELETED, partner, null, branch.trainId, branch.branchId, branch.getPrefixedName(), null, OffsetDateTime.now(),
             comment);
     }
 
     public static Changelog forSharing(String partner, String affectedPartner, TrainVersion trainVersion, String comment) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
         return new Changelog(UUID.randomUUID(), Action.SHARED, partner, affectedPartner, trainVersion.trainId, null, null, trainVersion.version,
             OffsetDateTime.now(), comment);
     }
 
     public static Changelog forUnsharing(String partner, String affectedPartner, TrainVersion trainVersion, String comment) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
         return new Changelog(UUID.randomUUID(), Action.UNSHARED, partner, affectedPartner, trainVersion.trainId, null, null, trainVersion.version,
             OffsetDateTime.now(), comment);
     }
 
     public static Changelog forMergeRequest(String partner, TrainVersion trainVersion, Branch branch, String comment) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
         return new Changelog(UUID.randomUUID(), Action.MERGE_REQUESTED, partner, null, trainVersion.trainId, trainVersion.branchId, branch.getPrefixedName(), trainVersion.version,
             OffsetDateTime.now(), comment);
     }
 
     public static Changelog forMerge(String partner, Branch sourceBranch, TrainVersion mergedBranchVersion, String comment) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
         return new Changelog(UUID.randomUUID(), Action.MERGED, partner, null, mergedBranchVersion.trainId, sourceBranch.branchId, sourceBranch.getPrefixedName(), mergedBranchVersion.version,
             OffsetDateTime.now(), comment);
     }
 
     public static Changelog forMergeRejection(String partner, TrainVersion trainVersion, Branch branch, String comment) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        validateComment(comment);
         return new Changelog(UUID.randomUUID(), Action.MERGE_REJECTED, partner, null, trainVersion.trainId, trainVersion.branchId, branch.getPrefixedName(), trainVersion.version,
             OffsetDateTime.now(), comment);
+    }
+
+    private static void validateComment(String comment) {
+        if (comment.isBlank()) {
+            throw new IllegalArgumentException("comment must not be blank");
+        }
     }
 }

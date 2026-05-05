@@ -29,7 +29,10 @@ public class TrainVersion {
     boolean head;
 
     public TrainVersion createNewVersion(Train payload, String comment) {
-        Objects.requireNonNull(comment, "comment must not be null");
+        Objects.requireNonNull(payload.getStartdate(), "payload.startdate must not be null");
+        if (comment.isBlank()) {
+            throw new IllegalArgumentException("comment must not be blank");
+        }
         return toBuilder()
             .version(UUID.randomUUID())
             .timestamp(OffsetDateTime.now())

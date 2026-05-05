@@ -878,6 +878,7 @@ components:
         - partner
         - trainId
         - timestamp
+        - comment
       properties:
         action:
           $ref: '#/components/schemas/Action'
@@ -947,6 +948,7 @@ components:
         - branchState
         - timestamp
         - mainBranch
+        - comment
       properties:
         owner:
           type: string
