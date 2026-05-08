@@ -47,6 +47,7 @@ const trainPayloadIC1234 = {
                         timings: [],
                         responsibility: { type: "rp", id: "BLS", status: "proposed" },
                         capability: {
+                            localOnly: false,
                             features: [],
                             rollingStock: { weight: 420000, length: 200000, maxSpeed: 200 }
                         }
@@ -101,6 +102,7 @@ const trainPayloadRE4711 = {
                         timings: [],
                         responsibility: { type: "rp", id: "BLS", status: "confirmed" },
                         capability: {
+                            localOnly: false,
                             features: [],
                             rollingStock: { weight: 280000, length: 150000, maxSpeed: 160 }
                         }
@@ -167,6 +169,7 @@ const trainPayloadS2050 = {
                         timings: [],
                         responsibility: { type: "rp", id: "SOB", status: "confirmed" },
                         capability: {
+                            localOnly: false,
                             features: [],
                             rollingStock: { weight: 180000, length: 100000, maxSpeed: 140 }
                         }
@@ -233,6 +236,7 @@ const trainPayloadIR2275 = {
                         timings: [],
                         responsibility: { type: "rp", id: "SBB", status: "confirmed" },
                         capability: {
+                            localOnly: false,
                             features: [],
                             rollingStock: { weight: 380000, length: 190000, maxSpeed: 200 }
                         }
@@ -488,5 +492,19 @@ const defaultSettings = {
     serverUrl: 'http://localhost:8080',
     partner: 'SBB'
 };
+
+/* ── Language Switcher ──────────────────────────────────────────── */
+/**
+ * Toggles the active state of the language switcher buttons.
+ * No actual translation is performed – this is a pure UI visualisation.
+ * @param {string} lang - Language code, e.g. 'en' or 'de'
+ * @param {HTMLElement} clickedBtn - The button element that was clicked
+ */
+function setLang(lang, clickedBtn) {
+    const switcher = clickedBtn.closest('.lang-switcher');
+    if (!switcher) return;
+    switcher.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+    clickedBtn.classList.add('active');
+}
 
 

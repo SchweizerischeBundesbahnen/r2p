@@ -51,7 +51,7 @@ class BranchTests {
     @Test
     void should_create_branch() {
         TrainListElement train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         var result = trainController.getTrainById(SBB, train.getTrainId());
         assertThat(result.getBody()).isNotNull();
@@ -61,7 +61,7 @@ class BranchTests {
     @Test
     void should_flag_main_branch_correctly() {
         TrainListElement train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         var result = trainController.getTrainById(SBB, train.getTrainId());
         assertThat(result.getBody()).isNotNull();
@@ -77,7 +77,7 @@ class BranchTests {
     void should_not_create_branch_with_same_name() {
         String branchName = "myBranch";
         TrainListElement train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         actor.createBranch(SOB, train.getTrainId(), branchName, "test");
         assertThrows(DuplicateKeyException.class, () -> trainController.createTrainBranch(SOB, train.getTrainId(), branchName, "test", actor.loadSampleTrain()));
         assertThrows(DuplicateKeyException.class, () -> trainController.createTrainBranch(SBB, train.getTrainId(), branchName, "test", actor.loadSampleTrain()));
@@ -87,7 +87,7 @@ class BranchTests {
     void should_delete_branch() {
         String branchName = "myBranch";
         TrainListElement train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         Branch branch = actor.createBranch(SOB, train.getTrainId(), branchName, "test");
         trainController.deleteTrainBranch(SOB, train.getTrainId(), branch.getBranchId(), "delete branch");
         var result = trainController.getTrainById(SBB, train.getTrainId());
@@ -102,7 +102,7 @@ class BranchTests {
     void should_not_delete_branch_of_other_partner() {
         String branchName = "myBranch";
         TrainListElement train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         Branch branch = actor.createBranch(SOB, train.getTrainId(), branchName, "test");
         assertThrows(AuthorizationDeniedException.class,
             () -> trainController.deleteTrainBranch(BLS, train.getTrainId(), branch.getBranchId(), "delete branch"));
@@ -156,7 +156,7 @@ class BranchTests {
     @Test
     void should_not_update_main_branch_by_other_partner() {
         TrainListElement train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         assertThrows(AuthorizationDeniedException.class,
             () -> trainController.updateTrainBranch(SOB, train.getTrainId(), train.getBranches().getFirst().getBranchId(), "test", actor.loadSampleTrain()));
     }

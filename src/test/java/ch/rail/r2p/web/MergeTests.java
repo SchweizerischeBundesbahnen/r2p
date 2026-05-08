@@ -47,7 +47,7 @@ class MergeTests {
     @Test
     void should_request_merge() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
 
         var result = trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
@@ -59,7 +59,7 @@ class MergeTests {
     @Test
     void should_record_merge_request_in_changelog() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
 
@@ -71,7 +71,7 @@ class MergeTests {
     @Test
     void should_not_request_merge_for_other_partners_branch() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
 
         assertThrows(AuthorizationDeniedException.class,
@@ -83,7 +83,7 @@ class MergeTests {
     @Test
     void should_not_request_merge_on_already_requested_branch() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
 
@@ -94,7 +94,7 @@ class MergeTests {
     @Test
     void should_merge_branch_into_main() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
 
@@ -115,7 +115,7 @@ class MergeTests {
     void should_merge_without_prior_merge_request_as_lead_ru() {
         // The Lead RU can merge any branch directly, without a prior merge request from the branch owner
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
 
         UUID reviewedVersion = branch.getTechnical().getVersion();
@@ -131,7 +131,7 @@ class MergeTests {
     void should_not_merge_without_prior_merge_request_as_non_lead_ru() {
         // A non-Lead-RU partner cannot call merge at all – only the Lead RU can
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
 
         UUID reviewedVersion = branch.getTechnical().getVersion();
@@ -142,7 +142,7 @@ class MergeTests {
     @Test
     void should_record_merge_in_changelog() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
 
         UUID reviewedVersion = branch.getTechnical().getVersion();
@@ -159,12 +159,15 @@ class MergeTests {
             .count();
         assertThat(updatedCount).isGreaterThanOrEqualTo(1);
         assertThat(actions).doesNotContain(Action.DELETED);
+        // comment is recorded on the MERGED entry
+        Change mergedEntry = changes.stream().filter(c -> c.getAction() == Action.MERGED).findFirst().orElseThrow();
+        assertThat(mergedEntry.getComment()).isEqualTo("merging");
     }
 
     @Test
     void should_not_merge_when_version_mismatch() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
 
         UUID staleVersion = UUID.randomUUID(); // wrong version
@@ -175,7 +178,7 @@ class MergeTests {
     @Test
     void should_not_merge_by_non_lead_ru() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
 
         UUID reviewedVersion = branch.getTechnical().getVersion();
@@ -186,7 +189,7 @@ class MergeTests {
     @Test
     void should_not_merge_already_merged_branch() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         UUID reviewedVersion = branch.getTechnical().getVersion();
         trainController.merge(SBB, train.getTrainId(), branch.getBranchId(), reviewedVersion, "first merge");
@@ -198,7 +201,7 @@ class MergeTests {
     @Test
     void should_reject_merge_request() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
 
@@ -211,7 +214,7 @@ class MergeTests {
     @Test
     void should_record_merge_rejection_in_changelog() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
         trainController.rejectMerge(SBB, train.getTrainId(), branch.getBranchId(), "not ready");
@@ -219,12 +222,15 @@ class MergeTests {
         var changes = trainController.getTrainChangesById(SBB, train.getTrainId(), null, null).getBody();
         assertThat(changes).isNotNull();
         assertThat(changes.stream().map(Change::getAction)).contains(Action.MERGE_REJECTED);
+        // comment is recorded on the MERGE_REJECTED entry
+        Change rejectedEntry = changes.stream().filter(c -> c.getAction() == Action.MERGE_REJECTED).findFirst().orElseThrow();
+        assertThat(rejectedEntry.getComment()).isEqualTo("not ready");
     }
 
     @Test
     void should_allow_update_after_merge_rejection() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
         trainController.rejectMerge(SBB, train.getTrainId(), branch.getBranchId(), "not ready");
@@ -238,7 +244,7 @@ class MergeTests {
     @Test
     void should_not_reject_merge_when_no_merge_request_open() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
 
         assertThrows(InvalidBranchStateException.class,
@@ -248,7 +254,7 @@ class MergeTests {
     @Test
     void should_not_reject_merge_by_non_lead_ru() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
 
@@ -259,7 +265,7 @@ class MergeTests {
     @Test
     void should_implicitly_reject_merge_request_when_branch_is_deleted() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
 
@@ -280,7 +286,7 @@ class MergeTests {
     @Test
     void should_not_update_merged_branch() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         UUID reviewedVersion = branch.getTechnical().getVersion();
         trainController.merge(SBB, train.getTrainId(), branch.getBranchId(), reviewedVersion, "merging");
@@ -292,7 +298,7 @@ class MergeTests {
     @Test
     void should_not_request_merge_on_merged_branch() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         UUID reviewedVersion = branch.getTechnical().getVersion();
         trainController.merge(SBB, train.getTrainId(), branch.getBranchId(), reviewedVersion, "merging");
@@ -304,7 +310,7 @@ class MergeTests {
     @Test
     void should_not_delete_merged_branch() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         UUID reviewedVersion = branch.getTechnical().getVersion();
         trainController.merge(SBB, train.getTrainId(), branch.getBranchId(), reviewedVersion, "merging");
@@ -341,7 +347,7 @@ class MergeTests {
         // After the main branch is deleted, attempting to merge a feature branch into it
         // must fail with InvalidBranchStateException (not silently create a new version on the deleted branch).
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         UUID reviewedVersion = branch.getTechnical().getVersion();
 
@@ -356,7 +362,7 @@ class MergeTests {
     @Test
     void should_implicitly_reject_merge_request_when_main_branch_is_deleted() {
         var train = actor.createTrain(SBB, "new train");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         var branch = actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
         trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
 

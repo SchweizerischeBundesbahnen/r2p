@@ -13,17 +13,18 @@
     <a class="top-nav-brand" href="overview.html">
         <span class="logo">🚂</span>
         R2P Web Client
+        <span class="version-tag" id="nav-version" style="margin-left:0.5rem;">v0.0.12</span>
     </a>
-    <ul class="top-nav-links">
-        <li><a href="overview.html" class="active">Traffic Overview</a></li>
-        <li><a href="settings.html">Settings</a></li>
-    </ul>
     <div class="top-nav-right">
         <div class="top-nav-partner">
-            <span class="top-nav-partner-label">Logged in as:</span>
+            <span class="top-nav-partner-label">Organization:</span>
             <span class="partner-badge partner-badge-SBB" id="nav-partner">SBB</span>
         </div>
-        <span class="version-tag" id="nav-version">v0.0.12</span>
+        <div class="lang-switcher">
+            <button class="lang-btn active" onclick="setLang('en', this)">EN</button>
+            <button class="lang-btn" onclick="setLang('de', this)">DE</button>
+        </div>
+        <button class="top-nav-settings-btn" onclick="openSettingsModal()" title="Settings">⚙️</button>
     </div>
 </nav>
 
@@ -88,7 +89,7 @@
                         </th>
                         <th>
                             Status
-                            <span class="tooltip-anchor" tabindex="0">?<span class="tooltip-box">🟢 Alle Activities sind <em>confirmed</em>.<br>🟡 Mindestens eine Activity ist <em>proposed</em> oder <em>requested</em>, keine abgelehnt.<br>🔴 Mindestens eine Activity ist <em>refused</em> oder <em>dropped</em>.</span></span>
+                            <span class="tooltip-anchor" tabindex="0">?<span class="tooltip-box">🟢 Circle: All activities are <em>confirmed</em>.<br>🟧 Square: At least one activity is <em>proposed</em> or <em>requested</em>, none refused.<br>🔺 Triangle: At least one activity is <em>refused</em> or <em>dropped</em>.</span></span>
                         </th>
                     </tr>
                 </thead>
@@ -110,6 +111,7 @@
 <div class="toast-container" id="toast-container"></div>
 
 <script src="sampleData.js"></script>
+<script src="settings-modal.js"></script>
 <script>
     /* ── State ──────────────────────────────────────────────────── */
     let currentSort = { field: 'lastChange', dir: 'desc' };

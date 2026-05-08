@@ -13,17 +13,18 @@
     <a class="top-nav-brand" href="overview.html">
         <span class="logo">🚂</span>
         R2P Web Client
+        <span class="version-tag" id="nav-version" style="margin-left:0.5rem;">v0.0.12</span>
     </a>
-    <ul class="top-nav-links">
-        <li><a href="overview.html">Traffic Overview</a></li>
-        <li><a href="settings.html">Settings</a></li>
-    </ul>
     <div class="top-nav-right">
         <div class="top-nav-partner">
-            <span class="top-nav-partner-label">Logged in as:</span>
+            <span class="top-nav-partner-label">Organization:</span>
             <span class="partner-badge partner-badge-SBB" id="nav-partner">SBB</span>
         </div>
-        <span class="version-tag" id="nav-version">v0.0.12</span>
+        <div class="lang-switcher">
+            <button class="lang-btn active" onclick="setLang('en', this)">EN</button>
+            <button class="lang-btn" onclick="setLang('de', this)">DE</button>
+        </div>
+        <button class="top-nav-settings-btn" onclick="openSettingsModal()" title="Settings">⚙️</button>
     </div>
 </nav>
 
@@ -46,7 +47,7 @@
                             🔗 Share Train
                         </button>
                         <button class="btn btn-primary" onclick="openCreateBranchModal()">
-                            ⎇ New Branch
+                            ⎇ New Variant
                         </button>
                     </div>
                 </div>
@@ -91,10 +92,10 @@
             </div>
         </div>
 
-        <!-- Journey (main branch – read-only table) -->
+        <!-- Journey (main variant – read-only table) -->
         <div class="card">
             <div class="card-header">
-                <span class="card-title">🗺️ Journey Route (main branch)</span>
+                <span class="card-title">🗺️ Journey Route (main variant)</span>
             </div>
             <div class="card-body" style="padding-top:0.5rem; padding-bottom:0.5rem;">
                 <div class="journey-table-wrapper">
@@ -115,10 +116,10 @@
             </div>
         </div>
 
-        <!-- Branches Section -->
+        <!-- Variants Section -->
         <div class="card">
             <div class="card-header">
-                <span class="card-title">⎇ Branches</span>
+                <span class="card-title">⎇ Variants</span>
             </div>
             <div id="branches-list">
                 <!-- Rendered by JS -->
@@ -145,6 +146,10 @@
                     <!-- Populated by JS -->
                 </select>
             </div>
+            <div class="form-group">
+                <label class="form-label required" for="share-comment-input">Comment</label>
+                <textarea id="share-comment-input" class="form-textarea" placeholder="Reason for sharing this train…"></textarea>
+            </div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-ghost" onclick="closeModal('modal-share')">Cancel</button>
@@ -153,22 +158,22 @@
     </div>
 </div>
 
-<!-- ══════════════════ MODAL: Create Branch ════════════════════════ -->
+<!-- ══════════════════ MODAL: Create Variant ════════════════════════ -->
 <div class="modal-overlay hidden" id="modal-create-branch">
     <div class="modal-card">
         <div class="modal-header">
-            <span class="modal-title">⎇ Create New Branch</span>
+            <span class="modal-title">⎇ Create New Variant</span>
             <button class="modal-close" onclick="closeModal('modal-create-branch')">✕</button>
         </div>
         <div class="modal-body">
             <div class="form-group">
-                <label class="form-label required" for="branch-name-input">Branch Name</label>
+                <label class="form-label required" for="branch-name-input">Variant Name</label>
                 <input type="text" id="branch-name-input" class="form-input" placeholder="e.g., sbb/rolling-stock-update" maxlength="255">
                 <p class="form-hint">Lowercase, hyphens and slashes allowed. Max 255 characters.</p>
             </div>
             <div class="form-group">
                 <label class="form-label required" for="branch-comment-input">Comment</label>
-                <textarea id="branch-comment-input" class="form-textarea" placeholder="Describe the purpose of this branch…"></textarea>
+                <textarea id="branch-comment-input" class="form-textarea" placeholder="Describe the purpose of this variant…"></textarea>
             </div>
         </div>
         <div class="modal-footer">
@@ -187,11 +192,11 @@
         </div>
         <div class="modal-body">
             <p style="margin-bottom:1rem; color:var(--text-secondary); font-size:0.9rem;">
-                Opening a merge request proposes your branch changes to be merged into <strong>main</strong>.
-                The branch name is: <strong id="mr-branch-name-display">–</strong>
+                Opening a merge request proposes your variant changes to be merged into <strong>main</strong>.
+                The variant name is: <strong id="mr-branch-name-display">–</strong>
             </p>
             <div class="form-group">
-                <label class="form-label" for="mr-comment-input">Comment (optional)</label>
+                <label class="form-label required" for="mr-comment-input">Comment</label>
                 <textarea id="mr-comment-input" class="form-textarea" placeholder="Describe what you changed and why…"></textarea>
             </div>
         </div>
@@ -202,10 +207,59 @@
     </div>
 </div>
 
+<!-- ══════════════════ MODAL: Accept Merge ════════════════════════ -->
+<div class="modal-overlay hidden" id="modal-accept-merge">
+    <div class="modal-card">
+        <div class="modal-header">
+            <span class="modal-title">✔ Accept Merge Request</span>
+            <button class="modal-close" onclick="closeModal('modal-accept-merge')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom:1rem; color:var(--text-secondary); font-size:0.9rem;">
+                Merging variant <strong id="accept-branch-name-display">–</strong> into <strong>main</strong>.
+                This action cannot be undone.
+            </p>
+            <div class="form-group">
+                <label class="form-label required" for="accept-comment-input">Comment</label>
+                <textarea id="accept-comment-input" class="form-textarea" placeholder="Reason for accepting this merge request…"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('modal-accept-merge')">Cancel</button>
+            <button class="btn btn-success" onclick="confirmAcceptMerge()">✔ Merge</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════ MODAL: Reject Merge ════════════════════════ -->
+<div class="modal-overlay hidden" id="modal-reject-merge">
+    <div class="modal-card">
+        <div class="modal-header">
+            <span class="modal-title">✗ Reject Merge Request</span>
+            <button class="modal-close" onclick="closeModal('modal-reject-merge')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom:1rem; color:var(--text-secondary); font-size:0.9rem;">
+                Rejecting merge request for variant <strong id="reject-branch-name-display">–</strong>.
+                The variant will revert to <em>Open</em> state and the partner can continue working on it.
+            </p>
+            <div class="form-group">
+                <label class="form-label required" for="reject-comment-input">Comment</label>
+                <textarea id="reject-comment-input" class="form-textarea" placeholder="Reason for rejecting this merge request…"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('modal-reject-merge')">Cancel</button>
+            <button class="btn btn-danger" onclick="confirmRejectMerge()">✗ Reject</button>
+        </div>
+    </div>
+</div>
+
 <!-- ── Toast Container ─────────────────────────────────────────── -->
 <div class="toast-container" id="toast-container"></div>
 
 <script src="sampleData.js"></script>
+<script src="settings-modal.js"></script>
 <script>
     /* ── State ──────────────────────────────────────────────────── */
     let currentTrain = null;
@@ -261,22 +315,53 @@
         const locs = journey.journeylocations;
         let html = '';
 
+        // Pre-compute spanning RS state
+        const spanningRs = new Array(locs.length).fill(null);
+        const spanningRsOrigin = new Array(locs.length).fill(null);
+        let activeRsAct = null, activeRsOrigin = null;
+        for (let i = 0; i < locs.length; i++) {
+            const ownRsActs = locs[i].activities.filter(a => activityColumnType(a.type) === 'rs');
+            if (ownRsActs.length > 0) {
+                const nonLocal = ownRsActs.filter(a => !(a.capability?.localOnly ?? false));
+                if (nonLocal.length > 0) { activeRsAct = nonLocal[nonLocal.length - 1]; activeRsOrigin = i; }
+                else { activeRsAct = null; activeRsOrigin = null; }
+                spanningRs[i] = null;
+            } else {
+                spanningRs[i] = activeRsAct;
+                spanningRsOrigin[i] = activeRsOrigin;
+            }
+        }
+        // Compute span role
+        const spanRole = new Array(locs.length).fill('none');
+        for (let i = 0; i < locs.length; i++) {
+            const ownRsActs = locs[i].activities.filter(a => activityColumnType(a.type) === 'rs');
+            if (ownRsActs.length > 0) {
+                const nonLocal = ownRsActs.filter(a => !(a.capability?.localOnly ?? false));
+                if (nonLocal.length > 0) {
+                    spanRole[i] = (i + 1 < locs.length && spanningRs[i + 1] !== null) ? 'start' : 'solo';
+                } else { spanRole[i] = 'solo'; }
+            } else if (spanningRs[i]) {
+                spanRole[i] = (i + 1 < locs.length && spanningRs[i + 1] !== null) ? 'mid' : 'end';
+            }
+        }
+
         locs.forEach((jl, idx) => {
             const stopName = jl.locations[0]?.name ?? '?';
             const isFirst = idx === 0;
             const isLast = idx === locs.length - 1;
+            const role = spanRole[idx];
 
-            // Separate activities by column
             const rsActs = jl.activities.filter(a => activityColumnType(a.type) === 'rs');
             const staffActs = jl.activities.filter(a => activityColumnType(a.type) === 'staff');
             const planActs = jl.activities.filter(a => activityColumnType(a.type) === 'plan');
 
-            // Add-stop-before row (editable only, first stop)
             if (editable && idx === 0) {
                 html += `<tr class="jt-add-stop-row"><td colspan="4"><button class="jt-add-activity-btn" style="max-width:200px;" onclick="insertStop(0)">＋ Add Stop Before</button></td></tr>`;
             }
 
-            html += `<tr>
+            const rsCellHtml = renderRsCell(rsActs, idx, locs, spanningRs[idx], spanningRsOrigin[idx], role, editable);
+
+            html += `<tr class="jt-row-rs-${role}">
                 <td class="jt-stop-cell">
                     <div class="jt-stop-indicator">
                         <div class="jt-stop-line-col">
@@ -294,12 +379,11 @@
                         </div>
                     </div>
                 </td>
-                <td class="jt-act-cell">${renderActCells(rsActs, idx, 'rs', editable)}</td>
+                <td class="jt-act-cell jt-rs-cell" data-rs-span="${role}">${rsCellHtml}</td>
                 <td class="jt-act-cell">${renderActCells(staffActs, idx, 'staff', editable)}</td>
                 <td class="jt-act-cell">${renderActCells(planActs, idx, 'plan', editable)}</td>
             </tr>`;
 
-            // Add-stop-after row (editable only)
             if (editable) {
                 html += `<tr class="jt-add-stop-row"><td colspan="4"><button class="jt-add-activity-btn" style="max-width:200px;" onclick="insertStop(${idx + 1})">＋ Add Stop After</button></td></tr>`;
             }
@@ -308,15 +392,41 @@
         tbody.innerHTML = html || '<tr><td colspan="4" class="text-muted text-center" style="padding:2rem;">No journey stops defined.</td></tr>';
     }
 
+    function renderRsCell(ownRsActs, stopIdx, locs, inheritedAct, inheritedOrigin, role, editable) {
+        let html = '<div class="jt-rs-cell-inner">';
+        if (ownRsActs.length > 0) {
+            html += '<div class="jt-act-list jt-rs-own-acts">';
+            ownRsActs.forEach(act => {
+                const arr = act.timings?.find(t => t.type === 'arrival')?.time?.slice(0, 5);
+                const dep = act.timings?.find(t => t.type === 'departure')?.time?.slice(0, 5);
+                const timesHtml = [arr ? `Arr: ${arr}` : null, dep ? `Dep: ${dep}` : null].filter(Boolean).join(' / ');
+                const isLocalOnly = act.capability?.localOnly ?? false;
+                const localBadge = isLocalOnly
+                    ? `<span class="rs-local-badge" title="Local only (vor Ort)">📍 local</span>`
+                    : `<span class="rs-span-badge" title="Spans forward">↔ spans</span>`;
+                html += `
+                    <div class="jt-act-item act-rs">
+                        <div class="jt-act-header"><span style="flex:1;">${partnerBadgeHtml(act.responsibility.id)}</span></div>
+                        <div class="jt-act-resp">${act.responsibility.type} · <span class="badge badge-${act.responsibility.status}" style="font-size:0.6rem;">${act.responsibility.status}</span> ${localBadge}</div>
+                        ${timesHtml ? `<div class="jt-act-times">${timesHtml}</div>` : ''}
+                    </div>`;
+            });
+            html += '</div>';
+        }
+        if (inheritedAct && ownRsActs.length === 0 && role === 'end') {
+            const originName = locs[inheritedOrigin]?.locations[0]?.name ?? `Stop ${inheritedOrigin + 1}`;
+            html += `<div class="rs-span-end-label">ends here · started at ${originName}</div>`;
+        }
+        html += '</div>';
+        return html;
+    }
+
     function renderActCells(acts, stopIdx, colType, editable) {
-        const colTypeLabel = { rs: 'Rolling Stock', staff: 'Staff/Journey', plan: 'Planning' }[colType];
         let html = '<div class="jt-act-list">';
         acts.forEach((act, aIdx) => {
-            const globalAIdx = /* find index in original array */ -1; // not used in read-only
             const arr = act.timings?.find(t => t.type === 'arrival')?.time?.slice(0,5);
             const dep = act.timings?.find(t => t.type === 'departure')?.time?.slice(0,5);
             const timesHtml = [arr ? `Arr: ${arr}` : null, dep ? `Dep: ${dep}` : null].filter(Boolean).join(' / ');
-            const statusDot = `<span class="status-dot ${planStatusColorClass(act.responsibility.status)}" title="${act.responsibility.status}"></span>`;
             html += `
                 <div class="jt-act-item act-${colType}">
                     <div class="jt-act-header">
@@ -352,8 +462,10 @@
                 OPEN: '● Open',
                 MERGED: '✓✓ Merged',
                 DELETED: '✗ Deleted',
-                MERGE_REQUESTED: '⇐ MR Open'
+                MERGE_REQUESTED: '⇐ Merge Request Open'
             }[state] || state;
+
+            const isLeadRU = currentTrain.partners[0] === currentPartner;
 
             let actionBtns = '';
             // Edit button: only for own OPEN branches (Lead RU can edit main, partners their own)
@@ -365,6 +477,11 @@
             // Merge request: only for own OPEN non-main branches
             if (isOwn && state === 'OPEN' && !isMain) {
                 actionBtns += `<button class="btn btn-outline btn-sm" onclick="openMergeRequestModal('${b.branchId}', '${b.branchName}')">⇐ Merge Request</button>`;
+            }
+            // Accept / Reject: only for Lead RU, only for MERGE_REQUESTED non-main branches
+            if (isLeadRU && state === 'MERGE_REQUESTED' && !isMain) {
+                actionBtns += `<button class="btn btn-success btn-sm" onclick="openAcceptMergeModal('${b.branchName}')">✔ Accept</button>`;
+                actionBtns += `<button class="btn btn-danger btn-sm" onclick="openRejectMergeModal('${b.branchName}')">✗ Reject</button>`;
             }
 
             return `
@@ -387,7 +504,7 @@
             `;
         }).join('');
 
-        container.innerHTML = html || '<div class="empty-state">No branches found.</div>';
+        container.innerHTML = html || '<div class="empty-state">No variants found.</div>';
     }
 
     /* ── Modals ─────────────────────────────────────────────────── */
@@ -408,8 +525,13 @@
 
     function confirmShare() {
         const partner = document.getElementById('share-partner-select').value;
-        if (!partner) return;
+        const comment = document.getElementById('share-comment-input').value.trim();
+        if (!partner || !comment) {
+            showToast('Please select a partner and enter a comment.', 'error');
+            return;
+        }
         showToast(`Train shared with ${partner} successfully.`, 'success');
+        document.getElementById('share-comment-input').value = '';
         closeModal('modal-share');
     }
 
@@ -423,10 +545,10 @@
         const name = document.getElementById('branch-name-input').value.trim();
         const comment = document.getElementById('branch-comment-input').value.trim();
         if (!name || !comment) {
-            showToast('Please fill in branch name and comment.', 'error');
+            showToast('Please fill in variant name and comment.', 'error');
             return;
         }
-        showToast(`Branch "${name}" created. Opening editor…`, 'success');
+        showToast(`Variant "${name}" created. Opening editor…`, 'success');
         closeModal('modal-create-branch');
         // In the real app, redirect to edit.html with new branch ID
         setTimeout(() => {
@@ -442,8 +564,47 @@
     }
 
     function confirmMergeRequest() {
+        const comment = document.getElementById('mr-comment-input').value.trim();
+        if (!comment) {
+            showToast('Please enter a comment for the merge request.', 'error');
+            return;
+        }
         showToast('Merge request opened successfully.', 'success');
         closeModal('modal-merge-request');
+    }
+
+    function openAcceptMergeModal(branchName) {
+        document.getElementById('accept-branch-name-display').textContent = branchName;
+        document.getElementById('accept-comment-input').value = '';
+        openModal('modal-accept-merge');
+    }
+
+    function confirmAcceptMerge() {
+        const comment = document.getElementById('accept-comment-input').value.trim();
+        if (!comment) {
+            showToast('Please enter a comment for accepting the merge request.', 'error');
+            return;
+        }
+        showToast('Merge request accepted. Variant merged into main.', 'success');
+        closeModal('modal-accept-merge');
+        // In the real app, perform the merge action and refresh the branches
+    }
+
+    function openRejectMergeModal(branchName) {
+        document.getElementById('reject-branch-name-display').textContent = branchName;
+        document.getElementById('reject-comment-input').value = '';
+        openModal('modal-reject-merge');
+    }
+
+    function confirmRejectMerge() {
+        const comment = document.getElementById('reject-comment-input').value.trim();
+        if (!comment) {
+            showToast('Please enter a comment for rejecting the merge request.', 'error');
+            return;
+        }
+        showToast('Merge request rejected. Variant status set to Open.', 'success');
+        closeModal('modal-reject-merge');
+        // In the real app, perform the reject action and refresh the branches
     }
 
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }

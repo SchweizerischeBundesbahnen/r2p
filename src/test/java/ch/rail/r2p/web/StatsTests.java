@@ -74,7 +74,7 @@ class StatsTests {
     @Test
     void should_count_trains_per_partner_after_sharing() {
         var train = actor.createTrain(SBB, "test");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
 
         List<PartnerStats> stats = statsController.getStats();
 
@@ -89,7 +89,7 @@ class StatsTests {
     @Test
     void should_count_open_branches_per_partner_after_branch_creation() {
         var train = actor.createTrain(SBB, "test");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
 
         List<PartnerStats> stats = statsController.getStats();
@@ -105,7 +105,7 @@ class StatsTests {
     @Test
     void should_include_open_branches_in_totals() {
         var train = actor.createTrain(SBB, "test");
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
 
         List<PartnerStats> stats = statsController.getStats();
@@ -126,7 +126,7 @@ class StatsTests {
     @Test
     void should_not_include_deleted_branches_in_open_count() {
         var train = actor.createTrain(SBB, "test");
-        actor.shareTrain(SBB, train.getTrainId(), BLS);
+        actor.shareTrain(SBB, train.getTrainId(), BLS, "sharing with BLS");
         var branch = actor.createBranch(BLS, train.getTrainId(), "myBranch", "test");
 
         // Delete the branch

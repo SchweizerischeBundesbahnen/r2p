@@ -13,17 +13,18 @@
     <a class="top-nav-brand" href="overview.html">
         <span class="logo">🚂</span>
         R2P Web Client
+        <span class="version-tag" style="margin-left:0.5rem;">v0.0.12</span>
     </a>
-    <ul class="top-nav-links">
-        <li><a href="overview.html">Traffic Overview</a></li>
-        <li><a href="settings.html">Settings</a></li>
-    </ul>
     <div class="top-nav-right">
         <div class="top-nav-partner">
-            <span class="top-nav-partner-label">Logged in as:</span>
+            <span class="top-nav-partner-label">Organization:</span>
             <span class="partner-badge partner-badge-SBB" id="nav-partner">SBB</span>
         </div>
-        <span class="version-tag">v0.0.12</span>
+        <div class="lang-switcher">
+            <button class="lang-btn active" onclick="setLang('en', this)">EN</button>
+            <button class="lang-btn" onclick="setLang('de', this)">DE</button>
+        </div>
+        <button class="top-nav-settings-btn" onclick="openSettingsModal()" title="Settings">⚙️</button>
     </div>
 </nav>
 
@@ -31,7 +32,7 @@
 <div class="sticky-edit-bar" id="sticky-edit-bar">
     <div class="sticky-edit-bar-inner">
         <div class="sticky-edit-bar-title">
-            <span id="sticky-title">Edit Branch</span>
+            <span id="sticky-title">Edit Variant</span>
             <span class="unsaved-indicator hidden" id="unsaved-indicator">● Unsaved changes</span>
         </div>
         <div class="sticky-edit-bar-actions">
@@ -47,18 +48,18 @@
 
         <a href="#" class="back-link" id="back-link">Traffic View</a>
 
-        <!-- Page Header with branch info -->
+        <!-- Page Header with variant info -->
         <div class="page-header">
             <div>
-                <h1 class="page-title" id="page-title">Edit Branch</h1>
-                <p class="page-subtitle" id="page-subtitle">Editing branch: –</p>
+                <h1 class="page-title" id="page-title">Edit Variant</h1>
+                <p class="page-subtitle" id="page-subtitle">Editing variant: –</p>
             </div>
         </div>
 
-        <!-- Branch context info -->
+        <!-- Variant context info -->
         <div class="alert alert-info" id="branch-alert">
-            ✏️ You are editing branch <strong id="branch-name-display">–</strong>.
-            Changes will be saved as a new version of this branch.
+            ✏️ You are editing variant <strong id="branch-name-display">–</strong>.
+            Changes will be saved as a new version of this variant.
         </div>
 
         <!-- ── Basic Info Card ──────────────────────────────────── -->
@@ -170,8 +171,12 @@
                             </select>
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
-                            <label class="form-label required" for="act-resp-id">Partner ID</label>
-                            <input type="text" id="act-resp-id" class="form-input" placeholder="e.g., SBB">
+                            <label class="form-label required" for="act-resp-id">Responsible Partner</label>
+                            <select id="act-resp-id" class="form-select">
+                                <option value="SBB">SBB</option>
+                                <option value="SOB">SOB</option>
+                                <option value="BLS">BLS</option>
+                            </select>
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
                             <label class="form-label required" for="act-resp-status">Plan Status</label>
@@ -245,6 +250,26 @@
                             <input type="text" id="rs-composition" class="form-input" placeholder="e.g., RABDe 502">
                         </div>
                     </div>
+
+                    <!-- Local only -->
+                    <div style="margin-top:1rem; border-top:1px solid var(--border-color); padding-top:1rem;">
+                        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                            <input type="checkbox" id="rs-local-only" style="width:16px; height:16px;">
+                            <span class="form-label" style="margin-bottom:0;">Local only (vor Ort)</span>
+                        </label>
+                        <p class="form-hint" style="margin-top:0.25rem;">If unchecked, this rolling stock activity spans forward to the end of the journey or until a new rolling stock activity starts.</p>
+                    </div>
+
+                    <!-- Features -->
+                    <div style="margin-top:1rem; border-top:1px solid var(--border-color); padding-top:1rem;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+                            <label class="form-label" style="margin-bottom:0;">Features</label>
+                            <button type="button" class="btn btn-ghost btn-sm" onclick="addRsFeatureRow()">＋ Add Feature</button>
+                        </div>
+                        <div id="rs-features-list" style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <!-- Feature rows rendered by JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -290,12 +315,20 @@
 </div>
 
 <script src="sampleData.js"></script>
+<script src="settings-modal.js"></script>
 <script>
     const settings = JSON.parse(localStorage.getItem('r2p_settings') || JSON.stringify(defaultSettings));
     const params = new URLSearchParams(window.location.search);
     const trainId = params.get('trainId');
     const branchId = params.get('branchId');
     const branchNameParam = params.get('branchName');
+
+    const RS_FEATURE_TYPES = [
+        { value: 'WLAN_HOTSPOT', label: 'WLAN Hotspot available' },
+        { value: 'RESTAURANT', label: 'Restaurant' },
+        { value: 'QUIET_ZONE_1ST_CLASS', label: 'Quiet zone in 1st class' },
+        { value: 'LOW_FLOOR_ENTRY', label: 'Low-floor entry' }
+    ];
 
     let currentTrain = null;
     let currentBranch = null;
@@ -340,7 +373,7 @@
         document.getElementById('cancel-btn') && (document.getElementById('cancel-btn').href = `traffic-view.html?trainId=${currentTrain.trainId}`);
         document.getElementById('sticky-cancel-btn').href = `traffic-view.html?trainId=${currentTrain.trainId}`;
         document.getElementById('page-title').textContent = `Edit: ${currentBranch.business.trainNumber}`;
-        document.getElementById('page-subtitle').textContent = `Branch: ${branchDisplayName}`;
+        document.getElementById('page-subtitle').textContent = `Variant: ${branchDisplayName}`;
         document.getElementById('branch-name-display').textContent = branchDisplayName;
         document.getElementById('sticky-title').textContent = `Edit: ${currentBranch.business.trainNumber}`;
 
@@ -364,20 +397,71 @@
         const tbody = document.getElementById('journey-tbody');
         let html = '';
 
+        // Pre-compute spanning RS state for each stop index.
+        const spanningRs = new Array(locs.length).fill(null);
+        const spanningRsOrigin = new Array(locs.length).fill(null);
+
+        let activeRsAct = null;
+        let activeRsOrigin = null;
+        for (let i = 0; i < locs.length; i++) {
+            const ownRsActs = locs[i].activities.filter(a => activityColumnType(a.type) === 'rs');
+            if (ownRsActs.length > 0) {
+                const nonLocalActs = ownRsActs.filter(a => !(a.capability?.localOnly ?? false));
+                if (nonLocalActs.length > 0) {
+                    activeRsAct = nonLocalActs[nonLocalActs.length - 1];
+                    activeRsOrigin = i;
+                } else {
+                    activeRsAct = null;
+                    activeRsOrigin = null;
+                }
+                spanningRs[i] = null;
+            } else {
+                spanningRs[i] = activeRsAct;
+                spanningRsOrigin[i] = activeRsOrigin;
+            }
+        }
+
+        // Compute span role for each stop: 'start' | 'mid' | 'end' | 'solo' | 'none'
+        // 'start' = has own non-local RS that spans into next stop(s)
+        // 'mid'   = inherits span and span continues into next stop
+        // 'end'   = inherits span and span stops here (last stop or next has own RS)
+        // 'solo'  = has own RS but it's local-only (no span)
+        // 'none'  = no RS involvement at all
+        const spanRole = new Array(locs.length).fill('none');
+        for (let i = 0; i < locs.length; i++) {
+            const ownRsActs = locs[i].activities.filter(a => activityColumnType(a.type) === 'rs');
+            if (ownRsActs.length > 0) {
+                const nonLocalActs = ownRsActs.filter(a => !(a.capability?.localOnly ?? false));
+                if (nonLocalActs.length > 0) {
+                    // Check if the span actually reaches a next stop
+                    const spansOnward = spanningRs[i + 1] !== null && i + 1 < locs.length;
+                    spanRole[i] = spansOnward ? 'start' : 'solo';
+                } else {
+                    spanRole[i] = 'solo';
+                }
+            } else if (spanningRs[i]) {
+                const continuesNext = i + 1 < locs.length && spanningRs[i + 1] !== null;
+                spanRole[i] = continuesNext ? 'mid' : 'end';
+            }
+        }
+
         locs.forEach((jl, idx) => {
             const stopName = jl.locations[0]?.name ?? '?';
             const isFirst = idx === 0;
             const isLast = idx === locs.length - 1;
-            const dotClass = isFirst ? 'jt-start' : (isLast ? 'jt-end' : '');
             const rsActs = jl.activities.filter(a => activityColumnType(a.type) === 'rs');
             const staffActs = jl.activities.filter(a => activityColumnType(a.type) === 'staff');
             const planActs = jl.activities.filter(a => activityColumnType(a.type) === 'plan');
+            const role = spanRole[idx];
 
             if (idx === 0) {
+                // For the very first "add before" row, check if there would be a span at stop 0 (never, since no stop precedes it)
                 html += `<tr class="jt-add-stop-row"><td colspan="4"><button class="jt-add-activity-btn" style="max-width:200px;" onclick="insertStop(0)">＋ Add Stop Before</button></td></tr>`;
             }
 
-            html += `<tr>
+            const rsCellHtml = renderRsActivityCell(rsActs, jl.activities, idx, spanningRs[idx], spanningRsOrigin[idx], role);
+
+            html += `<tr class="jt-row-rs-${role}">
                 <td class="jt-stop-cell">
                     <div class="jt-stop-indicator">
                         <div class="jt-stop-line-col">
@@ -394,15 +478,74 @@
                         </div>
                     </div>
                 </td>
-                <td class="jt-act-cell">${renderActCells(rsActs, jl.activities, idx, 'rs', true)}</td>
+                <td class="jt-act-cell jt-rs-cell" data-rs-span="${role}">${rsCellHtml}</td>
                 <td class="jt-act-cell">${renderActCells(staffActs, jl.activities, idx, 'staff', true)}</td>
                 <td class="jt-act-cell">${renderActCells(planActs, jl.activities, idx, 'plan', true)}</td>
             </tr>`;
 
-            html += `<tr class="jt-add-stop-row"><td colspan="4"><button class="jt-add-activity-btn" style="max-width:200px;" onclick="insertStop(${idx + 1})">＋ Add Stop After</button></td></tr>`;
+            // The "add stop after" row: if a span continues into the next stop, make the RS cell span through it
+            const nextRole = idx + 1 < locs.length ? spanRole[idx + 1] : 'none';
+            const addRowRsSpan = (role === 'start' || role === 'mid') && (nextRole === 'mid' || nextRole === 'end') ? 'through' : 'none';
+            html += `<tr class="jt-add-stop-row jt-row-rs-addrow-${addRowRsSpan}">
+                <td style="padding:0 !important; border-bottom:none !important;">
+                    <button class="jt-add-activity-btn" style="max-width:200px; margin: 0 var(--spacing-md);" onclick="insertStop(${idx + 1})">＋ Add Stop After</button>
+                </td>
+                <td class="jt-rs-cell-passthrough" data-rs-passthrough="${addRowRsSpan}" style="padding:0 !important; border-bottom:none !important;"></td>
+                <td colspan="2" style="padding:0 !important; border-bottom:none !important;"></td>
+            </tr>`;
         });
 
         tbody.innerHTML = html || '<tr><td colspan="4" class="text-muted text-center" style="padding:2rem;">No journey stops.</td></tr>';
+    }
+
+    /**
+     * Renders the Rolling Stock cell for a stop.
+     */
+    function renderRsActivityCell(ownRsActs, allActs, stopIdx, inheritedAct, inheritedOrigin, role) {
+        let html = '<div class="jt-rs-cell-inner">';
+
+        // Own RS activities (editable)
+        if (ownRsActs.length > 0) {
+            html += '<div class="jt-act-list jt-rs-own-acts">';
+            ownRsActs.forEach(act => {
+                const globalAIdx = allActs.indexOf(act);
+                const arr = act.timings?.find(t => t.type === 'arrival')?.time?.slice(0, 5);
+                const dep = act.timings?.find(t => t.type === 'departure')?.time?.slice(0, 5);
+                const timesHtml = [arr ? `Arr: ${arr}` : null, dep ? `Dep: ${dep}` : null].filter(Boolean).join(' / ');
+                const isLocalOnly = act.capability?.localOnly ?? false;
+                const localBadge = isLocalOnly
+                    ? `<span class="rs-local-badge" title="Local only (vor Ort)">📍 local</span>`
+                    : `<span class="rs-span-badge" title="Spans forward">↔ spans</span>`;
+                html += `
+                    <div class="jt-act-item act-rs">
+                        <div class="jt-act-header">
+                            <span style="flex:1;">${partnerBadgeHtml(act.responsibility.id)}</span>
+                            <div class="jt-act-actions">
+                                <button class="btn btn-ghost btn-sm" onclick="openActivityModal(${stopIdx}, ${globalAIdx}, 'rs')" title="Edit">Edit</button>
+                                <button class="btn btn-ghost-danger btn-sm" onclick="deleteActivity(${stopIdx}, ${globalAIdx})" title="Delete">Delete</button>
+                            </div>
+                        </div>
+                        <div class="jt-act-resp">${act.responsibility.type} · <span class="badge badge-${act.responsibility.status}" style="font-size:0.6rem;">${act.responsibility.status}</span> ${localBadge}</div>
+                        ${timesHtml ? `<div class="jt-act-times">${timesHtml}</div>` : ''}
+                    </div>`;
+            });
+            html += '</div>';
+        }
+
+        // Continuation content (mid / end rows)
+        if (inheritedAct && ownRsActs.length === 0) {
+            // Only show the label in 'end' rows to indicate where the span ends; 'mid' rows stay visually clean
+            if (role === 'end') {
+                const originLocs = workingJourney.journeylocations;
+                const originName = originLocs[inheritedOrigin]?.locations[0]?.name ?? `Stop ${inheritedOrigin + 1}`;
+                html += `<div class="rs-span-end-label">ends here · started at ${originName}</div>`;
+            }
+        }
+
+        // Always show add button
+        html += `<div class="jt-rs-add-btn-wrap"><button class="jt-add-activity-btn" onclick="openActivityModal(${stopIdx}, null, 'rs')">＋ Activity</button></div>`;
+        html += '</div>';
+        return html;
     }
 
     function renderActCells(colActs, allActs, stopIdx, colType, editable) {
@@ -507,6 +650,8 @@
                 document.getElementById('rs-length').value = act.capability?.rollingStock?.length ?? '';
                 document.getElementById('rs-weight').value = act.capability?.rollingStock?.weight ?? '';
                 document.getElementById('rs-composition').value = act.capability?.rollingStock?.composition ?? '';
+                document.getElementById('rs-local-only').checked = act.capability?.localOnly ?? false;
+                renderRsFeatures(act.capability?.features ?? []);
             } else if (colType === 'staff') {
                 document.getElementById('staff-role').value = act.capability?.staff?.[0]?.type ?? '';
                 document.getElementById('staff-function').value = act.capability?.staff?.[0]?.action ?? '';
@@ -522,6 +667,8 @@
             document.getElementById('rs-length').value = '';
             document.getElementById('rs-weight').value = '';
             document.getElementById('rs-composition').value = '';
+            document.getElementById('rs-local-only').checked = false;
+            renderRsFeatures([]);
             document.getElementById('staff-role').value = '';
             document.getElementById('staff-function').value = '';
             document.getElementById('plan-passthrough').checked = false;
@@ -558,7 +705,9 @@
             const len = parseInt(document.getElementById('rs-length').value);
             const wgt = parseInt(document.getElementById('rs-weight').value);
             const comp = document.getElementById('rs-composition').value.trim();
-            act.capability = { features: [], rollingStock: { length: len || null, weight: wgt || null, composition: comp || null } };
+            const localOnly = document.getElementById('rs-local-only').checked;
+            const features = collectRsFeatures();
+            act.capability = { features, localOnly, rollingStock: { length: len || null, weight: wgt || null, composition: comp || null } };
         } else if (pendingActivityColType === 'staff') {
             const role = document.getElementById('staff-role').value.trim();
             const fn = document.getElementById('staff-function').value.trim();
@@ -593,8 +742,43 @@
         if (!name) { showToast('Train name is required.', 'error'); return; }
         if (!comment) { showToast('A change comment is required.', 'error'); return; }
         clearDirty();
-        showToast('Branch updated successfully!', 'success');
+        showToast('Variant updated successfully!', 'success');
         setTimeout(() => { window.location.href = `traffic-view.html?trainId=${currentTrain.trainId}`; }, 1200);
+    }
+
+    function renderRsFeatures(features) {
+        const list = document.getElementById('rs-features-list');
+        list.innerHTML = '';
+        features.forEach((f, i) => addRsFeatureRow(f.type, f.value));
+    }
+
+    function addRsFeatureRow(type = '', value = '') {
+        const list = document.getElementById('rs-features-list');
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; gap:0.5rem; align-items:center;';
+        const typeOptions = RS_FEATURE_TYPES.map(ft =>
+            `<option value="${ft.value}"${ft.value === type ? ' selected' : ''}>${ft.label}</option>`
+        ).join('');
+        row.innerHTML = `
+            <select class="form-select rs-feature-type" style="flex:2;">
+                <option value="">– Select type –</option>
+                ${typeOptions}
+            </select>
+            <input type="text" class="form-input rs-feature-value" placeholder="Value (optional)" value="${value}" style="flex:2;">
+            <button type="button" class="btn btn-ghost-danger btn-sm" onclick="this.parentElement.remove()" title="Remove feature">✕</button>
+        `;
+        list.appendChild(row);
+    }
+
+    function collectRsFeatures() {
+        const rows = document.querySelectorAll('#rs-features-list > div');
+        const features = [];
+        rows.forEach(row => {
+            const type = row.querySelector('.rs-feature-type').value;
+            const value = row.querySelector('.rs-feature-value').value.trim();
+            if (type) features.push({ type, value });
+        });
+        return features;
     }
 
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }

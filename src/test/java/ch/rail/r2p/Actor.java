@@ -78,8 +78,8 @@ public class Actor {
         return train;
     }
 
-    public void shareTrain(PartnerToken owner, UUID trainId, PartnerToken partner) {
-        trainController.shareTrain(owner, trainId, partner.name());
+    public void shareTrain(PartnerToken owner, UUID trainId, PartnerToken partner, String comment) {
+        trainController.shareTrain(owner, trainId, partner.name(), comment);
     }
 
     public Branch createBranch(PartnerToken owner, UUID trainId, String branchName, String comment) {

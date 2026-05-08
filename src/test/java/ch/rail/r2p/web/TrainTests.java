@@ -112,7 +112,7 @@ class TrainTests {
         TrainListElement train = actor.createTrain(SBB, "initial creation");
         UUID trainId = train.getTrainId();
         UUID mainBranchId = train.getBranches().getFirst().getBranchId();
-        actor.shareTrain(SBB, trainId, SOB);
+        actor.shareTrain(SBB, trainId, SOB, "Train shared");
         trainController.updateTrainBranch(SBB, trainId, mainBranchId, "update main branch", actor.loadSampleTrain());
         UUID branchId = actor.createBranch(SOB, trainId, branchName, "create branch").getBranchId();
         trainController.updateTrainBranch(SOB, trainId, branchId, "update branch", actor.loadSampleTrain());
@@ -170,7 +170,7 @@ class TrainTests {
         TrainListElement train = actor.createTrain(SBB, "new train");
         UUID trainId = train.getTrainId();
         UUID branchId = train.getBranches().getFirst().getBranchId();
-        actor.shareTrain(SBB, trainId, SOB);
+        actor.shareTrain(SBB, trainId, SOB, "sharing with SOB");
 
         var result = trainController.getTrainBranch(SOB, trainId, branchId);
         assertThat(result.getBody()).isNotNull();
@@ -201,7 +201,7 @@ class TrainTests {
     void should_get_train_version_by_shared_partner() {
         TrainListElement train = actor.createTrain(SBB, "new train");
         UUID versionId = train.getBranches().getFirst().getTechnical().getVersion();
-        actor.shareTrain(SBB, train.getTrainId(), SOB);
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
 
         var result = trainController.getTrainVersion(SOB, versionId);
         assertThat(result.getBody()).isNotNull();

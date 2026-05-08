@@ -122,9 +122,9 @@
         <div class="mockup-card-body">
             <div class="mockup-card-title">Traffic View (Verkehrsansicht)</div>
             <p class="mockup-card-desc">
-                Detail view for a specific train. Shows main branch journey as pearl necklace (read-only).
-                Actions: Share train, Create branch. Lists all branches with state, opens edit or read view.
-                Merge request button per eligible branch.
+                Detail view for a specific train. Shows main variant journey as pearl necklace (read-only).
+                Actions: Share train, Create variant. Lists all variants with state, opens edit or read view.
+                Merge request button per eligible variant.
             </p>
         </div>
         <div class="mockup-card-footer">traffic-view.html</div>
@@ -153,8 +153,8 @@
         <div class="mockup-card-body">
             <div class="mockup-card-title">Edit View (Editieransicht)</div>
             <p class="mockup-card-desc">
-                Edit an existing branch. Pre-populated with the branch's train data. Same pearl necklace editor
-                as create page. Saves as a new version of the branch with a required change comment.
+                Edit an existing variant. Pre-populated with the variant's train data. Same pearl necklace editor
+                as create page. Saves as a new version of the variant with a required change comment.
             </p>
         </div>
         <div class="mockup-card-footer">edit.html</div>
@@ -165,7 +165,7 @@
         <div class="mockup-card-body">
             <div class="mockup-card-title">Read View (Leseansicht)</div>
             <p class="mockup-card-desc">
-                Read-only view of any branch version. Shows train details, pearl necklace journey visualization,
+                Read-only view of any variant version. Shows train details, pearl necklace journey visualization,
                 and a full activities summary table with plan status, responsibility and timing data.
                 No editing controls are shown.
             </p>
@@ -193,13 +193,13 @@
     <div class="mockup-card" style="cursor:default; opacity:0.8;">
         <div class="mockup-card-icon">⎇</div>
         <div class="mockup-card-body">
-            <div class="mockup-card-title">Create Branch Modal</div>
+            <div class="mockup-card-title">Create Variant Modal</div>
             <p class="mockup-card-desc">
-                Opens from Traffic View. Enter branch name (max 255 chars) and a required comment.
-                Confirms and redirects to the edit view with the new branch.
+                Opens from Traffic View. Enter variant name (max 255 chars) and a required comment.
+                Confirms and redirects to the edit view with the new variant.
             </p>
         </div>
-        <div class="mockup-card-footer">traffic-view.html → "New Branch"</div>
+        <div class="mockup-card-footer">traffic-view.html → "New Variant"</div>
     </div>
 
     <div class="mockup-card" style="cursor:default; opacity:0.8;">
@@ -207,8 +207,8 @@
         <div class="mockup-card-body">
             <div class="mockup-card-title">Merge Request Modal</div>
             <p class="mockup-card-desc">
-                Opens from Traffic View branch list. Proposes a branch's changes to be merged into main.
-                Optional comment. Only shown for own OPEN branches without an existing open merge request.
+                Opens from Traffic View variant list. Proposes a variant's changes to be merged into main.
+                Optional comment. Only shown for own OPEN variants without an existing open merge request.
             </p>
         </div>
         <div class="mockup-card-footer">traffic-view.html → "Merge Request"</div>
