@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.0.20](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.19...r2p-v0.0.20) (2026-05-08)
+
+
+### Bug Fixes
+
+* bpsglo-14279: get, list and stats endpoint omit deleted trains ([#118](https://github.com/SchweizerischeBundesbahnen/r2p/issues/118)) ([a54ff24](https://github.com/SchweizerischeBundesbahnen/r2p/commit/a54ff24d46affc22a652a83cf845c88471ced1fc))
+
+
+### Documentation
+
+* document authorization limitation ([#120](https://github.com/SchweizerischeBundesbahnen/r2p/issues/120)) ([4aa0773](https://github.com/SchweizerischeBundesbahnen/r2p/commit/4aa0773c62d41119695ec6f0aaa6ab7e3800b369))
+* moved REST endpoint and domain model documentation to wiki ([#119](https://github.com/SchweizerischeBundesbahnen/r2p/issues/119)) ([5c9f649](https://github.com/SchweizerischeBundesbahnen/r2p/commit/5c9f6497d88aad88dbc603eaba30af05862cda61))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.20-SNAPSHOT ([#114](https://github.com/SchweizerischeBundesbahnen/r2p/issues/114)) ([d9a86b9](https://github.com/SchweizerischeBundesbahnen/r2p/commit/d9a86b9ade66fcbd204c39cea140b63e8680d252))
+
+
+### Build System
+
+* **deps-dev:** bump org.openapitools:openapi-generator-maven-plugin ([#122](https://github.com/SchweizerischeBundesbahnen/r2p/issues/122)) ([21df1fb](https://github.com/SchweizerischeBundesbahnen/r2p/commit/21df1fb5b0ded391a932a3ced0b90d939019fc86))
+* **deps-dev:** bump the commitlint group with 2 updates ([#123](https://github.com/SchweizerischeBundesbahnen/r2p/issues/123)) ([bcba1ab](https://github.com/SchweizerischeBundesbahnen/r2p/commit/bcba1ab57cb6805f720f0bdc27d41aec58ce39f6))
+* **deps:** bump googleapis/release-please-action from 4 to 5 ([#117](https://github.com/SchweizerischeBundesbahnen/r2p/issues/117)) ([85b53f4](https://github.com/SchweizerischeBundesbahnen/r2p/commit/85b53f4ca4830f829d54c569c913e97596046474))
+* **deps:** bump org.springframework.boot:spring-boot-starter-parent ([#121](https://github.com/SchweizerischeBundesbahnen/r2p/issues/121)) ([210d0aa](https://github.com/SchweizerischeBundesbahnen/r2p/commit/210d0aacdf1effccb8f5a6377840681ee4f89814))
+
+
+### Continuous Integration
+
+* using github app token ([#124](https://github.com/SchweizerischeBundesbahnen/r2p/issues/124)) ([916cc01](https://github.com/SchweizerischeBundesbahnen/r2p/commit/916cc014fdf750aa921a6715b17b02f6a725706e))
+
 ## [0.0.19](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.18...r2p-v0.0.19) (2026-04-23)
 
 
