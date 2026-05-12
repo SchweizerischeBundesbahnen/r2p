@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.22](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.21...r2p-v0.0.22) (2026-05-12)
+
+
+### Bug Fixes
+
+* yaml lint automerge condition ([dd7664a](https://github.com/SchweizerischeBundesbahnen/r2p/commit/dd7664a9ee2e36aaacacdc55a55cb9fdc6c2ebaa))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.22-SNAPSHOT ([#131](https://github.com/SchweizerischeBundesbahnen/r2p/issues/131)) ([8acc1d0](https://github.com/SchweizerischeBundesbahnen/r2p/commit/8acc1d068b6a6902f7e50e4b29a06131f14799d5))
+
 ## [0.0.21](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.20...r2p-v0.0.21) (2026-05-12)
 
 
