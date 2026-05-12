@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   automerge:
-    if: contains(github.event.pull_request.labels.*.name, 'autorelease: snapshot')
+    if: "contains(github.event.pull_request.labels.*.name, 'autorelease: snapshot')"
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token
