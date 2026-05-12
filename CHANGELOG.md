@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.0.21](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.20...r2p-v0.0.21) (2026-05-12)
+
+
+### Features
+
+* mandatory comments for operations and webclient design update ([8edada3](https://github.com/SchweizerischeBundesbahnen/r2p/commit/8edada31f76a10cc878b46d464211e735ef984e2))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.21-SNAPSHOT ([#126](https://github.com/SchweizerischeBundesbahnen/r2p/issues/126)) ([bc9697c](https://github.com/SchweizerischeBundesbahnen/r2p/commit/bc9697c07215e90b46391b8a426072e4be63d647))
+* remove webclient artifacts ([#128](https://github.com/SchweizerischeBundesbahnen/r2p/issues/128)) ([c219523](https://github.com/SchweizerischeBundesbahnen/r2p/commit/c2195238a5c6ed945f44c984394c03e5d57ce610))
+
+
+### Continuous Integration
+
+* [#111](https://github.com/SchweizerischeBundesbahnen/r2p/issues/111) replace custom automerge action ([#129](https://github.com/SchweizerischeBundesbahnen/r2p/issues/129)) ([f2b5709](https://github.com/SchweizerischeBundesbahnen/r2p/commit/f2b570967cb417e07897fa9581c301493eca2364))
+
 ## [0.0.20](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.19...r2p-v0.0.20) (2026-05-08)
 
 
