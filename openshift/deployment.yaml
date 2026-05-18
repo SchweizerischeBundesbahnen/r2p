@@ -28,7 +28,6 @@ data:
   DATABASE_STORAGE: "file:/h2data/r2p"
   R2P_INSTANCE_OWNER: "REPLACE_ME"
   TZ: "Europe/Zurich"
-  R2P_AZURE_ISSUER_URI: "REPLACE_ME"
   R2P_TEST_DATA_ENABLED: "true"
 
 ---
@@ -40,6 +39,7 @@ metadata:
 stringData:
   clientId: "REPLACE_ME"
   clientSecret: "REPLACE_ME"
+  issuerUri: "REPLACE_ME"
 type: Opaque
 
 ---
@@ -133,9 +133,9 @@ spec:
                   key: clientSecret
             - name: R2P_AZURE_ISSUER_URI
               valueFrom:
-                configMapKeyRef:
-                  name: r2p-config
-                  key: R2P_AZURE_ISSUER_URI
+                secretKeyRef:
+                  name: r2p-azure-client
+                  key: issuerUri
           resources:
             limits:
               cpu: 2000m

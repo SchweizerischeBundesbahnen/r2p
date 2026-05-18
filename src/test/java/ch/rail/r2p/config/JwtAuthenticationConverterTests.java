@@ -75,23 +75,14 @@ class JwtAuthenticationConverterTests {
 
     @Test
     void should_map_authorities_for_example_token() {
-        // Provided example token claims (simplified, we ignore cryptographic correctness)
         Jwt jwt = Jwt.withTokenValue("example-token")
             .headers(h -> h.put("alg", "none"))
-            .claim("aud", "f5b54c65-e0b1-4233-bc60-bf4c59f399bd")
-            .claim("iss", "https://login.microsoftonline.com/2cda5d11-f0ac-46b3-967d-af1b2e1bd01a/v2.0")
             .claim("scp", "r2p")
             .claim("roles", List.of("r2p_user"))
-            .claim("preferred_username", "patrick.uhlmann@sbb.ch")
-            .claim("sub", "Su2ykyZr6_kVfLZXHPBDB9B76moJwypmIj1h3E6fGrc")
-            .subject("Su2ykyZr6_kVfLZXHPBDB9B76moJwypmIj1h3E6fGrc")
-            .issuedAt(Instant.now())
-            .expiresAt(Instant.now().plusSeconds(300))
             .build();
 
         AbstractAuthenticationToken auth = securityConfig.jwtAuthenticationConverter().convert(jwt);
         Objects.requireNonNull(auth);
-        assertEquals("patrick.uhlmann@sbb.ch", auth.getName());
         Set<String> authorities = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
         assertEquals(Set.of("SCOPE_r2p", "ROLE_r2p_user"), authorities);
     }

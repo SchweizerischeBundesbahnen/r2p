@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import ch.rail.r2p.Actor;
+import ch.rail.r2p.NoAuthSpringBootTest;
 import ch.rail.r2p.api.dto.Branch;
 import ch.rail.r2p.api.dto.BranchState;
 import ch.rail.r2p.api.dto.TrainListElement;
@@ -19,12 +20,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
-@SpringBootTest
+@NoAuthSpringBootTest
 class BranchTests {
     @Autowired
     private TrainController trainController;
