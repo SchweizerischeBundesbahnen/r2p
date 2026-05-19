@@ -20,8 +20,11 @@ the prototype uses Java and H2 (no need for a dedicated database server).
 === Test and execute the release on Windows, Linux or MacOS
 
 * Download the latest https://github.com/SchweizerischeBundesbahnen/r2p/releases[R2P release] for your platform from the GitHub repository and extract it.
-* Copy the `application-local.yaml.sample` file to `application-local.yaml` and define the configuration as needed.
-* Define the environment variable `R2P_AZURE_CLIENT_SECRET` for Azure AD authentication.
+* Define the environment variable `R2P_INSTANCE_OWNER`.
+* Define the environment variables for Azure AD authentication:
+** `R2P_AZURE_CLIENT_ID`
+** `R2P_AZURE_CLIENT_SECRET`
+** `R2P_AZURE_ISSUER_URI`
 * Start the application, e.g. `r2p.exe`.
 * Visit: http://localhost:8080/
 * Swagger UI: http://localhost:8080/swagger-ui/index.html
