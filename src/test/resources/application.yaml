@@ -6,5 +6,5 @@ r2p:
   azure:
     client-secret: "dummy-secret"
     client-id: "dummy-client"
-    issuer-uri: "dummy-issuer-uri"
+    issuer-uri: "https://dummy-issuer.com"
   instance-owner: "SBB"

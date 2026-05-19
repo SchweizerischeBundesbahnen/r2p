@@ -7,6 +7,9 @@
 :revnumber: 0.0.19-SNAPSHOT
 :revdate: {localdate}
 
+== Disclaimer
+This is a PoC implementation not suitable to run in production.
+
 == Overview
 
 R2P is a prototype demonstrating RU - RU - partner communication. To keep things lightweight and portable,
@@ -17,7 +20,8 @@ the prototype uses Java and H2 (no need for a dedicated database server).
 === Test and execute the release on Windows, Linux or MacOS
 
 * Download the latest https://github.com/SchweizerischeBundesbahnen/r2p/releases[R2P release] for your platform from the GitHub repository and extract it.
-* Define the environment variable `R2P_AZURE_CLIENT_SECRET` (and `R2P_AZURE_CLIENT_ID` if necessary) for Azure AD authentication.
+* Copy the `application-local.yaml.sample` file to `application-local.yaml` and define the configuration as needed.
+* Define the environment variable `R2P_AZURE_CLIENT_SECRET` for Azure AD authentication.
 * Start the application, e.g. `r2p.exe`.
 * Visit: http://localhost:8080/
 * Swagger UI: http://localhost:8080/swagger-ui/index.html
