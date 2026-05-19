@@ -9,6 +9,12 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 
+/**
+ * This class avoids having to use an existing OAuth2 provider for integration testing,
+ * by providing a dummy client registration.
+ * Another possible approach would be to override the security configuration,
+ * as described <a href="https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html#oauth2resourceserver-jwt-sansboot">here</a>
+ */
 @TestConfiguration
 public class NoAuth2Config {
 
