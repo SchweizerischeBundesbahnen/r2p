@@ -8,13 +8,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import ch.rail.r2p.Actor;
+import ch.rail.r2p.NoAuthSpringBootTest;
 import ch.rail.r2p.WithMockR2PUser;
 import ch.rail.r2p.api.dto.Train;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,7 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 /**
  * Tests for GlobalExceptionHandler using MockMvc to verify exception handling through the WebMvc layer.
  */
-@SpringBootTest
+@NoAuthSpringBootTest
 @AutoConfigureMockMvc
 @WithMockR2PUser
 class GlobalExceptionHandlerTests {

@@ -81,6 +81,15 @@ body {
     padding: var(--spacing-xl);
 }
 
+.poc-banner {
+    margin: calc(-1 * var(--spacing-xl)) calc(-1 * var(--spacing-xl)) var(--spacing-lg);
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-weight: 700;
+    color: white;
+    background-color: var(--primary-color);
+    text-align: center;
+}
+
 /* ========================================
    Typography
    ======================================== */
@@ -922,6 +931,10 @@ tbody td {
 @media (max-width: 767px) {
     body {
         padding: var(--spacing-md);
+    }
+
+    .poc-banner {
+        margin: calc(-1 * var(--spacing-md)) calc(-1 * var(--spacing-md)) var(--spacing-md);
     }
 
     h1 {

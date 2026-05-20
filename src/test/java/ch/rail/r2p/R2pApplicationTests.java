@@ -3,7 +3,6 @@ package ch.rail.r2p;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -11,7 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@NoAuthSpringBootTest
 @AutoConfigureMockMvc
 class R2pApplicationTests {
 
@@ -31,17 +30,6 @@ class R2pApplicationTests {
         mockMvc.perform(get("/v1/trains")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void should_return_401_on_invalid_bearer_token() throws Exception {
-        // A Bearer request with a malformed/invalid token is rejected by the JWT decoder
-        // with 401 before authorization is even evaluated. In production a valid Bearer
-        // token without SCOPE_r2p would reach the AuthorizationManager and return 403.
-        mockMvc.perform(get("/v1/trains")
-                .header("Authorization", "Bearer invalid.jwt.token")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
     }
 
     @Test

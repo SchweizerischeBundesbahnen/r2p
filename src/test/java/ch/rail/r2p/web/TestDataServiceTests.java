@@ -5,6 +5,7 @@ import static ch.rail.r2p.api.dto.PartnerToken.SOB;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import ch.rail.r2p.NoAuthSpringBootTest;
 import ch.rail.r2p.persistence.impl.BranchSpringDataRepository;
 import ch.rail.r2p.persistence.impl.ChangelogSpringDataRepository;
 import ch.rail.r2p.persistence.impl.TrainSpringDataRepository;
@@ -14,10 +15,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
-@SpringBootTest
+@NoAuthSpringBootTest
 @TestPropertySource(properties = "r2p.test-data.enabled=true")
 class TestDataServiceTests {
 

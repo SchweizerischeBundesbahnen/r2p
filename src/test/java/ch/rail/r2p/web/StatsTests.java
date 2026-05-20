@@ -6,16 +6,16 @@ import static ch.rail.r2p.api.dto.PartnerToken.SOB;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ch.rail.r2p.Actor;
+import ch.rail.r2p.NoAuthSpringBootTest;
 import ch.rail.r2p.persistence.TrainPersistence;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
-@SpringBootTest
+@NoAuthSpringBootTest
 class StatsTests {
 
     @Autowired

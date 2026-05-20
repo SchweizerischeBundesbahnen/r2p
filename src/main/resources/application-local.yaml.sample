@@ -1,0 +1,5 @@
+r2p:
+  azure:
+    client-id: <your-client-id>
+    issuer-uri: <your-issuer-uri>
+  instance-owner: <your-organization>
