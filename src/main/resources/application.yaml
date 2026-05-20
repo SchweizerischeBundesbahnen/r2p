@@ -7,6 +7,8 @@ r2p:
   flyway-clean-on-validation-error: "${FLYWAY_CLEAN_ON_VALIDATION_ERROR:false}"
   test-data:
     enabled: "${R2P_TEST_DATA_ENABLED:false}"
+  cors:
+    allowed-origins: "${R2P_CORS_ALLOWED_ORIGINS:http://localhost:4200}"
 spring:
   application:
     name: r2p

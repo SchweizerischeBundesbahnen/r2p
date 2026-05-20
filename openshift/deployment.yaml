@@ -28,6 +28,7 @@ data:
   DATABASE_STORAGE: "file:/h2data/r2p"
   R2P_INSTANCE_OWNER: "REPLACE_ME"
   TZ: "Europe/Zurich"
+  R2P_CORS_ALLOWED_ORIGINS: "REPLACE_ME"
   R2P_TEST_DATA_ENABLED: "true"
 
 ---
@@ -136,6 +137,11 @@ spec:
                 secretKeyRef:
                   name: r2p-azure-client
                   key: issuerUri
+            - name: R2P_CORS_ALLOWED_ORIGINS
+              valueFrom:
+                configMapKeyRef:
+                  name: r2p-config
+                  key: R2P_CORS_ALLOWED_ORIGINS
           resources:
             limits:
               cpu: 2000m
