@@ -9,7 +9,7 @@
     </parent>
     <groupId>ch.rail</groupId>
     <artifactId>r2p</artifactId>
-    <version>0.0.21-SNAPSHOT</version>
+    <version>0.0.24-SNAPSHOT</version>
     <name>r2p</name>
     <description>Prototype for RU - RU - Partner communication</description>
     <url/>
@@ -35,8 +35,8 @@
         <asciidoctorj.pdf.version>2.3.23</asciidoctorj.pdf.version>
         <maven-antrun-plugin.version>3.2.0</maven-antrun-plugin.version>
         <exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
-        <alpinejs.version>3.15.11</alpinejs.version>
-        <license-maven-plugin.version>2.5.0</license-maven-plugin.version>
+        <alpinejs.version>3.15.12</alpinejs.version>
+        <license-maven-plugin.version>2.7.1</license-maven-plugin.version>
     </properties>
     <dependencies>
         <dependency>

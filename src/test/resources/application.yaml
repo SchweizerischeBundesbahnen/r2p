@@ -4,4 +4,7 @@ spring:
 ---
 r2p:
   azure:
-    client-secret: "DummySecretForTests"
+    client-secret: "dummy-secret"
+    client-id: "dummy-client"
+    issuer-uri: "https://dummy-issuer.com"
+  instance-owner: "SBB"

@@ -1,9 +1,9 @@
 r2p:
   azure:
-    client-id: "${R2P_AZURE_CLIENT_ID:f5b54c65-e0b1-4233-bc60-bf4c59f399bd}"
+    client-id: "${R2P_AZURE_CLIENT_ID}"
     client-secret: "${R2P_AZURE_CLIENT_SECRET}"
-    issuer-uri: https://login.microsoftonline.com/2cda5d11-f0ac-46b3-967d-af1b2e1bd01a
-  instance-owner: "${R2P_INSTANCE_OWNER:SBB}"
+    issuer-uri: "${R2P_AZURE_ISSUER_URI}"
+  instance-owner: "${R2P_INSTANCE_OWNER}"
   flyway-clean-on-validation-error: "${FLYWAY_CLEAN_ON_VALIDATION_ERROR:false}"
   test-data:
     enabled: "${R2P_TEST_DATA_ENABLED:false}"
@@ -50,7 +50,6 @@ spring:
 springdoc:
   swagger-ui:
     oauth:
-      # app registration: https://self.sbb-cloud.net/tools/appregistrations/app-registration-detail/f5b54c65-e0b1-4233-bc60-bf4c59f399bd
       client-id: "${r2p.azure.client-id}"
       use-pkce-with-authorization-code-grant: true
       scopes: api://${r2p.azure.client-id}/r2p

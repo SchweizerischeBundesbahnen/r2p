@@ -1,9 +1,9 @@
 package ch.rail.r2p.config;
 
+import ch.rail.r2p.NoAuthSpringBootTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,7 +11,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@NoAuthSpringBootTest
 @TestPropertySource(properties = {
         "r2p.flyway-clean-on-validation-error=true",
         "spring.datasource.url=jdbc:h2:mem:flyway-test-db;MODE=PostgreSQL;DB_CLOSE_DELAY=-1" // unique database for this test

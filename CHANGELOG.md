@@ -1,5 +1,56 @@
 # Changelog
 
+## [0.0.23](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.22...r2p-v0.0.23) (2026-05-20)
+
+
+### Features
+
+* remove sbb references ([#138](https://github.com/SchweizerischeBundesbahnen/r2p/issues/138)) ([2d1a40e](https://github.com/SchweizerischeBundesbahnen/r2p/commit/2d1a40eed33dffbaee603d979a8b37f4d8009e39))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.23-SNAPSHOT ([#133](https://github.com/SchweizerischeBundesbahnen/r2p/issues/133)) ([9d80a8c](https://github.com/SchweizerischeBundesbahnen/r2p/commit/9d80a8c1e8356204c0b9ce146ed3629614518318))
+* rename app-token-input ([#135](https://github.com/SchweizerischeBundesbahnen/r2p/issues/135)) ([50fa5bb](https://github.com/SchweizerischeBundesbahnen/r2p/commit/50fa5bb3faca3e46145956296545962871856d4c))
+
+
+### Build System
+
+* **deps-dev:** bump fast-uri from 3.1.0 to 3.1.2 ([#130](https://github.com/SchweizerischeBundesbahnen/r2p/issues/130)) ([d3b8210](https://github.com/SchweizerischeBundesbahnen/r2p/commit/d3b8210664806f67074b38ea4f1681de9d74ad2b))
+* **deps-dev:** bump org.codehaus.mojo:license-maven-plugin ([#116](https://github.com/SchweizerischeBundesbahnen/r2p/issues/116)) ([80758b4](https://github.com/SchweizerischeBundesbahnen/r2p/commit/80758b409ffed721227a91b2b4be209ee75dc2d4))
+* **deps-dev:** bump the commitlint group with 2 updates ([#137](https://github.com/SchweizerischeBundesbahnen/r2p/issues/137)) ([510cc50](https://github.com/SchweizerischeBundesbahnen/r2p/commit/510cc50ba19efd1f6129a3ced8d5b3e23d58a9be))
+* **deps:** bump org.webjars.npm:alpinejs from 3.15.11 to 3.15.12 ([#136](https://github.com/SchweizerischeBundesbahnen/r2p/issues/136)) ([f0696ba](https://github.com/SchweizerischeBundesbahnen/r2p/commit/f0696ba4841c22a6d0ca77ecbfccb94cd0e40e22))
+
+## [0.0.22](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.21...r2p-v0.0.22) (2026-05-12)
+
+
+### Bug Fixes
+
+* yaml lint automerge condition ([dd7664a](https://github.com/SchweizerischeBundesbahnen/r2p/commit/dd7664a9ee2e36aaacacdc55a55cb9fdc6c2ebaa))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.22-SNAPSHOT ([#131](https://github.com/SchweizerischeBundesbahnen/r2p/issues/131)) ([8acc1d0](https://github.com/SchweizerischeBundesbahnen/r2p/commit/8acc1d068b6a6902f7e50e4b29a06131f14799d5))
+
+## [0.0.21](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.20...r2p-v0.0.21) (2026-05-12)
+
+
+### Features
+
+* mandatory comments for operations and webclient design update ([8edada3](https://github.com/SchweizerischeBundesbahnen/r2p/commit/8edada31f76a10cc878b46d464211e735ef984e2))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.21-SNAPSHOT ([#126](https://github.com/SchweizerischeBundesbahnen/r2p/issues/126)) ([bc9697c](https://github.com/SchweizerischeBundesbahnen/r2p/commit/bc9697c07215e90b46391b8a426072e4be63d647))
+* remove webclient artifacts ([#128](https://github.com/SchweizerischeBundesbahnen/r2p/issues/128)) ([c219523](https://github.com/SchweizerischeBundesbahnen/r2p/commit/c2195238a5c6ed945f44c984394c03e5d57ce610))
+
+
+### Continuous Integration
+
+* [#111](https://github.com/SchweizerischeBundesbahnen/r2p/issues/111) replace custom automerge action ([#129](https://github.com/SchweizerischeBundesbahnen/r2p/issues/129)) ([f2b5709](https://github.com/SchweizerischeBundesbahnen/r2p/commit/f2b570967cb417e07897fa9581c301493eca2364))
+
 ## [0.0.20](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.19...r2p-v0.0.20) (2026-05-08)
 
 

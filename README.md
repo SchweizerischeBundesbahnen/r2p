@@ -5,6 +5,9 @@ Prototype for RU - RU - Partner communication
 [![Build and Test](https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/build.yml/badge.svg)](https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/build.yml)
 [![Lint Commit Messages](https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/lint-commit-messages.yml/badge.svg)](https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/lint-commit-messages.yml)
 
+## Disclaimer
+This is a PoC implementation not suitable to run in production.
+
 ## Overview
 
 R2P is a Spring Boot 4.0 prototype demonstrating railway (RU - Railway Undertaking) partner communication. The prototype uses:
@@ -30,12 +33,14 @@ This runs the complete build including code generation, tests, and documentation
 
 ### Run the Application
 
-Define the environment variable `R2P_AZURE_CLIENT_SECRET` (and `R2P_AZURE_CLIENT_ID` if necessary) for Azure AD authentication.
+Copy the `application-local.yaml.sample` file to `application-local.yaml` and define the configuration as needed.
+
+Define the environment variable `R2P_AZURE_CLIENT_SECRET` for Azure AD authentication.
 
 Then start the application:
 
 ```bash
-mvn spring-boot:run
+mvn spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
 Access the application:
