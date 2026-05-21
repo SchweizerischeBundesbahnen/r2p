@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.24](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.23...r2p-v0.0.24) (2026-05-20)
+
+
+### Bug Fixes
+
+* bpsglo 14065: add cors config to security config ([#141](https://github.com/SchweizerischeBundesbahnen/r2p/issues/141)) ([a97a354](https://github.com/SchweizerischeBundesbahnen/r2p/commit/a97a3540e7757bda8713b257c43334340e3fe7ee))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.24-SNAPSHOT ([#139](https://github.com/SchweizerischeBundesbahnen/r2p/issues/139)) ([6ee5186](https://github.com/SchweizerischeBundesbahnen/r2p/commit/6ee5186391553ed329b5395a46741cd4a79225bd))
+
 ## [0.0.23](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.22...r2p-v0.0.23) (2026-05-20)
 
 
