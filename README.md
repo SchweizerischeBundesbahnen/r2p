@@ -31,27 +31,44 @@ mvn clean verify
 ```
 This runs the complete build including code generation, tests, and documentation.
 
-### Run the Application
+### Run the Application Locally (without Azure)
 
-Copy the `application-local.yaml.sample` file to `application-local.yaml` and define the configuration as needed.
+The easiest way to run the application locally is using the built-in Keycloak setup via Docker Compose.
 
-Define the environment variable `R2P_AZURE_CLIENT_SECRET` for Azure AD authentication.
+**Prerequisites:** Docker (or Podman with the Docker CLI wrapper) must be running.
+
+Spring Boot Docker Compose support automatically starts the Keycloak container defined in `compose.yaml` when you launch the app with the `local` profile. No manual `docker compose up` is required.
+
+```bash
+mvn spring-boot:run "-Dspring-boot.run.profiles=local"
+```
+
+Spring Boot waits for Keycloak to become healthy before the application starts.
+
+**Pre-configured test user:**
+
+| Username   | Password   | Role       |
+|------------|------------|------------|
+| `r2p-user` | `password` | `r2p_user` |
+
+Access the application:
+- **Application**: http://localhost:8080/
+- **Swagger UI**: http://localhost:8080/swagger-ui.html
+- **OpenAPI Spec**: http://localhost:8080/v3/api-docs
+- **Keycloak Admin Console**: http://localhost:8180/ (admin / admin)
+- **Documentation**: `target/docs/`
+  - `r2p-manual.html` / `r2p-manual.pdf` - User manual
+  - `r2p-api.html` / `r2p-api.pdf` - API documentation
+
+### Run the Application with Azure AD
+
+Copy `src/main/resources/application-local.yaml.sample` to `application-local.yaml` and fill in your Azure AD credentials.
 
 Then start the application:
 
 ```bash
 mvn spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
-
-Access the application:
-- **Application**: http://localhost:8080/
-- **Swagger UI**: http://localhost:8080/swagger-ui.html
-- **OpenAPI Spec**: http://localhost:8080/v3/api-docs
-- **Documentation**: `target/docs/`
-  - `r2p-manual.html` / `r2p-manual.pdf` - User manual
-  - `r2p-api.html` / `r2p-api.pdf` - API documentation
-
-**Note:** To access secured endpoints, you must be a member of AD group `DG_SEC_DEV_R2P_Admin`.
 
 ### Docker
 Run the latest release:

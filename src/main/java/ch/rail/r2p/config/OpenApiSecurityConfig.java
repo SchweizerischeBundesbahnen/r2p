@@ -18,10 +18,20 @@ public class OpenApiSecurityConfig {
     @Value("${r2p.azure.client-secret}")
     private String clientSecret; // not used in this config, but present to make sure an error is raised at startup if the environment variable is missing
 
+    @Value("${r2p.openapi.auth-url:}")
+    private String configuredAuthUrl;
+
+    @Value("${r2p.openapi.token-url:}")
+    private String configuredTokenUrl;
+
     @Bean
     public OpenAPI openAPI() {
-        String authUrl = issuerUri + "/oauth2/v2.0/authorize";
-        String tokenUrl = issuerUri + "/oauth2/v2.0/token";
+        String authUrl = configuredAuthUrl.isBlank()
+            ? issuerUri + "/oauth2/v2.0/authorize"
+            : configuredAuthUrl;
+        String tokenUrl = configuredTokenUrl.isBlank()
+            ? issuerUri + "/oauth2/v2.0/token"
+            : configuredTokenUrl;
 
         OAuthFlow authorizationCodeFlow = new OAuthFlow()
                 .authorizationUrl(authUrl)

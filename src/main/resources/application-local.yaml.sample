@@ -1,5 +1,11 @@
 r2p:
   azure:
-    client-id: <your-client-id>
-    issuer-uri: <your-issuer-uri>
+    # Option A – Azure AD (production)
+    client-id: <your-azure-client-id>
+    client-secret: <your-azure-client-secret>
+    issuer-uri: <your-azure-issuer-uri>
+    # Option B – Keycloak local dev (see compose.yaml + keycloak/r2p-realm.json)
+    # client-id: r2p-client
+    # client-secret: r2p-client-secret
+    # issuer-uri: http://localhost:8180/realms/r2p
   instance-owner: <your-organization>

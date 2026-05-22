@@ -1,5 +1,6 @@
 HELP.md
 target/
+data/
 .mvn/wrapper/maven-wrapper.jar
 /src/main/resources/application-local.yaml
 !**/src/main/**/target/
