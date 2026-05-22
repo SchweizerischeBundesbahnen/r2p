@@ -62,8 +62,6 @@ Access the application:
 
 ### Run the Application with Azure AD
 
-### Run the Application with Azure AD
-
 Create the file `src/main/resources/application-localazure.yaml` (it is git-ignored) with your Azure AD credentials:
 
 ```yaml
