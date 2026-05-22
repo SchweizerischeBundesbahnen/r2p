@@ -64,7 +64,7 @@ Access the application:
 
 ### Run the Application with Azure AD
 
-Create the file `src/main/resources/application-local.yaml` (it is git-ignored) with your Azure AD credentials:
+Create the file `src/main/resources/application-localazure.yaml` (it is git-ignored) with your Azure AD credentials:
 
 ```yaml
 r2p:
@@ -78,7 +78,7 @@ r2p:
 Then start the application:
 
 ```bash
-mvn spring-boot:run "-Dspring-boot.run.profiles=local"
+mvn spring-boot:run "-Dspring-boot.run.profiles=localazure"
 ```
 
 Run the latest release:
