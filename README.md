@@ -79,6 +79,8 @@ Then start the application:
 mvn spring-boot:run "-Dspring-boot.run.profiles=localazure"
 ```
 
+### Run the Application with Docker
+
 Run the latest release:
 ```bash
 docker run -it -p 8080:8080 ghcr.io/schweizerischebundesbahnen/r2p:latest
