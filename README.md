@@ -37,13 +37,13 @@ The easiest way to run the application locally is using the built-in Keycloak se
 
 **Prerequisites:** Docker (or Podman with the Docker CLI wrapper) must be running.
 
-Spring Boot Docker Compose support automatically starts the Keycloak container defined in `compose.yaml` when you launch the app with the `local` profile. No manual `docker compose up` is required.
+No configuration file needed – the `local` profile is included in `application.yaml`:
 
 ```bash
 mvn spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
-Spring Boot waits for Keycloak to become healthy before the application starts.
+Spring Boot Docker Compose support automatically starts the Keycloak container defined in `compose.yaml`. Spring Boot waits for Keycloak to become healthy before the application starts.
 
 **Pre-configured test user:**
 
@@ -62,7 +62,18 @@ Access the application:
 
 ### Run the Application with Azure AD
 
-Copy `src/main/resources/application-local.yaml.sample` to `application-local.yaml` and fill in your Azure AD credentials.
+### Run the Application with Azure AD
+
+Create the file `src/main/resources/application-local.yaml` (it is git-ignored) with your Azure AD credentials:
+
+```yaml
+r2p:
+  azure:
+    client-id: <your-azure-client-id>
+    client-secret: <your-azure-client-secret>
+    issuer-uri: <your-azure-issuer-uri>
+  instance-owner: <your-organization>
+```
 
 Then start the application:
 
@@ -70,7 +81,6 @@ Then start the application:
 mvn spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
-### Docker
 Run the latest release:
 ```bash
 docker run -it -p 8080:8080 ghcr.io/schweizerischebundesbahnen/r2p:latest

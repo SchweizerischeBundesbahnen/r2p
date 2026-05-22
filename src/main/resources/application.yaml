@@ -58,3 +58,55 @@ springdoc:
 #logging:
   #level:
     # org.springframework.web: DEBUG
+
+---
+# ── Local development profile ─────────────────────────────────────────────────
+# Uses a local Keycloak instance started automatically via Spring Docker Compose
+# (compose.yaml). No Azure credentials required.
+# Start with: mvn spring-boot:run "-Dspring-boot.run.profiles=local"
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    # File-based H2 so data survives restarts during development
+    url: jdbc:h2:file:./data/r2p-local;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/r2p
+          audiences: r2p-client
+      client:
+        registration:
+          azure:
+            client-id: r2p-client
+            client-secret: r2p-client-secret
+            scope:
+              - openid
+              - profile
+              - email
+        provider:
+          azure:
+            issuer-uri: http://localhost:8180/realms/r2p
+r2p:
+  azure:
+    client-id: r2p-client
+    client-secret: r2p-client-secret
+    issuer-uri: http://localhost:8180/realms/r2p
+  instance-owner: SBB
+  test-data:
+    enabled: true
+  openapi:
+    auth-url: http://localhost:8180/realms/r2p/protocol/openid-connect/auth
+    token-url: http://localhost:8180/realms/r2p/protocol/openid-connect/token
+springdoc:
+  swagger-ui:
+    oauth:
+      # r2p-spa is a public client (no secret), required for browser-based PKCE flows in Swagger UI.
+      # r2p-client is confidential and would require a secret that the browser cannot safely provide.
+      client-id: r2p-spa
+      use-pkce-with-authorization-code-grant: true
+      # r2p scope triggers the scp=r2p claim in the access token, which the backend requires.
+      scopes: r2p
+

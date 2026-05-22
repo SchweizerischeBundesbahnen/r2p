@@ -10,9 +10,11 @@ services:
     volumes:
       - ./keycloak/r2p-realm.json:/opt/keycloak/data/import/r2p-realm.json:ro
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8080/realms/r2p/.well-known/openid-configuration || exit 1"]
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && printf 'GET /realms/r2p HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && grep -q '200 OK' <&3"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 30s
+
+
 
