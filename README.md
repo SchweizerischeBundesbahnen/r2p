@@ -68,9 +68,14 @@ Create the file `src/main/resources/application-localazure.yaml` (it is git-igno
 r2p:
   azure:
     client-id: <your-azure-client-id>
-    client-secret: <your-azure-client-secret>
     issuer-uri: <your-azure-issuer-uri>
   instance-owner: <your-organization>
+```
+
+The client secret must be provided via the environment variable `R2P_AZURE_CLIENT_SECRET` (not in the config file):
+
+```bash
+set R2P_AZURE_CLIENT_SECRET=<your-azure-client-secret>
 ```
 
 Then start the application:
