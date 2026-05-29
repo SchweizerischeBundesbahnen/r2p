@@ -2,15 +2,11 @@ package ch.rail.r2p;
 
 import static ch.rail.r2p.api.dto.PartnerToken.SBB;
 import static ch.rail.r2p.domain.Branch.MAIN_BRANCH_NAME;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
 
 import ch.rail.r2p.api.dto.Branch;
 import ch.rail.r2p.api.dto.PartnerToken;
 import ch.rail.r2p.api.dto.Train;
 import ch.rail.r2p.api.dto.TrainListElement;
-import ch.rail.r2p.domain.TrainVersion;
-import ch.rail.r2p.persistence.TrainPersistence;
 import ch.rail.r2p.persistence.impl.BranchSpringDataRepository;
 import ch.rail.r2p.persistence.impl.ChangelogSpringDataRepository;
 import ch.rail.r2p.persistence.impl.TrainSpringDataRepository;
@@ -31,8 +27,6 @@ public class Actor {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private TrainPersistence trainPersistence;
 
     @Autowired
     private TrainController trainController;
@@ -75,6 +69,7 @@ public class Actor {
     public TrainListElement createTrain(PartnerToken owner, String comment) {
         TrainListElement train = trainController.createTrain(owner, comment, loadSampleTrain()).getBody();
         Objects.requireNonNull(train, "createTrain returned null body");
+        trainIdsForCleanup.add(train.getTrainId());
         return train;
     }
 
@@ -89,12 +84,7 @@ public class Actor {
     }
 
     public void setup() {
-        // Collect all trainIds of trains inserted by trainPersistence.insertVersion
-        doAnswer(invocation -> {
-            invocation.callRealMethod();
-            trainIdsForCleanup.add(((TrainVersion) invocation.getArgument(0)).getTrainId());
-            return null;
-        }).when(trainPersistence).insertVersion(any());
+        trainIdsForCleanup.clear();
     }
 
     public void cleanup() {

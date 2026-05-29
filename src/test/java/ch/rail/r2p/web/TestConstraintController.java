@@ -1,5 +1,6 @@
 package ch.rail.r2p.web;
 
+import ch.rail.r2p.persistence.impl.PayloadDeserializationException;
 import jakarta.validation.constraints.Size;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -35,6 +36,12 @@ public class TestConstraintController {
     @GetMapping("/test/invalid-branch-state")
     public ResponseEntity<String> testInvalidBranchState() {
         throw new InvalidBranchStateException("Test invalid branch state - branch already merged");
+    }
+
+    @GetMapping("/test/payload-deserialization")
+    public ResponseEntity<String> testPayloadDeserialization() {
+        throw new PayloadDeserializationException("Test payload deserialization error",
+            new RuntimeException("Unexpected value 'tttreftrain'"));
     }
 }
 
