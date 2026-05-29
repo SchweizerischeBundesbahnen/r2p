@@ -19,9 +19,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class Actor {
     @Autowired
@@ -84,7 +86,11 @@ public class Actor {
     }
 
     public void setup() {
-        trainIdsForCleanup.clear();
+        if (!trainIdsForCleanup.isEmpty()) {
+            log.warn("Actor.cleanup() was not called after the previous test — running cleanup now. "
+                + "Leftover train IDs: {}", trainIdsForCleanup);
+            cleanup();
+        }
     }
 
     public void cleanup() {
