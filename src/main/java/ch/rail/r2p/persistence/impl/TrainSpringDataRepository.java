@@ -34,7 +34,7 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
 
 
     @Query("""
-        SELECT tv.version, tv.payload FROM train_version tv
+        SELECT tv.version, tv.train_id, tv.branch_id, tv.payload FROM train_version tv
         WHERE (:operationalDayFrom IS NULL OR tv.operational_day>=:operationalDayFrom)
           AND (:operationalDayTo IS NULL OR tv.operational_day<=:operationalDayTo)
           AND EXISTS (SELECT 1 FROM train_partner WHERE train_partner.train_id=tv.train_id AND train_partner.partner=:partner)
@@ -48,7 +48,7 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
         """)
     List<VersionAndPayload> findHeadVersionIdsAndPayloads(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo);
 
-    record VersionAndPayload(UUID version, byte[] payload) {
+    record VersionAndPayload(UUID version, UUID trainId, UUID branchId, byte[] payload) {
     }
 
     @Query("""

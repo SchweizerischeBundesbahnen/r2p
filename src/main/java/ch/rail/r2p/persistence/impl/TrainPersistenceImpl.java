@@ -70,7 +70,8 @@ public class TrainPersistenceImpl implements TrainPersistence {
                 trainReadingConverter.convert(candidate.payload());
                 validIds.add(candidate.version());
             } catch (PayloadDeserializationException e) {
-                log.error("Skipping train version {} due to payload deserialization error: {}", candidate.version(), e.getMessage());
+                log.error("Skipping train version {} (trainId={}, branchId={}) due to payload deserialization error: {}",
+                    candidate.version(), candidate.trainId(), candidate.branchId(), e.getMessage());
             }
         }
         if (validIds.isEmpty()) {
