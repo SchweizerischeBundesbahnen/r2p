@@ -9,18 +9,25 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import ch.rail.r2p.Actor;
 import ch.rail.r2p.NoAuthSpringBootTest;
+import ch.rail.r2p.api.dto.Action;
 import ch.rail.r2p.api.dto.Branch;
 import ch.rail.r2p.api.dto.BranchState;
+import ch.rail.r2p.api.dto.Change;
 import ch.rail.r2p.api.dto.TrainListElement;
 import ch.rail.r2p.persistence.TrainPersistence;
 import ch.rail.r2p.persistence.impl.BranchSpringDataRepository;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+<<<<<<< HEAD
 import org.springframework.dao.DuplicateKeyException;
+=======
+import org.springframework.jdbc.core.JdbcTemplate;
+>>>>>>> e723526 (fix: branch deletion no longer fails on corrupt payload)
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
@@ -37,6 +44,9 @@ class BranchTests {
 
     @Autowired
     private BranchSpringDataRepository branchSpringDataRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @BeforeEach
     void setUp() {
@@ -228,5 +238,77 @@ class BranchTests {
         NoSuchElementException exception = assertThrows(NoSuchElementException.class,
             () -> trainController.updateTrainBranch(SBB, nonExistentTrainId, nonExistentBranchId, "update non-existent train", actor.loadSampleTrain()));
         assertThat(exception.getMessage()).isEqualTo("Train or Branch not found");
+    }
+
+    @Test
+    void should_delete_branch_with_corrupt_payload() {
+        TrainListElement train = actor.createTrain(SBB, "train with corrupt payload");
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
+        Branch branch = actor.createBranch(SOB, train.getTrainId(), "corruptBranch", "create branch");
+
+        // Corrupt the payload: valid JSON syntax but contains an invalid enum value that fails Jackson deserialization
+        jdbcTemplate.update(
+            "UPDATE train_version SET payload = '{\"id\":\"X\",\"startdate\":\"2026-01-01\","
+                + "\"references\":[{\"type\":\"INVALID_ENUM\",\"name\":\"X\"}]}' WHERE branch_id = ?",
+            branch.getBranchId());
+
+        // Delete should succeed even with corrupt payload
+        var response = trainController.deleteTrainBranch(SOB, train.getTrainId(), branch.getBranchId(), "deleting corrupt branch");
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getTechnical().getBranchState()).isEqualTo(BranchState.DELETED);
+
+        // Verify changelog entry was written
+        List<Change> changes = trainController.getTrainChangesById(SBB, train.getTrainId(), null, null).getBody();
+        assertThat(changes).isNotNull();
+        assertThat(changes.stream().map(Change::getAction)).contains(Action.DELETED);
+    }
+
+    @Test
+    void should_delete_merge_requested_branch_with_corrupt_payload() {
+        TrainListElement train = actor.createTrain(SBB, "train for merge-request corrupt payload test");
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
+        Branch branch = actor.createBranch(SOB, train.getTrainId(), "mergeCorruptBranch", "create branch");
+        trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
+
+        // Corrupt the payload: valid JSON syntax but contains an invalid enum value that fails Jackson deserialization
+        jdbcTemplate.update(
+            "UPDATE train_version SET payload = '{\"id\":\"X\",\"startdate\":\"2026-01-01\","
+                + "\"references\":[{\"type\":\"INVALID_ENUM\",\"name\":\"X\"}]}' WHERE branch_id = ?",
+            branch.getBranchId());
+
+        // Delete should succeed and implicitly reject the merge request
+        var response = trainController.deleteTrainBranch(SOB, train.getTrainId(), branch.getBranchId(), "aborting corrupt branch");
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getTechnical().getBranchState()).isEqualTo(BranchState.DELETED);
+
+        List<Change> changes = trainController.getTrainChangesById(SBB, train.getTrainId(), null, null).getBody();
+        assertThat(changes).isNotNull();
+        List<Action> actions = changes.stream().map(Change::getAction).toList();
+        assertThat(actions).contains(Action.MERGE_REJECTED);
+        assertThat(actions).contains(Action.DELETED);
+        int rejectedIdx = actions.indexOf(Action.MERGE_REJECTED);
+        int deletedIdx = actions.lastIndexOf(Action.DELETED);
+        assertThat(rejectedIdx).isLessThan(deletedIdx);
+    }
+
+    @Test
+    void should_delete_main_branch_when_sibling_branches_have_corrupt_payload() {
+        TrainListElement train = actor.createTrain(SBB, "train for cascade corrupt payload test");
+        Branch siblingBranch = actor.createBranch(SBB, train.getTrainId(), "siblingBranch", "create sibling");
+
+        // Corrupt the sibling branch payload: valid JSON syntax but contains an invalid enum value that fails Jackson deserialization
+        jdbcTemplate.update(
+            "UPDATE train_version SET payload = '{\"id\":\"X\",\"startdate\":\"2026-01-01\","
+                + "\"references\":[{\"type\":\"INVALID_ENUM\",\"name\":\"X\"}]}' WHERE branch_id = ?",
+            siblingBranch.getBranchId());
+
+        UUID mainBranchId = train.getBranches().getFirst().getBranchId();
+
+        // Deleting the main branch should cascade and delete the sibling despite its corrupt payload
+        trainController.deleteTrainBranch(SBB, train.getTrainId(), mainBranchId, "delete main with corrupt sibling");
+
+        var branches = branchSpringDataRepository.findTrainBranchByTrainId(train.getTrainId());
+        assertThat(branches).hasSize(2);
+        assertThat(branches).allMatch(b -> b.getState() == BranchState.DELETED, "all branches should be DELETED");
     }
 }

@@ -2,6 +2,7 @@ package ch.rail.r2p.persistence.impl;
 
 import ch.rail.r2p.domain.TrainVersion;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,6 +26,19 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
           )
         """)
     List<TrainVersion> findHeadVersionsByTrainId(UUID trainId);
+
+    @Query("""
+        SELECT version, train_id, branch_id, payload FROM train_version
+        WHERE train_id = :trainId
+          AND head = true
+          AND NOT EXISTS (
+              SELECT 1 FROM branch b
+              WHERE b.train_id = :trainId
+                AND b.name = 'main'
+                AND b.state = 'DELETED'
+          )
+        """)
+    List<VersionAndPayload> findHeadVersionIdsAndPayloadsByTrainId(UUID trainId);
 
     @Query("""
         SELECT * FROM train_version
@@ -79,6 +93,15 @@ public interface TrainSpringDataRepository extends CrudRepository<TrainVersion, 
         )
         """)
     boolean existsByTrainId(UUID trainId);
+
+    @Query("""
+        SELECT version, timestamp FROM train_version
+        WHERE train_id=:trainId AND branch_id=:branchId AND head=true
+        """)
+    Optional<HeadVersionRefRow> findHeadVersionRef(UUID trainId, UUID branchId);
+
+    record HeadVersionRefRow(UUID version, OffsetDateTime timestamp) {
+    }
 
     @Query("""
         DELETE FROM train_partner WHERE train_id=:trainId
