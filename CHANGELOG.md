@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.0.25](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.24...r2p-v0.0.25) (2026-05-29)
+
+
+### Features
+
+* add keycloak setup ([#145](https://github.com/SchweizerischeBundesbahnen/r2p/issues/145)) ([4a41497](https://github.com/SchweizerischeBundesbahnen/r2p/commit/4a414978888d5ca125e7d9337551e913d1b2b7dd))
+
+
+### Bug Fixes
+
+* skip trains with corrupt payloads during listTrains ([#146](https://github.com/SchweizerischeBundesbahnen/r2p/issues/146)) ([4bacf59](https://github.com/SchweizerischeBundesbahnen/r2p/commit/4bacf596e7ca88731019f8475ebfe664c257aa92))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.25-SNAPSHOT ([#142](https://github.com/SchweizerischeBundesbahnen/r2p/issues/142)) ([67dc680](https://github.com/SchweizerischeBundesbahnen/r2p/commit/67dc68033c3319c8889207c5185fab7f91a1913e))
+
 ## [0.0.24](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.23...r2p-v0.0.24) (2026-05-20)
 
 
