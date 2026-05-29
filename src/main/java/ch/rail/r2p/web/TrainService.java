@@ -9,6 +9,7 @@ import ch.rail.r2p.api.dto.MergeAction;
 import ch.rail.r2p.api.dto.Train;
 import ch.rail.r2p.domain.Branch;
 import ch.rail.r2p.domain.Changelog;
+import ch.rail.r2p.domain.HeadVersionRef;
 import ch.rail.r2p.domain.TrainVersion;
 import ch.rail.r2p.domain.TrainVersionEnriched;
 import ch.rail.r2p.persistence.ChangelogPersistence;
@@ -69,39 +70,42 @@ public class TrainService {
     }
 
     @Transactional
-    public TrainVersionEnriched deleteTrainBranch(String partner, UUID trainId, UUID branchId, String comment) {
+    public Branch deleteTrainBranch(String partner, UUID trainId, UUID branchId, String comment) {
         validateComment(comment);
-        var train = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branchId)
+        Branch branch = trainPersistence.findBranch(trainId, branchId)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
-        checkSharing(partner, train);
-        checkBranchOwner(partner, train.branch());
-        checkBranchState(train.branch(), BranchState.OPEN, BranchState.MERGE_REQUESTED);
+        List<String> partners = trainPersistence.getPartners(trainId);
+        checkSharing(partner, partners);
+        checkBranchOwner(partner, branch);
+        checkBranchState(branch, BranchState.OPEN, BranchState.MERGE_REQUESTED);
         // If an open merge request exists, implicitly reject it first so the changelog stays consistent
-        if (train.branch().getState() == BranchState.MERGE_REQUESTED) {
-            changelogPersistence.insert(Changelog.forMergeRejection(partner, train.trainVersion(), train.branch(),
+        if (branch.getState() == BranchState.MERGE_REQUESTED) {
+            HeadVersionRef ref = trainPersistence.findHeadVersionRef(trainId, branchId)
+                .orElseThrow(() -> new NoSuchElementException("Head version not found for branch " + branchId));
+            changelogPersistence.insert(Changelog.forMergeRejection(partner, trainId, branchId,
+                branch.getPrefixedName(), ref.version(),
                 "Merge request implicitly rejected due to branch deletion"));
         }
-        var updatedBranch = trainPersistence.updateBranchState(branchId, BranchState.DELETED);
-        Changelog changelog = Changelog.forDeletion(partner, train.branch(), comment);
-        changelogPersistence.insert(changelog);
+        Branch updatedBranch = trainPersistence.updateBranchState(branchId, BranchState.DELETED);
+        changelogPersistence.insert(Changelog.forDeletion(partner, branch, comment));
         // If main branch is deleted, delete all other branches as well
-        if (train.branch().isMainBranch()) {
-            List<Branch> branches = trainPersistence.findBranchesByTrainId(trainId);
-            for (Branch branch : branches) {
-                if (branch.getState() != BranchState.DELETED) {
-                    // If the branch has an open merge request, implicitly reject it first
-                    if (branch.getState() == BranchState.MERGE_REQUESTED) {
-                        TrainVersionEnriched branchHead = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branch.getBranchId())
-                            .orElseThrow(() -> new NoSuchElementException("Head version not found for branch " + branch.getBranchId()));
-                        changelogPersistence.insert(Changelog.forMergeRejection(partner, branchHead.trainVersion(), branch,
+        if (branch.isMainBranch()) {
+            List<Branch> allBranches = trainPersistence.findBranchesByTrainId(trainId);
+            for (Branch b : allBranches) {
+                if (b.getState() != BranchState.DELETED) {
+                    if (b.getState() == BranchState.MERGE_REQUESTED) {
+                        HeadVersionRef ref = trainPersistence.findHeadVersionRef(trainId, b.getBranchId())
+                            .orElseThrow(() -> new NoSuchElementException("Head version not found for branch " + b.getBranchId()));
+                        changelogPersistence.insert(Changelog.forMergeRejection(partner, trainId, b.getBranchId(),
+                            b.getPrefixedName(), ref.version(),
                             "Merge request implicitly rejected due to branch deletion"));
                     }
-                    trainPersistence.updateBranchState(branch.getBranchId(), BranchState.DELETED);
-                    changelogPersistence.insert(Changelog.forDeletion(partner, branch, comment));
+                    trainPersistence.updateBranchState(b.getBranchId(), BranchState.DELETED);
+                    changelogPersistence.insert(Changelog.forDeletion(partner, b, comment));
                 }
             }
         }
-        return new TrainVersionEnriched(train.trainVersion(), updatedBranch, train.partners());
+        return updatedBranch;
     }
 
     public List<TrainVersionEnriched> getTrainById(String partner, UUID trainId) {
@@ -161,9 +165,10 @@ public class TrainService {
             if (branch.getOwner().equals(unshareWith) && branch.getState() != BranchState.DELETED) {
                 // If the branch has an open merge request, implicitly reject it first
                 if (branch.getState() == BranchState.MERGE_REQUESTED) {
-                    TrainVersionEnriched branchHead = trainPersistence.findHeadVersionByTrainIdAndBranchId(trainId, branch.getBranchId())
+                    HeadVersionRef ref = trainPersistence.findHeadVersionRef(trainId, branch.getBranchId())
                         .orElseThrow(() -> new NoSuchElementException("Head version not found for branch " + branch.getBranchId()));
-                    changelogPersistence.insert(Changelog.forMergeRejection(partner, branchHead.trainVersion(), branch,
+                    changelogPersistence.insert(Changelog.forMergeRejection(partner, trainId, branch.getBranchId(),
+                        branch.getPrefixedName(), ref.version(),
                         "Merge request implicitly rejected due to unsharing of train"));
                 }
                 trainPersistence.updateBranchState(branch.getBranchId(), BranchState.DELETED);
@@ -304,7 +309,11 @@ public class TrainService {
     }
 
     private void checkSharing(String partner, TrainVersionEnriched train) {
-        if (!train.partners().contains(partner)) {
+        checkSharing(partner, train.partners());
+    }
+
+    private void checkSharing(String partner, List<String> partners) {
+        if (!partners.contains(partner)) {
             throw new AuthorizationDeniedException("Train not shared with partner");
         }
     }

@@ -16,6 +16,8 @@ public interface BranchSpringDataRepository extends CrudRepository<Branch, UUID>
 
     Optional<Branch> findTrainBranchByTrainIdAndName(UUID trainId, String branchName);
 
+    Optional<Branch> findTrainBranchByTrainIdAndBranchId(UUID trainId, UUID branchId);
+
     @Query("""
         DELETE FROM branch WHERE train_id=:trainId
         """)

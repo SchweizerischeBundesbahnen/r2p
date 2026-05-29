@@ -2,6 +2,7 @@ package ch.rail.r2p.persistence.impl;
 
 import ch.rail.r2p.api.dto.BranchState;
 import ch.rail.r2p.domain.Branch;
+import ch.rail.r2p.domain.HeadVersionRef;
 import ch.rail.r2p.domain.TrainVersion;
 import ch.rail.r2p.domain.TrainVersionEnriched;
 import ch.rail.r2p.persistence.TrainPersistence;
@@ -39,7 +40,28 @@ public class TrainPersistenceImpl implements TrainPersistence {
 
     @Override
     public List<TrainVersionEnriched> findHeadVersionsByTrainId(UUID trainId) {
-        return enrich(trainSpringDataRepository.findHeadVersionsByTrainId(trainId));
+        List<TrainSpringDataRepository.VersionAndPayload> candidates =
+            trainSpringDataRepository.findHeadVersionIdsAndPayloadsByTrainId(trainId);
+        if (candidates.isEmpty()) {
+            return List.of();
+        }
+        // Pre-validate each payload individually so that one corrupt entry does not abort the entire list
+        List<UUID> validIds = new java.util.ArrayList<>();
+        for (TrainSpringDataRepository.VersionAndPayload candidate : candidates) {
+            try {
+                trainReadingConverter.convert(candidate.payload());
+                validIds.add(candidate.version());
+            } catch (PayloadDeserializationException e) {
+                log.error("Skipping train version {} (trainId={}, branchId={}) due to payload deserialization error: {}",
+                    candidate.version(), candidate.trainId(), candidate.branchId(), e.getMessage());
+            }
+        }
+        if (validIds.isEmpty()) {
+            return List.of();
+        }
+        List<TrainVersion> versions = StreamSupport.stream(
+            trainSpringDataRepository.findAllById(validIds).spliterator(), false).toList();
+        return enrich(versions);
     }
 
     @Override
@@ -127,6 +149,22 @@ public class TrainPersistenceImpl implements TrainPersistence {
     @Override
     public void removePartner(UUID trainId, String partner) {
         trainSpringDataRepository.removePartner(trainId, partner);
+    }
+
+    @Override
+    public Optional<Branch> findBranch(UUID trainId, UUID branchId) {
+        return branchSpringDataRepository.findTrainBranchByTrainIdAndBranchId(trainId, branchId);
+    }
+
+    @Override
+    public List<String> getPartners(UUID trainId) {
+        return trainSpringDataRepository.getPartners(trainId);
+    }
+
+    @Override
+    public Optional<HeadVersionRef> findHeadVersionRef(UUID trainId, UUID branchId) {
+        return trainSpringDataRepository.findHeadVersionRef(trainId, branchId)
+            .map(row -> new HeadVersionRef(row.version(), row.timestamp()));
     }
 
     private List<TrainVersionEnriched> enrich(List<TrainVersion> versions) {

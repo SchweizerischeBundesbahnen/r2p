@@ -13,6 +13,7 @@ import ch.rail.r2p.api.dto.BranchState;
 import ch.rail.r2p.api.dto.Change;
 import ch.rail.r2p.api.dto.TrainListElement;
 import ch.rail.r2p.persistence.TrainPersistence;
+import ch.rail.r2p.persistence.impl.BranchSpringDataRepository;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
@@ -34,6 +36,12 @@ class SharingTests {
 
     @MockitoSpyBean
     private TrainPersistence trainPersistence;
+
+    @Autowired
+    private BranchSpringDataRepository branchSpringDataRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @BeforeEach
     void setUp() {
@@ -167,6 +175,28 @@ class SharingTests {
         int rejectedIdx = actions.indexOf(Action.MERGE_REJECTED);
         int deletedIdx  = actions.lastIndexOf(Action.DELETED);
         assertThat(rejectedIdx).isLessThan(deletedIdx);
+    }
+
+    @Test
+    void should_unshare_train_when_partner_branch_has_corrupt_payload() {
+        TrainListElement train = actor.createTrain(SBB, "train for unshare corrupt payload test");
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
+        var branch = actor.createBranch(SOB, train.getTrainId(), "corruptBranch", "create branch");
+
+        // Corrupt the payload: valid JSON syntax but contains an invalid enum value that fails Jackson deserialization
+        jdbcTemplate.update(
+            "UPDATE train_version SET payload = '{\"id\":\"X\",\"startdate\":\"2026-01-01\","
+                + "\"references\":[{\"type\":\"INVALID_ENUM\",\"name\":\"X\"}]}' WHERE branch_id = ?",
+            branch.getBranchId());
+
+        // Unsharing should succeed despite the corrupt payload
+        trainController.unshareTrain(SBB, train.getTrainId(), SOB.toString(), "revoking access");
+
+        // Verify the SOB branch is DELETED – query the branch table directly to avoid loading the corrupt payload
+        var branches = branchSpringDataRepository.findTrainBranchByTrainId(train.getTrainId());
+        var sobBranch = branches.stream()
+            .filter(b -> "SOB".equals(b.getOwner())).findAny().orElseThrow();
+        assertThat(sobBranch.getState()).isEqualTo(BranchState.DELETED);
     }
 }
 

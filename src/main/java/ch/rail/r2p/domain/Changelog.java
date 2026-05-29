@@ -76,8 +76,19 @@ public class Changelog {
 
     public static Changelog forMergeRejection(String partner, TrainVersion trainVersion, Branch branch, String comment) {
         validateComment(comment);
-        return new Changelog(UUID.randomUUID(), Action.MERGE_REJECTED, partner, null, trainVersion.trainId, trainVersion.branchId, branch.getPrefixedName(), trainVersion.version,
-            OffsetDateTime.now(), comment);
+        return forMergeRejection(partner, trainVersion.trainId, trainVersion.branchId, branch.getPrefixedName(),
+            trainVersion.version, comment);
+    }
+
+    /**
+     * Creates a MERGE_REJECTED changelog entry without requiring a full {@link TrainVersion} to be loaded.
+     * Use this overload when the payload must not be deserialized (e.g. during branch deletion).
+     */
+    public static Changelog forMergeRejection(String partner, UUID trainId, UUID branchId,
+            String prefixedBranchName, UUID version, String comment) {
+        validateComment(comment);
+        return new Changelog(UUID.randomUUID(), Action.MERGE_REJECTED, partner, null, trainId, branchId,
+            prefixedBranchName, version, OffsetDateTime.now(), comment);
     }
 
     private static void validateComment(String comment) {

@@ -42,7 +42,7 @@ public class TrainController implements V1Api {
 
     @Override
     public ResponseEntity<Branch> deleteTrainBranch(PartnerToken token, UUID trainId, UUID branchId, String comment) {
-        TrainVersionEnriched deleted = trainService.deleteTrainBranch(token.name(), trainId, branchId, comment);
+        ch.rail.r2p.domain.Branch deleted = trainService.deleteTrainBranch(token.name(), trainId, branchId, comment);
         return ResponseEntity.ok(trainMapper.toBranch(deleted));
     }
 

@@ -2,6 +2,7 @@ package ch.rail.r2p.persistence;
 
 import ch.rail.r2p.api.dto.BranchState;
 import ch.rail.r2p.domain.Branch;
+import ch.rail.r2p.domain.HeadVersionRef;
 import ch.rail.r2p.domain.TrainVersionEnriched;
 import ch.rail.r2p.domain.TrainVersion;
 import java.time.LocalDate;
@@ -39,4 +40,20 @@ public interface TrainPersistence {
     void addPartner(UUID trainId, String partner);
 
     void removePartner(UUID trainId, String partner);
+
+    /**
+     * Finds a branch by trainId and branchId without loading any train version payload.
+     */
+    Optional<Branch> findBranch(UUID trainId, UUID branchId);
+
+    /**
+     * Returns the list of partners for the given train without loading any train version payload.
+     */
+    List<String> getPartners(UUID trainId);
+
+    /**
+     * Returns a lightweight reference to the HEAD version of a branch (version UUID + timestamp only),
+     * without deserializing the payload column.
+     */
+    Optional<HeadVersionRef> findHeadVersionRef(UUID trainId, UUID branchId);
 }
