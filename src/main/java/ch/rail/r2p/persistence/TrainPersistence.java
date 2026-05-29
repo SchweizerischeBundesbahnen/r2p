@@ -28,6 +28,8 @@ public interface TrainPersistence {
     TrainVersionEnriched getVersion(UUID version);
 
 
+    boolean existsBranchByTrainIdAndName(UUID trainId, String branchName);
+
     void insertBranch(Branch branch);
 
     Branch updateBranchState(UUID branchId, BranchState state);

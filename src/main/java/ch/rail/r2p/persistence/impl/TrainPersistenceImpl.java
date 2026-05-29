@@ -91,6 +91,11 @@ public class TrainPersistenceImpl implements TrainPersistence {
 
 
     @Override
+    public boolean existsBranchByTrainIdAndName(UUID trainId, String branchName) {
+        return branchSpringDataRepository.findTrainBranchByTrainIdAndName(trainId, branchName).isPresent();
+    }
+
+    @Override
     public void insertBranch(Branch branch) {
         branchSpringDataRepository.insert(branch);
     }

@@ -180,6 +180,9 @@ public class TrainService {
         checkSharing(partner, main);
         checkBranchState(main.branch(), BranchState.OPEN);
         Branch newBranch = Branch.createBranch(trainId, branchName, partner);
+        if (trainPersistence.existsBranchByTrainIdAndName(trainId, branchName)) {
+            throw new DuplicateBranchNameException(branchName);
+        }
         trainPersistence.insertBranch(newBranch);
         TrainVersion newVersion = main.trainVersion().createNewVersion(train, comment);
         newVersion.setBranchId(newBranch.getBranchId());

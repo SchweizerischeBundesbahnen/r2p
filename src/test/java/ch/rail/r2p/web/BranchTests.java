@@ -20,7 +20,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
+
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
@@ -79,8 +79,8 @@ class BranchTests {
         TrainListElement train = actor.createTrain(SBB, "new train");
         actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
         actor.createBranch(SOB, train.getTrainId(), branchName, "test");
-        assertThrows(DuplicateKeyException.class, () -> trainController.createTrainBranch(SOB, train.getTrainId(), branchName, "test", actor.loadSampleTrain()));
-        assertThrows(DuplicateKeyException.class, () -> trainController.createTrainBranch(SBB, train.getTrainId(), branchName, "test", actor.loadSampleTrain()));
+        assertThrows(DuplicateBranchNameException.class, () -> trainController.createTrainBranch(SOB, train.getTrainId(), branchName, "test", actor.loadSampleTrain()));
+        assertThrows(DuplicateBranchNameException.class, () -> trainController.createTrainBranch(SBB, train.getTrainId(), branchName, "test", actor.loadSampleTrain()));
     }
 
     @Test

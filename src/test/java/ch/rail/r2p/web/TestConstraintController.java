@@ -38,6 +38,11 @@ public class TestConstraintController {
         throw new InvalidBranchStateException("Test invalid branch state - branch already merged");
     }
 
+    @GetMapping("/test/duplicate-branch-name")
+    public ResponseEntity<String> testDuplicateBranchName() {
+        throw new DuplicateBranchNameException("abc");
+    }
+
     @GetMapping("/test/payload-deserialization")
     public ResponseEntity<String> testPayloadDeserialization() {
         throw new PayloadDeserializationException("Test payload deserialization error",
