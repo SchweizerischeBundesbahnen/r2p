@@ -1,5 +1,5 @@
 
-Lists of 116 third-party dependencies.
+Lists of 117 third-party dependencies.
      (MIT) @vue/reactivity (org.webjars.npm:vue__reactivity:3.2.0-beta.8 - https://www.webjars.org)
      (MIT) @vue/shared (org.webjars.npm:vue__shared:3.2.0-beta.8 - https://www.webjars.org)
      (MIT) alpinejs (org.webjars.npm:alpinejs:3.15.12 - https://www.webjars.org)
@@ -64,6 +64,7 @@ Lists of 116 third-party dependencies.
      (Apache License, Version 2.0) spring-boot-configuration-processor (org.springframework.boot:spring-boot-configuration-processor:4.0.6 - https://spring.io/projects/spring-boot)
      (Apache License, Version 2.0) spring-boot-data-commons (org.springframework.boot:spring-boot-data-commons:4.0.6 - https://spring.io/projects/spring-boot)
      (Apache License, Version 2.0) spring-boot-data-jdbc (org.springframework.boot:spring-boot-data-jdbc:4.0.6 - https://spring.io/projects/spring-boot)
+     (Apache License, Version 2.0) spring-boot-docker-compose (org.springframework.boot:spring-boot-docker-compose:4.0.6 - https://spring.io/projects/spring-boot)
      (Apache License, Version 2.0) spring-boot-flyway (org.springframework.boot:spring-boot-flyway:4.0.6 - https://spring.io/projects/spring-boot)
      (Apache License, Version 2.0) spring-boot-health (org.springframework.boot:spring-boot-health:4.0.6 - https://spring.io/projects/spring-boot)
      (Apache License, Version 2.0) spring-boot-http-converter (org.springframework.boot:spring-boot-http-converter:4.0.6 - https://spring.io/projects/spring-boot)
