@@ -1,5 +1,6 @@
 package ch.rail.r2p.web;
 
+import ch.rail.r2p.persistence.impl.PayloadDeserializationException;
 import jakarta.validation.ConstraintViolationException;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -48,6 +49,13 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public ProblemDetail handleIllegalStateException(IllegalStateException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    }
+
+    @ExceptionHandler(PayloadDeserializationException.class)
+    @ResponseBody
+    public ProblemDetail handlePayloadDeserializationException(PayloadDeserializationException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR,
+            "A stored train payload could not be deserialized. Please contact support.");
     }
 
     @ExceptionHandler(MergeConflictException.class)

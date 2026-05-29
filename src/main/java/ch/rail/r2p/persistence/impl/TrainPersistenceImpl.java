@@ -15,14 +15,17 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class TrainPersistenceImpl implements TrainPersistence {
 
     private final TrainSpringDataRepository trainSpringDataRepository;
     private final BranchSpringDataRepository branchSpringDataRepository;
+    private final TrainReadingConverter trainReadingConverter;
 
     @Override
     public void insertVersion(TrainVersion train) {
@@ -55,7 +58,29 @@ public class TrainPersistenceImpl implements TrainPersistence {
 
     @Override
     public List<TrainVersionEnriched> findHeadVersions(String partner, LocalDate operationalDayFrom, LocalDate operationalDayTo) {
-        return enrich(trainSpringDataRepository.findHeadVersions(partner, operationalDayFrom, operationalDayTo));
+        List<TrainSpringDataRepository.VersionAndPayload> candidates =
+            trainSpringDataRepository.findHeadVersionIdsAndPayloads(partner, operationalDayFrom, operationalDayTo);
+        if (candidates.isEmpty()) {
+            return List.of();
+        }
+        // Deserialize each payload individually so that one corrupt entry does not abort the entire list
+        List<UUID> validIds = new java.util.ArrayList<>();
+        for (TrainSpringDataRepository.VersionAndPayload candidate : candidates) {
+            try {
+                trainReadingConverter.convert(candidate.payload());
+                validIds.add(candidate.version());
+            } catch (PayloadDeserializationException e) {
+                log.error("Skipping train version {} (trainId={}, branchId={}) due to payload deserialization error: {}",
+                    candidate.version(), candidate.trainId(), candidate.branchId(), e.getMessage());
+            }
+        }
+        if (validIds.isEmpty()) {
+            return List.of();
+        }
+        // Fetch full rows for valid IDs in a single IN-query; converter will succeed because we pre-validated
+        List<TrainVersion> versions = StreamSupport.stream(
+            trainSpringDataRepository.findAllById(validIds).spliterator(), false).toList();
+        return enrich(versions);
     }
 
     @Override

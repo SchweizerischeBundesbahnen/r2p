@@ -174,4 +174,15 @@ class GlobalExceptionHandlerTests {
             .andExpect(jsonPath("$.title").value("Conflict"))
             .andExpect(jsonPath("$.detail").value(containsString("branch already merged")));
     }
+
+    @Test
+    void should_handle_payload_deserialization_exception_as_500_with_sanitized_message() throws Exception {
+        // When: a stored train payload cannot be deserialized (e.g. unknown enum value 'tttreftrain')
+        mockMvc.perform(get("/test/payload-deserialization")
+                .accept(MediaType.APPLICATION_JSON))
+            // Then: should return 500 (not 400) with a sanitized message that hides Jackson internals
+            .andExpect(status().isInternalServerError())
+            .andExpect(jsonPath("$.status").value(500))
+            .andExpect(jsonPath("$.detail").value("A stored train payload could not be deserialized. Please contact support."));
+    }
 }

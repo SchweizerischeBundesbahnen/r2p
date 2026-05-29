@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jdbc.repository.config.AbstractJdbcConfiguration;
 
@@ -15,12 +16,14 @@ import org.springframework.data.jdbc.repository.config.AbstractJdbcConfiguration
 public class JdbcConfig extends AbstractJdbcConfiguration {
 
     private final ObjectMapper objectMapper;
+    private final TrainReadingConverter trainReadingConverter;
 
+    @NullMarked
     @Override
     public List<?> userConverters() {
         return Arrays.asList(
             new UtcToOffsetDateTimeReadingConverter(),
-            new TrainReadingConverter(objectMapper),
+            trainReadingConverter,
             new TrainWritingConverter(objectMapper)
         );
     }
