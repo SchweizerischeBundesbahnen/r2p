@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.26](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.25...r2p-v0.0.26) (2026-06-01)
+
+
+### Bug Fixes
+
+* branch deletion no longer fails on corrupt payload ([#149](https://github.com/SchweizerischeBundesbahnen/r2p/issues/149)) ([b80e81a](https://github.com/SchweizerischeBundesbahnen/r2p/commit/b80e81a3b3afcc7b291f8a106edea7ede21144f7))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.26-SNAPSHOT ([#147](https://github.com/SchweizerischeBundesbahnen/r2p/issues/147)) ([39b862f](https://github.com/SchweizerischeBundesbahnen/r2p/commit/39b862f7279b4f08ca837133de2d7df6795da4d3))
+
 ## [0.0.25](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.24...r2p-v0.0.25) (2026-05-29)
 
 
