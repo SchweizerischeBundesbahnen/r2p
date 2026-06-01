@@ -176,6 +176,18 @@ class GlobalExceptionHandlerTests {
     }
 
     @Test
+    void should_handle_duplicate_branch_name_exception() throws Exception {
+        // When: calling an endpoint that throws DuplicateBranchNameException
+        mockMvc.perform(get("/test/duplicate-branch-name")
+                .accept(MediaType.APPLICATION_JSON))
+            // Then: should return 409 Conflict with ProblemDetail
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.status").value(409))
+            .andExpect(jsonPath("$.title").value("Conflict"))
+            .andExpect(jsonPath("$.detail").value(containsString("already exists")));
+    }
+
+    @Test
     void should_handle_payload_deserialization_exception_as_500_with_sanitized_message() throws Exception {
         // When: a stored train payload cannot be deserialized (e.g. unknown enum value 'tttreftrain')
         mockMvc.perform(get("/test/payload-deserialization")

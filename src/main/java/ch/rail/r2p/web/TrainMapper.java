@@ -49,6 +49,22 @@ public class TrainMapper {
                 .mainBranch(trainVersionEnriched.branch().isMainBranch()));
     }
 
+    /**
+     * Maps a domain {@link ch.rail.r2p.domain.Branch} directly to the API DTO,
+     * without requiring a {@link ch.rail.r2p.domain.TrainVersion}.
+     * Used by operations that must not deserialize the payload (e.g. branch deletion).
+     */
+    Branch toBranch(ch.rail.r2p.domain.Branch branch) {
+        return new Branch()
+            .branchId(branch.getBranchId())
+            .branchName(branch.getPrefixedName())
+            .business(new BranchBusinessData())
+            .technical(new BranchTechnicalData()
+                .branchState(branch.getState())
+                .owner(branch.getOwner())
+                .mainBranch(branch.isMainBranch()));
+    }
+
     public Change toChange(Changelog changelog) {
         return new Change()
             .action(changelog.getAction())

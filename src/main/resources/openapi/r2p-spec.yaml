@@ -331,7 +331,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
         '409':
-          description: Main branch is not in OPEN state (e.g. deleted)
+          description: |
+            Conflict – one of the following:
+            - Main branch is not in OPEN state (e.g. deleted)
+            - A branch with the given name already exists for this train
           content:
             application/problem+json:
               schema:
