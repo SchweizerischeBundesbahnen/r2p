@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.27](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.26...r2p-v0.0.27) (2026-06-11)
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.27-SNAPSHOT ([#151](https://github.com/SchweizerischeBundesbahnen/r2p/issues/151)) ([9feec03](https://github.com/SchweizerischeBundesbahnen/r2p/commit/9feec03c3419a9a3487faacde763e2cc89021146))
+
+
+### Build System
+
+* **deps-dev:** bump org.openapitools:openapi-generator-maven-plugin ([#155](https://github.com/SchweizerischeBundesbahnen/r2p/issues/155)) ([7ef43a3](https://github.com/SchweizerischeBundesbahnen/r2p/commit/7ef43a39d4cb75b8b2f0254b353352345045e966))
+* **deps-dev:** bump the commitlint group with 2 updates ([#153](https://github.com/SchweizerischeBundesbahnen/r2p/issues/153)) ([fb9185d](https://github.com/SchweizerischeBundesbahnen/r2p/commit/fb9185dc323f98b3cf073a23d742a8f8b92e8cfd))
+* **deps:** bump org.springframework.boot:spring-boot-starter-parent ([#154](https://github.com/SchweizerischeBundesbahnen/r2p/issues/154)) ([289fa0f](https://github.com/SchweizerischeBundesbahnen/r2p/commit/289fa0f0081dbb1ea5445194b63ac931b833a679))
+
 ## [0.0.26](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.25...r2p-v0.0.26) (2026-06-01)
 
 
