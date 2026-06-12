@@ -8,6 +8,7 @@ import ch.rail.r2p.api.dto.CapabilityFeature;
 import ch.rail.r2p.api.dto.CapabilityType;
 import ch.rail.r2p.api.dto.Featureset;
 import ch.rail.r2p.api.dto.Focus;
+import ch.rail.r2p.api.dto.PartnerToken;
 import ch.rail.r2p.api.dto.Path;
 import ch.rail.r2p.api.dto.RollingStock;
 import ch.rail.r2p.api.dto.RouteClassType;
@@ -41,13 +42,6 @@ import java.util.Set;
 import lombok.Getter;
 
 public final class TestDataGenerator {
-
-    static final Set<KnownResponsibilityType> POC_RESPONSIBILITY_TYPES = Set.of(
-        KnownResponsibilityType.SBB_PERSONENVERKEHR,
-        KnownResponsibilityType.BLS,
-        KnownResponsibilityType.SOB_TRANSPORT_EVU
-    );
-
 
     private TestDataGenerator() {
     }
@@ -283,10 +277,9 @@ public final class TestDataGenerator {
 
         static RandomResponsibility of(Random random) {
             ResponsibilityType type = ResponsibilityType.values()[random.nextInt(ResponsibilityType.values().length)];
-            KnownResponsibilityType[] pocTypes = POC_RESPONSIBILITY_TYPES.toArray(KnownResponsibilityType[]::new);
-            String id = pocTypes[random.nextInt(pocTypes.length)].getOrganisationCode();
+            PartnerToken partner = PartnerToken.values()[random.nextInt(PartnerToken.values().length)];
             PlanStatus status = PlanStatus.values()[random.nextInt(PlanStatus.values().length)];
-            return new RandomResponsibility(type, id, status);
+            return new RandomResponsibility(type, partner.getValue(), status);
         }
     }
 
@@ -402,24 +395,6 @@ public final class TestDataGenerator {
             path.setTrainCategory(randomStringOfCapitalLetters(random, 1) + TestDataGenerator.randomInt(random, 10, 99));
             path.setRouteClass(RouteClassType.values()[random.nextInt(RouteClassType.values().length)]);
             return path;
-        }
-    }
-
-    @Getter
-    enum KnownResponsibilityType {
-        BLS("1163"),
-        BLS_CARGO("3356"),
-        RHAETISCHE_BAHN("3267"),
-        SBB_PERSONENVERKEHR("1385"),
-        SBB_CARGO("2185"),
-        SBB_INFRASTRUKTUR("5186"),
-        SOB_TRANSPORT_EVU("5458")
-        ;
-
-        private final String organisationCode;
-
-        KnownResponsibilityType(String organisationCode) {
-            this.organisationCode = organisationCode;
         }
     }
 

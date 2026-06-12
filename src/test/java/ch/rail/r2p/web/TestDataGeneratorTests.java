@@ -4,10 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ch.rail.r2p.api.dto.Activity;
+import ch.rail.r2p.api.dto.PartnerToken;
 import ch.rail.r2p.api.dto.TimingType;
 import ch.rail.r2p.api.dto.Train;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,16 +23,12 @@ import org.junit.jupiter.api.Test;
 class TestDataGeneratorTests {
 
     /**
-     * Hard-coded contract: exactly these three organisation codes are allowed in PoC data.
-     * If the production constant {@link TestDataGenerator#POC_RESPONSIBILITY_TYPES} is changed
-     * the test {@code poc_responsibility_types_must_match_contract} will catch the drift.
-     * <ul>
-     *   <li>1385 – SBB Personenverkehr</li>
-     *   <li>1163 – BLS</li>
-     *   <li>5458 – SOB Transport EVU</li>
-     * </ul>
+     * Partner abbreviations derived from {@link PartnerToken} used as Responsibility.id in PoC data.
+     * Intentionally not RICS codes — the webclient uses EVU abbreviations for the PoC.
      */
-    private static final Set<String> EXPECTED_POC_ORGANISATION_CODES = Set.of("1385", "1163", "5458");
+    private static final Set<String> EXPECTED_POC_PARTNER_ABBREVIATIONS = Arrays.stream(PartnerToken.values())
+        .map(PartnerToken::getValue)
+        .collect(Collectors.toUnmodifiableSet());
 
     @Test
     void activity_ids_within_a_train_must_be_unique_and_not_blank() {
@@ -87,29 +85,17 @@ class TestDataGeneratorTests {
     }
 
     @Test
-    void responsibilities_must_only_use_poc_organisation_codes() {
+    void responsibilities_must_only_use_poc_partner_abbreviations() {
         Train train = TestDataGenerator.createTrain(LocalDate.of(2026, 7, 1), "7001");
 
         train.getJourney().getJourneylocations().forEach(jl ->
             jl.getActivities().forEach(activity -> {
-                String orgCode = activity.getResponsibility().getId();
-                assertThat(EXPECTED_POC_ORGANISATION_CODES)
-                    .as("organisation code '%s' is not in the PoC contract set {1385=SBB, 1163=BLS, 5458=SOB}", orgCode)
-                    .contains(orgCode);
+                String abbreviation = activity.getResponsibility().getId();
+                assertThat(EXPECTED_POC_PARTNER_ABBREVIATIONS)
+                    .as("partner abbreviation '%s' is not in the PoC contract set {SBB, BLS, SOB}", abbreviation)
+                    .contains(abbreviation);
             })
         );
-    }
-
-    @Test
-    void poc_responsibility_types_must_match_contract() {
-        Set<String> actual = TestDataGenerator.POC_RESPONSIBILITY_TYPES
-            .stream()
-            .map(TestDataGenerator.KnownResponsibilityType::getOrganisationCode)
-            .collect(Collectors.toUnmodifiableSet());
-
-        assertThat(actual)
-            .as("POC_RESPONSIBILITY_TYPES organisation codes must exactly match the contract set")
-            .containsExactlyInAnyOrderElementsOf(EXPECTED_POC_ORGANISATION_CODES);
     }
 
     @Test
