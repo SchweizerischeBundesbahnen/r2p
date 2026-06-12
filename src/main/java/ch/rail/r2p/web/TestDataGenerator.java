@@ -6,6 +6,7 @@ import ch.rail.r2p.api.dto.BrakeType;
 import ch.rail.r2p.api.dto.Capability;
 import ch.rail.r2p.api.dto.CapabilityFeature;
 import ch.rail.r2p.api.dto.CapabilityType;
+import ch.rail.r2p.api.dto.Feature;
 import ch.rail.r2p.api.dto.Featureset;
 import ch.rail.r2p.api.dto.Focus;
 import ch.rail.r2p.api.dto.PartnerToken;
@@ -389,16 +390,56 @@ public final class TestDataGenerator {
 
     static class RandomUnit extends Unit {
 
-        private RandomUnit(String id) {
-            super(id, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        private RandomUnit(String id, List<CapabilityFeature> capabilityFeatures) {
+            super(id, Collections.emptyList(), capabilityFeatures, Collections.emptyList());
         }
 
         static RandomUnit of(Random random, int index) {
-            var unit = new RandomUnit(String.valueOf(index));
+            var unit = new RandomUnit(String.valueOf(index), RandomCapabilityFeature.listForUnit(random));
             unit.setName(randomStringOfCapitalLetters(random, 4) + " " + TestDataGenerator.randomInt(random, 100, 999));
             unit.setLength(TestDataGenerator.randomInt(random, 10000, 200000));
             unit.setWeight(TestDataGenerator.randomInt(random, 30000, 800000));
             return unit;
+        }
+    }
+
+    static class RandomCapabilityFeature {
+
+        // Boolean CUSTOMER_SERVICE features for rolling stock units
+        private static final String[] CUSTOMER_SERVICE_FEATURES = {
+            "FEAT_CS_WV",  // WLAN Hotspot
+            "FEAT_CS_WR",  // Restaurant
+            "FEAT_CS_RZ",  // Ruhezone 1. Klasse
+            "FEAT_CS_NF",  // Niederflureinstieg
+            "FEAT_CS_TT",  // Neigezug
+        };
+
+        static List<CapabilityFeature> listForUnit(Random random) {
+            List<CapabilityFeature> features = new ArrayList<>();
+
+            // 2–4 random Boolean customer service features
+            List<String> pool = new ArrayList<>(List.of(CUSTOMER_SERVICE_FEATURES));
+            Collections.shuffle(pool, random);
+            int count = TestDataGenerator.randomInt(random, 2, 4);
+            for (int i = 0; i < count; i++) {
+                features.add(booleanFeature(pool.get(i), random.nextBoolean()));
+            }
+
+            // Vehicle type identification
+            long vehicleTypeId = 100_000_000_000L + (Math.abs(random.nextLong()) % 900_000_000_000L);
+            features.add(stringFeature("VC_FOS_VehicleType_vehicleTypeIdentifier", String.valueOf(vehicleTypeId)));
+            PartnerToken ru = PartnerToken.values()[random.nextInt(PartnerToken.values().length)];
+            features.add(stringFeature("VC_FOS_VehicleType_ru", ru.getValue()));
+
+            return features;
+        }
+
+        private static CapabilityFeature booleanFeature(String type, boolean value) {
+            return new CapabilityFeature().feature(new Feature().type(type).offeredservice(String.valueOf(value)));
+        }
+
+        private static CapabilityFeature stringFeature(String type, String value) {
+            return new CapabilityFeature().feature(new Feature().type(type).offeredservice(value));
         }
     }
 
