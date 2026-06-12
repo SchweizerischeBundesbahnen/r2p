@@ -4,7 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ch.rail.r2p.api.dto.Activity;
+import ch.rail.r2p.api.dto.ActivityType;
+import ch.rail.r2p.api.dto.CapabilityType;
 import ch.rail.r2p.api.dto.PartnerToken;
+import ch.rail.r2p.api.dto.ResponsibilityType;
 import ch.rail.r2p.api.dto.TimingType;
 import ch.rail.r2p.api.dto.Train;
 import java.time.Duration;
@@ -54,15 +57,109 @@ class TestDataGeneratorTests {
         Train train = TestDataGenerator.createTrain(LocalDate.of(2026, 5, 1), "2001");
         var locations = train.getJourney().getJourneylocations();
 
-        locations.getFirst().getActivities().forEach(activity -> {
-            assertThat(activity.getTimings()).hasSize(1);
-            assertThat(activity.getTimings().getFirst().getType()).isEqualTo(TimingType.DEPARTURE);
-        });
+        // RollingStock activities carry no timing; only path and staff activities do.
+        locations.getFirst().getActivities().stream()
+            .filter(a -> a.getCapability() != null && a.getCapability().getType() != CapabilityType.ROLLING_STOCK)
+            .forEach(activity -> {
+                assertThat(activity.getTimings()).hasSize(1);
+                assertThat(activity.getTimings().getFirst().getType()).isEqualTo(TimingType.DEPARTURE);
+            });
 
         locations.getLast().getActivities().forEach(activity -> {
             assertThat(activity.getTimings()).hasSize(1);
             assertThat(activity.getTimings().getFirst().getType()).isEqualTo(TimingType.ARRIVAL);
         });
+    }
+
+    @Test
+    void rolling_stock_activities_must_have_no_timings() {
+        Train train = TestDataGenerator.createTrain(LocalDate.of(2026, 5, 1), "3001");
+
+        train.getJourney().getJourneylocations().forEach(jl ->
+            jl.getActivities().stream()
+                .filter(a -> a.getCapability() != null && a.getCapability().getType() == CapabilityType.ROLLING_STOCK)
+                .forEach(activity ->
+                    assertThat(activity.getTimings())
+                        .as("rollingStock activity '%s' must have no timings", activity.getId())
+                        .isEmpty()
+                )
+        );
+    }
+
+    @Test
+    void timings_must_have_a_source() {
+        Train train = TestDataGenerator.createTrain(LocalDate.of(2026, 5, 1), "4001");
+
+        train.getJourney().getJourneylocations().forEach(jl ->
+            jl.getActivities().forEach(activity ->
+                activity.getTimings().forEach(timing ->
+                    assertThat(timing.getSource())
+                        .as("timing source must not be null or blank")
+                        .isNotBlank()
+                )
+            )
+        );
+    }
+
+    @Test
+    void activity_type_must_be_consistent_with_capability_type() {
+        Train train = TestDataGenerator.createTrain(LocalDate.of(2026, 5, 1), "5001");
+
+        train.getJourney().getJourneylocations().forEach(jl ->
+            jl.getActivities().forEach(activity -> {
+                if (activity.getCapability() == null) return;
+                CapabilityType capType = activity.getCapability().getType();
+                ActivityType actType = activity.getType();
+                switch (capType) {
+                    case PATH -> assertThat(actType.getValue()).startsWith("path.");
+                    case ROLLING_STOCK -> assertThat(actType.getValue()).startsWith("rollingStock");
+                    case STAFF -> assertThat(actType).isNotNull();
+                    default -> { /* no assertion for unknown types */ }
+                }
+            })
+        );
+    }
+
+    @Test
+    void responsibility_type_must_match_capability_type() {
+        Train train = TestDataGenerator.createTrain(LocalDate.of(2026, 5, 1), "6001");
+
+        train.getJourney().getJourneylocations().forEach(jl ->
+            jl.getActivities().forEach(activity -> {
+                if (activity.getCapability() == null || activity.getResponsibility() == null) return;
+                CapabilityType capType = activity.getCapability().getType();
+                ResponsibilityType respType = activity.getResponsibility().getType();
+                switch (capType) {
+                    case PATH -> assertThat(respType).isIn(ResponsibilityType.PIM, ResponsibilityType.RIM);
+                    case ROLLING_STOCK -> assertThat(respType).isIn(ResponsibilityType.TRU, ResponsibilityType.RRU);
+                    case STAFF -> assertThat(respType).isEqualTo(ResponsibilityType.PRU);
+                    default -> { /* no assertion for unknown types */ }
+                }
+            })
+        );
+    }
+
+    @Test
+    void max_speed_must_be_a_multiple_of_10() {
+        Train train = TestDataGenerator.createTrain(LocalDate.of(2026, 5, 1), "8001");
+
+        train.getJourney().getJourneylocations().forEach(jl ->
+            jl.getActivities().forEach(activity -> {
+                if (activity.getCapability() == null) return;
+                var rs = activity.getCapability().getRollingStock();
+                if (rs != null && rs.getMaxSpeed() != null) {
+                    assertThat(rs.getMaxSpeed() % 10)
+                        .as("rollingStock maxSpeed %d must be a multiple of 10", rs.getMaxSpeed())
+                        .isZero();
+                }
+                var path = activity.getCapability().getPath();
+                if (path != null && path.getMaxSpeed() != null) {
+                    assertThat(path.getMaxSpeed() % 10)
+                        .as("path maxSpeed %d must be a multiple of 10", path.getMaxSpeed())
+                        .isZero();
+                }
+            })
+        );
     }
 
     @Test

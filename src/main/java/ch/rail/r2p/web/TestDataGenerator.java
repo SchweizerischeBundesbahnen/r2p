@@ -191,13 +191,16 @@ public final class TestDataGenerator {
                 capabilities.add(RandomCapability.of(random));
             }
 
-            // Timings are computed once per stop and reused for all capabilities so that
-            // all activities at the same stop share consistent time values.
+            // Timings are computed once per stop and shared by path/staff activities.
+            // RollingStock activities carry no timing of their own.
             List<Timing> timings = RandomTiming.listOf(random, stopPosition, routeLength, offsetMinutes);
 
             List<Activity> activities = new ArrayList<>();
             for (int i = 0; i < capabilities.size(); i++) {
-                activities.add(of(random, stop, stopPosition, capabilities.get(i), timings, i));
+                RandomCapability cap = capabilities.get(i);
+                List<Timing> activityTimings = cap.getType() == CapabilityType.ROLLING_STOCK
+                        ? Collections.emptyList() : timings;
+                activities.add(of(random, stop, stopPosition, cap, activityTimings, i));
             }
             return activities;
         }
@@ -205,13 +208,21 @@ public final class TestDataGenerator {
         private static RandomActivity of(Random random, Stop stop, int stopPosition, RandomCapability capability, List<Timing> timings, int activityIndex) {
             return new RandomActivity(
                 generateId(stop, capability.getType(), stopPosition, activityIndex),
-                // ActivityType is expected to be removed – temporarily set to rollingStock
-                ActivityType.ROLLING_STOCK,
+                activityTypeFor(capability.getType()),
                 timings,
-                RandomResponsibility.of(random),
+                RandomResponsibility.of(random, capability.getType()),
                 capability,
                 Collections.emptyList()
             );
+        }
+
+        private static ActivityType activityTypeFor(CapabilityType capabilityType) {
+            return switch (capabilityType) {
+                case PATH -> ActivityType.PATH_RUNTHROUGH;
+                case ROLLING_STOCK -> ActivityType.ROLLING_STOCK;
+                case STAFF -> ActivityType.INSPECT_TRAIN_OPERATIONAL;
+                default -> throw new IllegalStateException("Unexpected capability type: " + capabilityType);
+            };
         }
 
         private static String generateId(Stop stop, CapabilityType capabilityType, int stopPosition, int activityIndex) {
@@ -264,7 +275,9 @@ public final class TestDataGenerator {
             int h = totalMinutes / 60;
             int m = totalMinutes % 60;
             String duration = (h > 0) ? "PT" + h + "H" + m + "M" : "PT" + m + "M";
-            return new RandomTiming(type, duration, focus);
+            var timing = new RandomTiming(type, duration, focus);
+            timing.setSource("generated");
+            return timing;
         }
 
     }
@@ -275,11 +288,20 @@ public final class TestDataGenerator {
             super(type, id, status);
         }
 
-        static RandomResponsibility of(Random random) {
-            ResponsibilityType type = ResponsibilityType.values()[random.nextInt(ResponsibilityType.values().length)];
+        static RandomResponsibility of(Random random, CapabilityType capabilityType) {
+            ResponsibilityType type = responsibilityTypeFor(random, capabilityType);
             PartnerToken partner = PartnerToken.values()[random.nextInt(PartnerToken.values().length)];
             PlanStatus status = PlanStatus.values()[random.nextInt(PlanStatus.values().length)];
             return new RandomResponsibility(type, partner.getValue(), status);
+        }
+
+        private static ResponsibilityType responsibilityTypeFor(Random random, CapabilityType capabilityType) {
+            return switch (capabilityType) {
+                case PATH -> random.nextBoolean() ? ResponsibilityType.PIM : ResponsibilityType.RIM;
+                case ROLLING_STOCK -> random.nextBoolean() ? ResponsibilityType.TRU : ResponsibilityType.RRU;
+                case STAFF -> ResponsibilityType.PRU;
+                default -> throw new IllegalStateException("Unexpected capability type: " + capabilityType);
+            };
         }
     }
 
@@ -357,7 +379,7 @@ public final class TestDataGenerator {
             int totalWeight = units.stream().mapToInt(u -> u.getWeight() != null ? u.getWeight() : 0).sum();
             rollingStock.setLength(totalLength);
             rollingStock.setWeight(totalWeight);
-            rollingStock.setMaxSpeed(TestDataGenerator.randomInt(random, 80, 200));
+            rollingStock.setMaxSpeed(TestDataGenerator.randomInt(random, 8, 20) * 10);
             rollingStock.setBrakeType(BrakeType.values()[random.nextInt(BrakeType.values().length)]);
             rollingStock.setBrakeWeight(TestDataGenerator.randomInt(random, 50000, 500000));
             rollingStock.setBrakingRatio(20.0f + random.nextFloat() * 80.0f);
@@ -390,7 +412,7 @@ public final class TestDataGenerator {
             String id = TestDataGenerator.randomInt(random, 10000, 99999) + "-" + String.format("%03d", TestDataGenerator.randomInt(random, 1, 999));
             int length = TestDataGenerator.randomInt(random, 50000, 500000);
             int weight = TestDataGenerator.randomInt(random, 100000, 2000000);
-            int maxSpeed = TestDataGenerator.randomInt(random, 80, 200);
+            int maxSpeed = TestDataGenerator.randomInt(random, 8, 20) * 10;
             var path = new RandomPath(id, length, weight, maxSpeed);
             path.setTrainCategory(randomStringOfCapitalLetters(random, 1) + TestDataGenerator.randomInt(random, 10, 99));
             path.setRouteClass(RouteClassType.values()[random.nextInt(RouteClassType.values().length)]);
