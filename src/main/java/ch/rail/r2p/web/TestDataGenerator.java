@@ -408,13 +408,15 @@ public final class TestDataGenerator {
             super(id, length, weight, maxSpeed);
         }
 
+        private static final String[] TRAIN_CATEGORIES = {"00", "01", "02", "03", "04", "05", "06"};
+
         static RandomPath of(Random random) {
             String id = TestDataGenerator.randomInt(random, 10000, 99999) + "-" + String.format("%03d", TestDataGenerator.randomInt(random, 1, 999));
             int length = TestDataGenerator.randomInt(random, 50000, 500000);
             int weight = TestDataGenerator.randomInt(random, 100000, 2000000);
             int maxSpeed = TestDataGenerator.randomInt(random, 8, 20) * 10;
             var path = new RandomPath(id, length, weight, maxSpeed);
-            path.setTrainCategory(randomStringOfCapitalLetters(random, 1) + TestDataGenerator.randomInt(random, 10, 99));
+            path.setTrainCategory(TRAIN_CATEGORIES[random.nextInt(TRAIN_CATEGORIES.length)]);
             path.setRouteClass(RouteClassType.values()[random.nextInt(RouteClassType.values().length)]);
             return path;
         }
