@@ -425,9 +425,7 @@ public final class TestDataGenerator {
                 features.add(booleanFeature(pool.get(i), random.nextBoolean()));
             }
 
-            // Vehicle type identification
-            long vehicleTypeId = 100_000_000_000L + (Math.abs(random.nextLong()) % 900_000_000_000L);
-            features.add(stringFeature("VC_FOS_VehicleType_vehicleTypeIdentifier", String.valueOf(vehicleTypeId)));
+            long vehicleTypeId = 100_000_000_000L + Long.remainderUnsigned(random.nextLong(), 900_000_000_000L);
             PartnerToken ru = PartnerToken.values()[random.nextInt(PartnerToken.values().length)];
             features.add(stringFeature("VC_FOS_VehicleType_ru", ru.getValue()));
 
