@@ -6,8 +6,10 @@ import ch.rail.r2p.api.dto.BrakeType;
 import ch.rail.r2p.api.dto.Capability;
 import ch.rail.r2p.api.dto.CapabilityFeature;
 import ch.rail.r2p.api.dto.CapabilityType;
+import ch.rail.r2p.api.dto.Feature;
 import ch.rail.r2p.api.dto.Featureset;
 import ch.rail.r2p.api.dto.Focus;
+import ch.rail.r2p.api.dto.PartnerToken;
 import ch.rail.r2p.api.dto.Path;
 import ch.rail.r2p.api.dto.RollingStock;
 import ch.rail.r2p.api.dto.RouteClassType;
@@ -41,13 +43,6 @@ import java.util.Set;
 import lombok.Getter;
 
 public final class TestDataGenerator {
-
-    static final Set<KnownResponsibilityType> POC_RESPONSIBILITY_TYPES = Set.of(
-        KnownResponsibilityType.SBB_PERSONENVERKEHR,
-        KnownResponsibilityType.BLS,
-        KnownResponsibilityType.SOB_TRANSPORT_EVU
-    );
-
 
     private TestDataGenerator() {
     }
@@ -197,13 +192,16 @@ public final class TestDataGenerator {
                 capabilities.add(RandomCapability.of(random));
             }
 
-            // Timings are computed once per stop and reused for all capabilities so that
-            // all activities at the same stop share consistent time values.
+            // Timings are computed once per stop and shared by path/staff activities.
+            // RollingStock activities carry no timing of their own.
             List<Timing> timings = RandomTiming.listOf(random, stopPosition, routeLength, offsetMinutes);
 
             List<Activity> activities = new ArrayList<>();
             for (int i = 0; i < capabilities.size(); i++) {
-                activities.add(of(random, stop, stopPosition, capabilities.get(i), timings, i));
+                RandomCapability cap = capabilities.get(i);
+                List<Timing> activityTimings = cap.getType() == CapabilityType.ROLLING_STOCK
+                        ? Collections.emptyList() : timings;
+                activities.add(of(random, stop, stopPosition, cap, activityTimings, i));
             }
             return activities;
         }
@@ -211,13 +209,21 @@ public final class TestDataGenerator {
         private static RandomActivity of(Random random, Stop stop, int stopPosition, RandomCapability capability, List<Timing> timings, int activityIndex) {
             return new RandomActivity(
                 generateId(stop, capability.getType(), stopPosition, activityIndex),
-                // ActivityType is expected to be removed – temporarily set to rollingStock
-                ActivityType.ROLLING_STOCK,
+                activityTypeFor(capability.getType()),
                 timings,
-                RandomResponsibility.of(random),
+                RandomResponsibility.of(random, capability.getType()),
                 capability,
                 Collections.emptyList()
             );
+        }
+
+        private static ActivityType activityTypeFor(CapabilityType capabilityType) {
+            return switch (capabilityType) {
+                case PATH -> ActivityType.PATH_RUNTHROUGH;
+                case ROLLING_STOCK -> ActivityType.ROLLING_STOCK;
+                case STAFF -> ActivityType.INSPECT_TRAIN_OPERATIONAL;
+                default -> throw new IllegalStateException("Unexpected capability type: " + capabilityType);
+            };
         }
 
         private static String generateId(Stop stop, CapabilityType capabilityType, int stopPosition, int activityIndex) {
@@ -270,7 +276,9 @@ public final class TestDataGenerator {
             int h = totalMinutes / 60;
             int m = totalMinutes % 60;
             String duration = (h > 0) ? "PT" + h + "H" + m + "M" : "PT" + m + "M";
-            return new RandomTiming(type, duration, focus);
+            var timing = new RandomTiming(type, duration, focus);
+            timing.setSource("generated");
+            return timing;
         }
 
     }
@@ -281,12 +289,20 @@ public final class TestDataGenerator {
             super(type, id, status);
         }
 
-        static RandomResponsibility of(Random random) {
-            ResponsibilityType type = ResponsibilityType.values()[random.nextInt(ResponsibilityType.values().length)];
-            KnownResponsibilityType[] pocTypes = POC_RESPONSIBILITY_TYPES.toArray(KnownResponsibilityType[]::new);
-            String id = pocTypes[random.nextInt(pocTypes.length)].getOrganisationCode();
+        static RandomResponsibility of(Random random, CapabilityType capabilityType) {
+            ResponsibilityType type = responsibilityTypeFor(random, capabilityType);
+            PartnerToken partner = PartnerToken.values()[random.nextInt(PartnerToken.values().length)];
             PlanStatus status = PlanStatus.values()[random.nextInt(PlanStatus.values().length)];
-            return new RandomResponsibility(type, id, status);
+            return new RandomResponsibility(type, partner.getValue(), status);
+        }
+
+        private static ResponsibilityType responsibilityTypeFor(Random random, CapabilityType capabilityType) {
+            return switch (capabilityType) {
+                case PATH -> random.nextBoolean() ? ResponsibilityType.PIM : ResponsibilityType.RIM;
+                case ROLLING_STOCK -> random.nextBoolean() ? ResponsibilityType.TRU : ResponsibilityType.RRU;
+                case STAFF -> ResponsibilityType.PRU;
+                default -> throw new IllegalStateException("Unexpected capability type: " + capabilityType);
+            };
         }
     }
 
@@ -364,7 +380,7 @@ public final class TestDataGenerator {
             int totalWeight = units.stream().mapToInt(u -> u.getWeight() != null ? u.getWeight() : 0).sum();
             rollingStock.setLength(totalLength);
             rollingStock.setWeight(totalWeight);
-            rollingStock.setMaxSpeed(TestDataGenerator.randomInt(random, 80, 200));
+            rollingStock.setMaxSpeed(TestDataGenerator.randomInt(random, 8, 20) * 10);
             rollingStock.setBrakeType(BrakeType.values()[random.nextInt(BrakeType.values().length)]);
             rollingStock.setBrakeWeight(TestDataGenerator.randomInt(random, 50000, 500000));
             rollingStock.setBrakingRatio(20.0f + random.nextFloat() * 80.0f);
@@ -374,16 +390,54 @@ public final class TestDataGenerator {
 
     static class RandomUnit extends Unit {
 
-        private RandomUnit(String id) {
-            super(id, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        private RandomUnit(String id, List<CapabilityFeature> capabilityFeatures) {
+            super(id, Collections.emptyList(), capabilityFeatures, Collections.emptyList());
         }
 
         static RandomUnit of(Random random, int index) {
-            var unit = new RandomUnit(String.valueOf(index));
+            var unit = new RandomUnit(String.valueOf(index), RandomCapabilityFeature.listForUnit(random));
             unit.setName(randomStringOfCapitalLetters(random, 4) + " " + TestDataGenerator.randomInt(random, 100, 999));
             unit.setLength(TestDataGenerator.randomInt(random, 10000, 200000));
             unit.setWeight(TestDataGenerator.randomInt(random, 30000, 800000));
             return unit;
+        }
+    }
+
+    static class RandomCapabilityFeature {
+
+        // Boolean CUSTOMER_SERVICE features for rolling stock units
+        private static final String[] CUSTOMER_SERVICE_FEATURES = {
+            "FEAT_CS_WV",  // WLAN Hotspot
+            "FEAT_CS_WR",  // Restaurant
+            "FEAT_CS_RZ",  // Ruhezone 1. Klasse
+            "FEAT_CS_NF",  // Niederflureinstieg
+            "FEAT_CS_TT",  // Neigezug
+        };
+
+        static List<CapabilityFeature> listForUnit(Random random) {
+            List<CapabilityFeature> features = new ArrayList<>();
+
+            // 2–4 random Boolean customer service features
+            List<String> pool = new ArrayList<>(List.of(CUSTOMER_SERVICE_FEATURES));
+            Collections.shuffle(pool, random);
+            int count = TestDataGenerator.randomInt(random, 2, 4);
+            for (int i = 0; i < count; i++) {
+                features.add(booleanFeature(pool.get(i), random.nextBoolean()));
+            }
+
+            long vehicleTypeId = 100_000_000_000L + Long.remainderUnsigned(random.nextLong(), 900_000_000_000L);
+            PartnerToken ru = PartnerToken.values()[random.nextInt(PartnerToken.values().length)];
+            features.add(stringFeature("VC_FOS_VehicleType_ru", ru.getValue()));
+
+            return features;
+        }
+
+        private static CapabilityFeature booleanFeature(String type, boolean value) {
+            return new CapabilityFeature().feature(new Feature().type(type).offeredservice(String.valueOf(value)));
+        }
+
+        private static CapabilityFeature stringFeature(String type, String value) {
+            return new CapabilityFeature().feature(new Feature().type(type).offeredservice(value));
         }
     }
 
@@ -393,33 +447,17 @@ public final class TestDataGenerator {
             super(id, length, weight, maxSpeed);
         }
 
+        private static final String[] TRAIN_CATEGORIES = {"00", "01", "02", "03", "04", "05", "06"};
+
         static RandomPath of(Random random) {
             String id = TestDataGenerator.randomInt(random, 10000, 99999) + "-" + String.format("%03d", TestDataGenerator.randomInt(random, 1, 999));
             int length = TestDataGenerator.randomInt(random, 50000, 500000);
             int weight = TestDataGenerator.randomInt(random, 100000, 2000000);
-            int maxSpeed = TestDataGenerator.randomInt(random, 80, 200);
+            int maxSpeed = TestDataGenerator.randomInt(random, 8, 20) * 10;
             var path = new RandomPath(id, length, weight, maxSpeed);
-            path.setTrainCategory(randomStringOfCapitalLetters(random, 1) + TestDataGenerator.randomInt(random, 10, 99));
+            path.setTrainCategory(TRAIN_CATEGORIES[random.nextInt(TRAIN_CATEGORIES.length)]);
             path.setRouteClass(RouteClassType.values()[random.nextInt(RouteClassType.values().length)]);
             return path;
-        }
-    }
-
-    @Getter
-    enum KnownResponsibilityType {
-        BLS("1163"),
-        BLS_CARGO("3356"),
-        RHAETISCHE_BAHN("3267"),
-        SBB_PERSONENVERKEHR("1385"),
-        SBB_CARGO("2185"),
-        SBB_INFRASTRUKTUR("5186"),
-        SOB_TRANSPORT_EVU("5458")
-        ;
-
-        private final String organisationCode;
-
-        KnownResponsibilityType(String organisationCode) {
-            this.organisationCode = organisationCode;
         }
     }
 

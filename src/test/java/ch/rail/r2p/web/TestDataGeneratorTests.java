@@ -4,10 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ch.rail.r2p.api.dto.Activity;
+import ch.rail.r2p.api.dto.ActivityType;
+import ch.rail.r2p.api.dto.CapabilityType;
+import ch.rail.r2p.api.dto.PartnerToken;
+import ch.rail.r2p.api.dto.ResponsibilityType;
 import ch.rail.r2p.api.dto.TimingType;
 import ch.rail.r2p.api.dto.Train;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,16 +26,12 @@ import org.junit.jupiter.api.Test;
 class TestDataGeneratorTests {
 
     /**
-     * Hard-coded contract: exactly these three organisation codes are allowed in PoC data.
-     * If the production constant {@link TestDataGenerator#POC_RESPONSIBILITY_TYPES} is changed
-     * the test {@code poc_responsibility_types_must_match_contract} will catch the drift.
-     * <ul>
-     *   <li>1385 – SBB Personenverkehr</li>
-     *   <li>1163 – BLS</li>
-     *   <li>5458 – SOB Transport EVU</li>
-     * </ul>
+     * Partner abbreviations derived from {@link PartnerToken} used as Responsibility.id in PoC data.
+     * Intentionally not RICS codes — the webclient uses EVU abbreviations for the PoC.
      */
-    private static final Set<String> EXPECTED_POC_ORGANISATION_CODES = Set.of("1385", "1163", "5458");
+    private static final Set<String> EXPECTED_POC_PARTNER_ABBREVIATIONS = Arrays.stream(PartnerToken.values())
+        .map(PartnerToken::getValue)
+        .collect(Collectors.toUnmodifiableSet());
 
     @Test
     void activity_ids_within_a_train_must_be_unique_and_not_blank() {
@@ -56,15 +57,109 @@ class TestDataGeneratorTests {
         Train train = TestDataGenerator.createTrain(LocalDate.of(2026, 5, 1), "2001");
         var locations = train.getJourney().getJourneylocations();
 
-        locations.getFirst().getActivities().forEach(activity -> {
-            assertThat(activity.getTimings()).hasSize(1);
-            assertThat(activity.getTimings().getFirst().getType()).isEqualTo(TimingType.DEPARTURE);
-        });
+        // RollingStock activities carry no timing; only path and staff activities do.
+        locations.getFirst().getActivities().stream()
+            .filter(a -> a.getCapability() != null && a.getCapability().getType() != CapabilityType.ROLLING_STOCK)
+            .forEach(activity -> {
+                assertThat(activity.getTimings()).hasSize(1);
+                assertThat(activity.getTimings().getFirst().getType()).isEqualTo(TimingType.DEPARTURE);
+            });
 
         locations.getLast().getActivities().forEach(activity -> {
             assertThat(activity.getTimings()).hasSize(1);
             assertThat(activity.getTimings().getFirst().getType()).isEqualTo(TimingType.ARRIVAL);
         });
+    }
+
+    @Test
+    void rolling_stock_activities_must_have_no_timings() {
+        Train train = TestDataGenerator.createTrain(LocalDate.of(2026, 5, 1), "3001");
+
+        train.getJourney().getJourneylocations().forEach(jl ->
+            jl.getActivities().stream()
+                .filter(a -> a.getCapability() != null && a.getCapability().getType() == CapabilityType.ROLLING_STOCK)
+                .forEach(activity ->
+                    assertThat(activity.getTimings())
+                        .as("rollingStock activity '%s' must have no timings", activity.getId())
+                        .isEmpty()
+                )
+        );
+    }
+
+    @Test
+    void timings_must_have_a_source() {
+        Train train = TestDataGenerator.createTrain(LocalDate.of(2026, 5, 1), "4001");
+
+        train.getJourney().getJourneylocations().forEach(jl ->
+            jl.getActivities().forEach(activity ->
+                activity.getTimings().forEach(timing ->
+                    assertThat(timing.getSource())
+                        .as("timing source must not be null or blank")
+                        .isNotBlank()
+                )
+            )
+        );
+    }
+
+    @Test
+    void activity_type_must_be_consistent_with_capability_type() {
+        Train train = TestDataGenerator.createTrain(LocalDate.of(2026, 5, 1), "5001");
+
+        train.getJourney().getJourneylocations().forEach(jl ->
+            jl.getActivities().forEach(activity -> {
+                if (activity.getCapability() == null) return;
+                CapabilityType capType = activity.getCapability().getType();
+                ActivityType actType = activity.getType();
+                switch (capType) {
+                    case PATH -> assertThat(actType.getValue()).startsWith("path.");
+                    case ROLLING_STOCK -> assertThat(actType.getValue()).startsWith("rollingStock");
+                    case STAFF -> assertThat(actType).isNotNull();
+                    default -> { /* no assertion for unknown types */ }
+                }
+            })
+        );
+    }
+
+    @Test
+    void responsibility_type_must_match_capability_type() {
+        Train train = TestDataGenerator.createTrain(LocalDate.of(2026, 5, 1), "6001");
+
+        train.getJourney().getJourneylocations().forEach(jl ->
+            jl.getActivities().forEach(activity -> {
+                if (activity.getCapability() == null || activity.getResponsibility() == null) return;
+                CapabilityType capType = activity.getCapability().getType();
+                ResponsibilityType respType = activity.getResponsibility().getType();
+                switch (capType) {
+                    case PATH -> assertThat(respType).isIn(ResponsibilityType.PIM, ResponsibilityType.RIM);
+                    case ROLLING_STOCK -> assertThat(respType).isIn(ResponsibilityType.TRU, ResponsibilityType.RRU);
+                    case STAFF -> assertThat(respType).isEqualTo(ResponsibilityType.PRU);
+                    default -> { /* no assertion for unknown types */ }
+                }
+            })
+        );
+    }
+
+    @Test
+    void max_speed_must_be_a_multiple_of_10() {
+        Train train = TestDataGenerator.createTrain(LocalDate.of(2026, 5, 1), "8001");
+
+        train.getJourney().getJourneylocations().forEach(jl ->
+            jl.getActivities().forEach(activity -> {
+                if (activity.getCapability() == null) return;
+                var rs = activity.getCapability().getRollingStock();
+                if (rs != null && rs.getMaxSpeed() != null) {
+                    assertThat(rs.getMaxSpeed() % 10)
+                        .as("rollingStock maxSpeed %d must be a multiple of 10", rs.getMaxSpeed())
+                        .isZero();
+                }
+                var path = activity.getCapability().getPath();
+                if (path != null && path.getMaxSpeed() != null) {
+                    assertThat(path.getMaxSpeed() % 10)
+                        .as("path maxSpeed %d must be a multiple of 10", path.getMaxSpeed())
+                        .isZero();
+                }
+            })
+        );
     }
 
     @Test
@@ -87,29 +182,17 @@ class TestDataGeneratorTests {
     }
 
     @Test
-    void responsibilities_must_only_use_poc_organisation_codes() {
+    void responsibilities_must_only_use_poc_partner_abbreviations() {
         Train train = TestDataGenerator.createTrain(LocalDate.of(2026, 7, 1), "7001");
 
         train.getJourney().getJourneylocations().forEach(jl ->
             jl.getActivities().forEach(activity -> {
-                String orgCode = activity.getResponsibility().getId();
-                assertThat(EXPECTED_POC_ORGANISATION_CODES)
-                    .as("organisation code '%s' is not in the PoC contract set {1385=SBB, 1163=BLS, 5458=SOB}", orgCode)
-                    .contains(orgCode);
+                String abbreviation = activity.getResponsibility().getId();
+                assertThat(EXPECTED_POC_PARTNER_ABBREVIATIONS)
+                    .as("partner abbreviation '%s' is not in the PoC contract set {SBB, BLS, SOB}", abbreviation)
+                    .contains(abbreviation);
             })
         );
-    }
-
-    @Test
-    void poc_responsibility_types_must_match_contract() {
-        Set<String> actual = TestDataGenerator.POC_RESPONSIBILITY_TYPES
-            .stream()
-            .map(TestDataGenerator.KnownResponsibilityType::getOrganisationCode)
-            .collect(Collectors.toUnmodifiableSet());
-
-        assertThat(actual)
-            .as("POC_RESPONSIBILITY_TYPES organisation codes must exactly match the contract set")
-            .containsExactlyInAnyOrderElementsOf(EXPECTED_POC_ORGANISATION_CODES);
     }
 
     @Test
