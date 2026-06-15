@@ -14,6 +14,6 @@ public class InstanceOwnerController implements ConfigApi {
 
     @Override
     public ResponseEntity<InstanceOwner> getInstanceOwner() {
-        return ResponseEntity.ok(new InstanceOwner(instanceOwner));
+        return ResponseEntity.ok(new InstanceOwner().name(instanceOwner));
     }
 }
