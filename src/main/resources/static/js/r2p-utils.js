@@ -52,9 +52,17 @@ function truncateId(id) {
  */
 function partnerBadgeClass(partner) {
     const mapping = {
-        'SBB': 'partner-badge-SBB',
-        'BLS': 'partner-badge-BLS',
-        'SOB': 'partner-badge-SOB'
+        'SBB':   'partner-badge-SBB',
+        'BLS':   'partner-badge-BLS',
+        'SOB':   'partner-badge-SOB',
+        'TI':    'partner-badge-TI',
+        'DBF':   'partner-badge-DBF',
+        'DBC':   'partner-badge-DBC',
+        'DBCNL': 'partner-badge-DBCNL',
+        'SBBC':  'partner-badge-SBBC',
+        'SBBCI': 'partner-badge-SBBCI',
+        'RCA':   'partner-badge-RCA',
+        'MEV':   'partner-badge-MEV'
     };
     return mapping[partner] ?? 'partner-badge-default';
 }
@@ -315,7 +323,7 @@ function getTimetableYearOptions() {
  * This is a temporary front-end-only simulation until real auth is in place.
  * @type {string[]}
  */
-const PARTNER_TOKENS = ['SBB', 'BLS', 'SOB'];
+const PARTNER_TOKENS = ['SBB', 'BLS', 'SOB', 'TI', 'DBF', 'DBC', 'DBCNL', 'SBBC', 'SBBCI', 'RCA', 'MEV'];
 
 const _TOKEN_STORAGE_KEY = 'r2p_selected_token';
 

@@ -4,7 +4,7 @@ The prototype ships with a lightweight web interface built with https://alpinejs
 
 == Partner / Token Switcher
 
-Because the PoC uses a simplified token model, a drop-down in the top-right corner of every page lets you switch between the available partners (`SBB`, `BLS`, `SOB`). The active selection determines the `token` header that is sent with every API request, so all access-control rules (Lead RU vs. shared partner) apply exactly as they would in a real integration.
+Because the PoC uses a simplified token model, a drop-down in the top-right corner of every page lets you switch between the available partners (`SBB`, `BLS`, `SOB`, `TI`, `DBF`, `DBC`, `DBCNL`, `SBBC`, `SBBCI`, `RCA`, `MEV`). The active selection determines the `token` header that is sent with every API request, so all access-control rules (Lead RU vs. shared partner) apply exactly as they would in a real integration.
 
 == Train Overview (`index.html`)
 

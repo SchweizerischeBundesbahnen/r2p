@@ -978,6 +978,14 @@ components:
         - SBB
         - BLS
         - SOB
+        - TI
+        - DBF
+        - DBC
+        - DBCNL
+        - SBBC
+        - SBBCI
+        - RCA
+        - MEV
     ProblemDetail:
       type: object
       description: RFC 7807 Problem Details
