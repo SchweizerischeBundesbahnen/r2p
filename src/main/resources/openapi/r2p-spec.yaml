@@ -11,6 +11,8 @@ servers:
 tags:
   - name: R2P
     description: Trains Endpoints
+  - name: Config
+    description: Configuration Endpoints
 
 paths:
   /v1/trains:
@@ -785,9 +787,9 @@ paths:
         - R2P
       summary: List all train changes
       description: |
-        Returns a chronological list of all changes (audit log) across all trains accessible to the authenticated 
-        partner within the specified time range. This provides a comprehensive view of all activities related to 
-        the partner's trains, including creations, updates, deletions, and sharing actions. Useful for monitoring 
+        Returns a chronological list of all changes (audit log) across all trains accessible to the authenticated
+        partner within the specified time range. This provides a comprehensive view of all activities related to
+        the partner's trains, including creations, updates, deletions, and sharing actions. Useful for monitoring
         and auditing purposes. Both 'from' and 'to' timestamps are required.
       operationId: listTrainChanges
       parameters:
@@ -819,7 +821,20 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Change'
-
+  /v1/instance-owner:
+    get:
+      tags:
+        - Config
+      summary: Get instance owner
+      description: Returns the name of the instance owner (Lead RU) of this R2P instance.
+      operationId: getInstanceOwner
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstanceOwner'
 components:
   schemas:
     TrainListElement:
@@ -971,6 +986,15 @@ components:
           type: boolean
           description: 'Indicates whether this branch is the main branch of the train'
           example: true
+    InstanceOwner:
+      description: The instance owner (Lead RU) of this R2P instance.
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: SBB
     PartnerToken:
       description: Represents an authentication token of a partner in the context of the PoC (to be replaced by a real authentication token later)
       type: string

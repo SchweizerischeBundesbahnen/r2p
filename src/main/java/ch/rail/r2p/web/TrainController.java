@@ -1,6 +1,6 @@
 package ch.rail.r2p.web;
 
-import ch.rail.r2p.api.V1Api;
+import ch.rail.r2p.api.R2PApi;
 import ch.rail.r2p.api.dto.Branch;
 import ch.rail.r2p.api.dto.MergeAction;
 import ch.rail.r2p.api.dto.Change;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @Valid
-public class TrainController implements V1Api {
+public class TrainController implements R2PApi {
 
     private final TrainService trainService;
     private final TrainMapper trainMapper;
