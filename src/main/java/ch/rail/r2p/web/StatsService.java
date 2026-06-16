@@ -50,13 +50,12 @@ public class StatsService {
             .sorted(Comparator.naturalOrder())
             .map(partner -> new PartnerStats(
                 partner,
-                partner.equals(instanceOwner),
                 trainsByPartner.getOrDefault(partner, 0),
                 openBranchesByOwner.getOrDefault(partner, 0),
                 mergeRequestsByOwner.getOrDefault(partner, 0)))
             .toList();
 
-        PartnerStats totals = new PartnerStats(null, false, totalTrainsCount, totalOpenBranches, totalMergeRequests);
+        PartnerStats totals = new PartnerStats(null, totalTrainsCount, totalOpenBranches, totalMergeRequests);
 
         List<PartnerStats> result = new ArrayList<>();
         result.add(totals);

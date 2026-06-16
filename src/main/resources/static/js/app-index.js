@@ -13,6 +13,7 @@ function trainApp() {
         // ── Statistics data from server ───────────────────────────────────────
         stats: [],          // array from /internal/stats; first element is totals (partner === null)
         statsError: null,
+        instanceOwnerName: '…',
 
         // ── Timetable year filter (mandatory; drives date range) ──────────────
         filterTimetableYear: String(getCurrentTimetableYear()),
@@ -55,12 +56,6 @@ function trainApp() {
             if (!this.selectedStatPartner)
                 return this.stats.find(s => s.partner === null) ?? {};
             return this.stats.find(s => s.partner === this.selectedStatPartner) ?? {};
-        },
-
-        // ── Derived: name of the Lead RU ─────────────────────────────────────
-        get leadRUName() {
-            const row = this.stats.find(s => s.leadRU === true);
-            return row ? row.partner : '…';
         },
 
         // ── Derived: partner list for the stats dropdown (excluding totals) ───
@@ -110,7 +105,7 @@ function trainApp() {
             const bounds = this.timetableYearBounds;
             this.filterDateFrom = bounds.start;
             this.filterDateTo   = bounds.end;
-            await Promise.all([this.fetchTrains(), this.fetchStatsData()]);
+            await Promise.all([this.fetchTrains(), this.fetchStatsData(), this.fetchInstanceOwnerData()]);
         },
 
         // ── Server fetch (called on init and when date filters change) ─────────
@@ -145,6 +140,18 @@ function trainApp() {
                 this.stats = await response.json();
             } catch (e) {
                 this.statsError = e.message;
+            }
+        },
+
+        // ── Instance owner fetch (called on init) ──────────────────────────────
+        async fetchInstanceOwnerData() {
+            try {
+                const response = await fetchInstanceOwner();
+                if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
+                const data = await response.json();
+                this.instanceOwnerName = data.name ?? '…';
+            } catch (e) {
+                // non-fatal: header subtitle stays '…'
             }
         },
 
