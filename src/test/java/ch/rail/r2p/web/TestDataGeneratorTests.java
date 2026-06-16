@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ch.rail.r2p.api.dto.Activity;
-import ch.rail.r2p.api.dto.ActivityType;
 import ch.rail.r2p.api.dto.CapabilityType;
 import ch.rail.r2p.api.dto.PartnerToken;
 import ch.rail.r2p.api.dto.ResponsibilityType;
@@ -107,13 +106,12 @@ class TestDataGeneratorTests {
 
         train.getJourney().getJourneylocations().forEach(jl ->
             jl.getActivities().forEach(activity -> {
-                if (activity.getCapability() == null) return;
-                CapabilityType capType = activity.getCapability().getType();
-                ActivityType actType = activity.getType();
-                switch (capType) {
-                    case PATH -> assertThat(actType.getValue()).startsWith("path.");
-                    case ROLLING_STOCK -> assertThat(actType.getValue()).startsWith("rollingStock");
-                    case STAFF -> assertThat(actType).isNotNull();
+                var capability = activity.getCapability();
+                if (capability == null) return;
+                switch (capability.getType()) {
+                    case PATH -> assertThat(capability.getPath().getActivityType().getValue()).startsWith("path.");
+                    case ROLLING_STOCK -> assertThat(capability.getRollingStock().getActivityType().getValue()).startsWith("rollingStock");
+                    case STAFF -> assertThat(capability.getStaff().getActivityType()).isNotNull();
                     default -> { /* no assertion for unknown types */ }
                 }
             })

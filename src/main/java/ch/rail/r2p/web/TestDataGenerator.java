@@ -1,17 +1,17 @@
 package ch.rail.r2p.web;
 
 import ch.rail.r2p.api.dto.Activity;
-import ch.rail.r2p.api.dto.ActivityType;
 import ch.rail.r2p.api.dto.BrakeType;
 import ch.rail.r2p.api.dto.Capability;
 import ch.rail.r2p.api.dto.CapabilityFeature;
 import ch.rail.r2p.api.dto.CapabilityType;
 import ch.rail.r2p.api.dto.Feature;
-import ch.rail.r2p.api.dto.Featureset;
 import ch.rail.r2p.api.dto.Focus;
 import ch.rail.r2p.api.dto.PartnerToken;
 import ch.rail.r2p.api.dto.Path;
+import ch.rail.r2p.api.dto.PathActivityType;
 import ch.rail.r2p.api.dto.RollingStock;
+import ch.rail.r2p.api.dto.RollingStockActivityType;
 import ch.rail.r2p.api.dto.RouteClassType;
 import ch.rail.r2p.api.dto.Unit;
 import ch.rail.r2p.api.dto.Journey;
@@ -25,6 +25,7 @@ import ch.rail.r2p.api.dto.Relation;
 import ch.rail.r2p.api.dto.Responsibility;
 import ch.rail.r2p.api.dto.ResponsibilityType;
 import ch.rail.r2p.api.dto.Staff;
+import ch.rail.r2p.api.dto.StaffActivityType;
 import ch.rail.r2p.api.dto.StaffType;
 import ch.rail.r2p.api.dto.Timing;
 import ch.rail.r2p.api.dto.TimingType;
@@ -126,13 +127,12 @@ public final class TestDataGenerator {
 
     static class RandomJourney extends Journey {
 
-        private RandomJourney(List<@Valid Featureset> featuresets, List<@Valid Journeylocation> journeylocations) {
-            super(featuresets, journeylocations);
+        private RandomJourney(List<@Valid Journeylocation> journeylocations) {
+            super(journeylocations);
         }
 
         static RandomJourney of(Random random) {
-            // featuresets are not yet implemented and are therefore omitted here.
-            return new RandomJourney(Collections.emptyList(), RandomJourneylocation.listOf(random));
+            return new RandomJourney(RandomJourneylocation.listOf(random));
         }
 
     }
@@ -172,8 +172,8 @@ public final class TestDataGenerator {
 
     static class RandomActivity extends Activity {
 
-        private RandomActivity(String id, ActivityType type, List<@Valid Timing> timings, Responsibility responsibility, Capability capability, List<@Valid Relation> relations) {
-            super(id, type, timings, responsibility, relations);
+        private RandomActivity(String id, List<@Valid Timing> timings, Responsibility responsibility, Capability capability, List<@Valid Relation> relations) {
+            super(id, timings, responsibility, relations);
             setCapability(capability);
         }
 
@@ -209,21 +209,11 @@ public final class TestDataGenerator {
         private static RandomActivity of(Random random, Stop stop, int stopPosition, RandomCapability capability, List<Timing> timings, int activityIndex) {
             return new RandomActivity(
                 generateId(stop, capability.getType(), stopPosition, activityIndex),
-                activityTypeFor(capability.getType()),
                 timings,
                 RandomResponsibility.of(random, capability.getType()),
                 capability,
                 Collections.emptyList()
             );
-        }
-
-        private static ActivityType activityTypeFor(CapabilityType capabilityType) {
-            return switch (capabilityType) {
-                case PATH -> ActivityType.PATH_RUNTHROUGH;
-                case ROLLING_STOCK -> ActivityType.ROLLING_STOCK;
-                case STAFF -> ActivityType.INSPECT_TRAIN_OPERATIONAL;
-                default -> throw new IllegalStateException("Unexpected capability type: " + capabilityType);
-            };
         }
 
         private static String generateId(Stop stop, CapabilityType capabilityType, int stopPosition, int activityIndex) {
@@ -327,7 +317,7 @@ public final class TestDataGenerator {
         }
         static RandomCapability staff(Random random) {
             var capability = empty(CapabilityType.STAFF);
-            capability.staffs(RandomStaff.listOf(random));
+            capability.staff(RandomStaff.of(random));
             return capability;
         }
 
@@ -352,20 +342,20 @@ public final class TestDataGenerator {
 
     static class RandomStaff extends Staff {
 
-        private RandomStaff(StaffType type) {
-            super(type);
+        private RandomStaff(StaffType type, StaffActivityType activityType) {
+            super(type, activityType);
         }
 
-        static List<Staff> listOf(Random random) {
+        static Staff of(Random random) {
             StaffType type = StaffType.values()[random.nextInt(StaffType.values().length)];
-            return List.of(new RandomStaff(type));
+            return new RandomStaff(type, StaffActivityType.INSPECT_TRAIN_OPERATIONAL);
         }
     }
 
     static class RandomRollingStock extends RollingStock {
 
         private RandomRollingStock(List<Unit> units) {
-            super(units);
+            super(RollingStockActivityType.ROLLING_STOCK, units);
         }
 
         static RandomRollingStock of(Random random) {
@@ -444,7 +434,7 @@ public final class TestDataGenerator {
     static class RandomPath extends Path {
 
         private RandomPath(String id, Integer length, Integer weight, Integer maxSpeed) {
-            super(id, length, weight, maxSpeed);
+            super(id, PathActivityType.PATH_RUNTHROUGH, length, weight, maxSpeed);
         }
 
         private static final String[] TRAIN_CATEGORIES = {"00", "01", "02", "03", "04", "05", "06"};
