@@ -19,7 +19,7 @@
                 <div>
                     <h1>R2P - Railway Undertaking Partner Communication</h1>
                     <p class="subtitle">Prototype for RU-RU-Partner communication and collaboration</p>
-                    <p class="lead-ru-subtitle" x-text="'Lead RU: ' + leadRUName">Lead RU: …</p>
+                    <p class="lead-ru-subtitle" x-text="'Instance Owner: ' + instanceOwnerName">Instance Owner: …</p>
                 </div>
             </div>
             <!-- Temporary partner/token switcher (PoC only) -->
@@ -43,7 +43,7 @@
                 <option value="">All Partners (totals)</option>
                 <template x-for="s in statsPartners" :key="s.partner">
                     <option :value="s.partner"
-                            x-text="s.partner + (s.partner === instanceOwnerName ? ' (Lead RU)' : '')"></option>
+                            x-text="s.partner + (s.partner === instanceOwnerName ? ' (Instance Owner)' : '')"></option>
                 </template>
             </select>
         </div>

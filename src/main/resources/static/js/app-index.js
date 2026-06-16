@@ -58,11 +58,6 @@ function trainApp() {
             return this.stats.find(s => s.partner === this.selectedStatPartner) ?? {};
         },
 
-        // ── Derived: name of the Lead RU ─────────────────────────────────────
-        get leadRUName() {
-            return this.instanceOwnerName;
-        },
-
         // ── Derived: partner list for the stats dropdown (excluding totals) ───
         get statsPartners() {
             return this.stats.filter(s => s.partner !== null);
