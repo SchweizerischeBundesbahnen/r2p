@@ -51,24 +51,7 @@ class StatsTests {
             .findFirst()
             .orElseThrow(() -> new AssertionError("No totals row found"));
 
-        assertThat(totals.leadRU()).isFalse();
         assertThat(totals.trains()).isGreaterThanOrEqualTo(1);
-    }
-
-    @Test
-    void should_set_lead_ru_true_only_for_instance_owner() {
-        actor.createTrain(SBB, "test");
-
-        List<PartnerStats> stats = statsController.getStats();
-
-        assertThat(stats.stream().filter(s -> s.partner() != null && s.leadRU()))
-            .as("exactly one partner has leadRU=true")
-            .hasSize(1);
-
-        assertThat(stats.stream().filter(s -> s.partner() != null && s.leadRU()).findFirst())
-            .get()
-            .extracting(PartnerStats::partner)
-            .isEqualTo(SBB.name());
     }
 
     @Test

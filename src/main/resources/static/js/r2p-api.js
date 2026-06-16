@@ -108,3 +108,11 @@ async function fetchMergeRequests(trainId) {
 async function fetchStats() {
     return apiFetch('/internal/stats');
 }
+
+/**
+ * Fetches the instance owner (Lead RU) name from the backend.
+ * @returns {Promise<Response>}
+ */
+async function fetchInstanceOwner() {
+    return apiFetch('/v1/instance-owner');
+}

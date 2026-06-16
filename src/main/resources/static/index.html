@@ -43,7 +43,7 @@
                 <option value="">All Partners (totals)</option>
                 <template x-for="s in statsPartners" :key="s.partner">
                     <option :value="s.partner"
-                            x-text="s.partner + (s.leadRU ? ' (Lead RU)' : '')"></option>
+                            x-text="s.partner + (s.partner === instanceOwnerName ? ' (Lead RU)' : '')"></option>
                 </template>
             </select>
         </div>
