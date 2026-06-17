@@ -12,12 +12,15 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Verifies that unauthenticated requests to the REST API ({@code /v1/**}) are answered with
- * 401 Unauthorized and never with a 302 redirect to the IdP login page.
+ * Verifies that unauthenticated requests to protected resources ({@code /v1/**} and
+ * {@code /internal/**}) are answered with 401 Unauthorized and never with a 302 redirect to the
+ * IdP login page.
  * <p>
- * This guards the {@code defaultAuthenticationEntryPointFor} configuration in
- * {@link SecurityConfig}: without it, oauth2Login's {@code LoginUrlAuthenticationEntryPoint}
- * would issue a 302 to {@code login.microsoftonline.com}, which browsers block with a CORS error.
+ * This guards the {@code authenticationEntryPoint} configuration in {@link SecurityConfig}:
+ * without it, oauth2Login's {@code LoginUrlAuthenticationEntryPoint} would issue a 302 to
+ * {@code /oauth2/authorization/azure -> login.microsoftonline.com}, which an AJAX fetch follows
+ * cross-origin and browsers block with a CORS error. The integrated UI relies on the 401 to
+ * trigger the login redirect itself (see {@code r2p-api.js} / {@code router.js}).
  * <p>
  * Note: deliberately <em>not</em> annotated with {@code @WithMockR2PUser} so requests are
  * unauthenticated and actually exercise the authentication entry point.
@@ -41,6 +44,16 @@ class ApiAuthenticationEntryPointTests {
     @Test
     void unauthenticated_api_request_to_single_resource_returns_401_and_no_redirect() throws Exception {
         mockMvc.perform(get("/v1/trains/00000000-0000-0000-0000-000000000000")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized())
+            .andExpect(header().doesNotExist("Location"));
+    }
+
+    @Test
+    void unauthenticated_internal_request_returns_401_and_no_redirect() throws Exception {
+        // /internal/** is also consumed by the UI via AJAX (e.g. fetchStats -> /internal/stats)
+        // and must therefore return 401 rather than a redirect to the IdP login page.
+        mockMvc.perform(get("/internal/stats")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized())
             .andExpect(header().doesNotExist("Location"));

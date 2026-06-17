@@ -33,7 +33,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -107,15 +106,19 @@ public class SecurityConfig {
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
             )
-            // API paths must return 401, never a redirect to the IdP login page.
-            // Without this, an expired/missing session causes oauth2Login's LoginUrlAuthenticationEntryPoint
-            // to issue a 302 to login.microsoftonline.com, which the browser blocks with a CORS error
-            // because that origin has no Access-Control-Allow-Origin header.
+            // Unauthenticated requests to protected resources must return 401, never a redirect
+            // to the IdP login page. Without this, oauth2Login's LoginUrlAuthenticationEntryPoint
+            // issues a 302 to /oauth2/authorization/azure -> login.microsoftonline.com, which an
+            // AJAX fetch follows cross-origin and the browser blocks with a CORS error (that origin
+            // has no Access-Control-Allow-Origin header).
+            //
+            // This applies to ALL protected paths, not just /v1/**: the integrated UI loads its
+            // public HTML pages, then fetches data via AJAX (/v1/** and /internal/**). On 401 the
+            // frontend itself navigates to /oauth2/authorization/azure (see r2p-api.js / router.js),
+            // which triggers the Azure redirect via OAuth2AuthorizationRequestRedirectFilter - a
+            // separate mechanism that is unaffected by this entry point.
             .exceptionHandling(ex -> ex
-                .defaultAuthenticationEntryPointFor(
-                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                    PathPatternRequestMatcher.withDefaults().matcher("/v1/**")
-                )
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             );
         return http.build();
     }
