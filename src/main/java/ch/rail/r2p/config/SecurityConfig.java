@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -48,27 +49,29 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // Custom AuthorizationManager that handles two authentication paths:
+        // Custom AuthorizationManager that handles two authentication mechanisms:
         //
         //  1. JWT Bearer token (REST API / Swagger-UI):
-        //     Detected by the presence of the "Authorization: Bearer ..." header.
+        //     The request authenticated as a JwtAuthenticationToken (oauth2ResourceServer).
         //     Requires both SCOPE_r2p (API consent) and ROLE_r2p_user (AD group membership).
         //
         //  2. Session cookie (browser OIDC login):
-        //     No Bearer header present. Azure AD ID tokens do not carry an 'scp' claim,
+        //     Any other (non-JWT) authentication. Azure AD ID tokens do not carry an 'scp' claim,
         //     so only ROLE_r2p_user is required.
+        //
+        // The decision keys off the authentication type rather than the Authorization header so it
+        // stays consistent with how the request was actually authenticated.
         AuthorizationManager<RequestAuthorizationContext> roleAndScope = (authSupplier, ctx) -> {
             var auth = authSupplier.get();
-            if (auth == null || !auth.isAuthenticated()) {
+            if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
                 return new AuthorizationDecision(false);
             }
             Set<String> authorities = auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toSet());
             boolean hasRole = authorities.contains("ROLE_r2p_user");
-            // Bearer token requests must also carry the API scope
-            boolean isBearerRequest = isBearerRequest(ctx.getRequest());
-            boolean granted = isBearerRequest
+            // Bearer-token (JWT) requests must also carry the API scope.
+            boolean granted = (auth instanceof JwtAuthenticationToken)
                 ? hasRole && authorities.contains("SCOPE_r2p")
                 : hasRole;
             return new AuthorizationDecision(granted);
