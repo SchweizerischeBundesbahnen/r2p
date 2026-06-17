@@ -30,6 +30,8 @@ import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
@@ -117,8 +119,16 @@ public class SecurityConfig {
             // frontend itself navigates to /oauth2/authorization/azure (see r2p-api.js / router.js),
             // which triggers the Azure redirect via OAuth2AuthorizationRequestRedirectFilter - a
             // separate mechanism that is unaffected by this entry point.
+            //
+            // Bearer-token requests still get the RFC 6750 "WWW-Authenticate: Bearer ..." challenge:
+            // we delegate to BearerTokenAuthenticationEntryPoint for them and only fall back to the
+            // plain 401 for session-cookie (browser) requests. Note: setting a single
+            // authenticationEntryPoint replaces the configurer's delegating entry point entirely
+            // (an explicit authenticationEntryPoint short-circuits createDefaultEntryPoint, so the
+            // BearerTokenAuthenticationEntryPoint that oauth2ResourceServer auto-registers would
+            // otherwise be dropped) - hence we delegate explicitly here.
             .exceptionHandling(ex -> ex
-                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                .authenticationEntryPoint(apiAuthenticationEntryPoint())
             );
         return http.build();
     }
@@ -127,6 +137,23 @@ public class SecurityConfig {
         String authHeader = request.getHeader("Authorization");
         return authHeader != null
             && authHeader.regionMatches(true, 0, "bearer ", 0, 7);
+    }
+
+    /**
+     * Authentication entry point for unauthenticated requests to protected resources.
+     * <p>
+     * Bearer-token API requests are delegated to {@link BearerTokenAuthenticationEntryPoint} so the
+     * RFC 6750 {@code WWW-Authenticate: Bearer ...} challenge (incl. {@code error}/
+     * {@code error_description} for invalid/expired tokens) is preserved. All other (session-cookie
+     * / browser) requests get a plain {@code 401}, never a {@code 302} redirect to the IdP — the
+     * frontend turns that 401 into a login redirect itself.
+     */
+    private static AuthenticationEntryPoint apiAuthenticationEntryPoint() {
+        AuthenticationEntryPoint bearerEntryPoint = new BearerTokenAuthenticationEntryPoint();
+        AuthenticationEntryPoint statusEntryPoint = new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED);
+        return (request, response, authException) ->
+            (isBearerRequest(request) ? bearerEntryPoint : statusEntryPoint)
+                .commence(request, response, authException);
     }
 
     /**
