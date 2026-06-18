@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: SBB R2P Train API
+  title: SBB R2P Train Data Model
   description: |
-    This API provides access to train data in the SBB R2P format. It allows users to create, update, and retrieve train information, including details about the train's journey, activities, capabilities, and requirements. 
-    The API is designed to support the needs of railway operators, infrastructure managers, and other stakeholders involved in train planning and operations.
+    Data model (schema components) for the SBB R2P Train domain: the train and its journey, activities, capabilities, and requirements.
+    These schemas are referenced by the API specification in r2p-spec.yaml; this file does not define API paths itself.
   termsOfService: https://developer.sbb.ch/license
   contact:
     name: TMSC Team
@@ -15,161 +15,6 @@ info:
 externalDocs:
   description: CARIS2 - Canonical Data Model - Train
   url: https://confluence.sbb.ch/x/XM6nyw
-servers:
-  - url: '{scheme}://{host}/{baseTrain}'
-    variables:
-      scheme:
-        enum:
-          - https
-          - http
-        default: https
-      host:
-        default: train1.swagger.io
-      baseTrain:
-        default: /api/v1
-tags:
-  - name: Train
-    description: Everything about train
-    externalDocs:
-      description: Find out more
-      url: http://swagger.io
-# ---------------------------------------------- train -------------------------------------------------------------------------------------
-paths:
-  /train:
-    put:
-      tags:
-        - train
-      summary: Update an existing train
-      description: Update an existing train by Id
-      operationId: updateTrain
-      requestBody:
-        description: Update an existent train 
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Train'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/Train'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Train'
-        required: true
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: train not found
-        '405':
-          description: Validation exception
-      security:
-        - path_auth:
-            - write:train
-            - read:train
-    post:
-      tags:
-        - train
-      summary: Add a new train
-      description: Add a new train
-      operationId: createTrain
-      requestBody:
-        description: Create a new train
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Train'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/Train'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Train'
-        required: true
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-        '405':
-          description: Invalid input
-      security:
-        - path_auth:
-            - write:train
-            - read:train
-    get:
-      tags:
-        - train
-      summary: Finds train
-      description: one or more trains can be retrieved
-      operationId: readTrain
-      parameters:
-        - name: trainid
-          in: query
-          description: Train ID for the object
-          required: false
-          explode: true
-          schema:
-            type: string
-        - name: tttrefrainid
-          in: query
-          description: TTT RefTrain ID for the object
-          required: false
-          explode: true
-          schema:
-            type: string
-        - name: tttrouteid
-          in: query
-          description: TTT Route ID for the object
-          required: false
-          explode: true
-          schema:
-            type: string
-        - name: ttttrainid
-          in: query
-          description: TTT Train ID for the object
-          required: false
-          explode: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Train'
-                  xml:
-                    name: train
-                xml:
-                  name: trains
-                  wrapped: true
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Train'
-        '400':
-          description: Invalid period value
-      security:
-        - path_auth:
-            - write:train
-            - read:train
 # ---------------------------------------------- components -------------------------------------------------------------------------------------
 # ---------------------------------------------- ---------- -------------------------------------------------------------------------------------
 components:
@@ -1622,19 +1467,6 @@ components:
       xml:
         name: stabling
 
-# ---------------------------------------------- API RESPONSE -------------------------------------------------------------------------------------
-    ApiResponse:
-      type: object
-      properties:
-        code:
-          type: integer
-          format: int32
-        type:
-          type: string
-        message:
-          type: string
-      xml:
-        name: apiresponse
 # ---------------------------------------------- ENUM ReferenceType -------------------------------------------------------------------------------------
     ReferenceType:
         description: |
