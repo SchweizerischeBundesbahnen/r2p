@@ -130,6 +130,22 @@ class TrainEditPolicyTest {
     }
 
     @Test
+    void partner_mayNotMoveForeignActivityBetweenLocationsWithSameCode() {
+        // Two journeylocations share the same location code; a foreign (SOB) activity is moved from the
+        // first to the second. The move must still be detected (no authorization bypass via duplicate codes).
+        Train oldTrain = train(
+            location("CH-3527", activity("a1", BLS), activity("a2", SOB)),
+            location("CH-3527"));
+        Train newTrain = train(
+            location("CH-3527", activity("a1", BLS)),
+            location("CH-3527", activity("a2", SOB)));
+
+        assertThatThrownBy(() -> policy.checkEditAuthorization(BLS, oldTrain, newTrain))
+            .isInstanceOf(AuthorizationDeniedException.class)
+            .hasMessageContaining("a2");
+    }
+
+    @Test
     void partner_unchangedTrain_isAllowed() {
         Train oldTrain = train(location("CH-3527", activity("a1", BLS), activity("a2", SOB)));
         Train newTrain = train(location("CH-3527", activity("a1", BLS), activity("a2", SOB)));
@@ -184,7 +200,7 @@ class TrainEditPolicyTest {
             .responsibility(new Responsibility().type(ResponsibilityType.RRU).id(owner).status(PlanStatus.CONFIRMED));
     }
 
-    /** Returns a content-changed copy of the activity (same id and owner) to simulate an edit. */
+    /** Mutates the activity in place (same instance, same id and owner) to simulate a content change. */
     private static Activity modify(Activity activity) {
         activity.getResponsibility().status(PlanStatus.REQUESTED);
         return activity;

@@ -147,8 +147,10 @@ public class TrainEditPolicy {
                         + ") is not assigned to partner '" + partner + "'");
                 }
             } else if (!Objects.equals(oldRef.activity(), newRef.activity())
-                || !Objects.equals(oldRef.locationLabel(), newRef.locationLabel())) {
+                || oldRef.journeylocationIndex() != newRef.journeylocationIndex()) {
                 // modified or moved -> must be owned by the partner before and after
+                // (compare by journeylocation index so moves are detected even when two
+                //  journeylocations share the same location code)
                 if (!ownedBy(oldRef.activity(), partner) || !ownedBy(newRef.activity(), partner)) {
                     violations.add("activity '" + id + "' modified (responsibility '"
                         + responsibilityId(oldRef.activity()) + "' -> '" + responsibilityId(newRef.activity())
@@ -161,7 +163,9 @@ public class TrainEditPolicy {
 
     private Map<String, ActivityRef> indexActivities(Train train) {
         Map<String, ActivityRef> activities = new LinkedHashMap<>();
-        for (Journeylocation journeylocation : journeylocations(train)) {
+        List<Journeylocation> journeylocations = journeylocations(train);
+        for (int index = 0; index < journeylocations.size(); index++) {
+            Journeylocation journeylocation = journeylocations.get(index);
             String locationLabel = label(journeylocation);
             List<Activity> locationActivities = journeylocation.getActivities();
             if (locationActivities == null) {
@@ -171,7 +175,7 @@ public class TrainEditPolicy {
                 if (activity == null || activity.getId() == null) {
                     continue;
                 }
-                activities.put(activity.getId(), new ActivityRef(activity, locationLabel));
+                activities.put(activity.getId(), new ActivityRef(activity, locationLabel, index));
             }
         }
         return activities;
@@ -204,7 +208,12 @@ public class TrainEditPolicy {
         return first != null && first.getCode() != null ? first.getCode() : "?";
     }
 
-    /** An activity together with the label of the location it currently sits at. */
-    private record ActivityRef(Activity activity, String locationLabel) {
+    /**
+     * An activity together with where it currently sits: {@code locationLabel} is the (possibly non-unique)
+     * location code used for human-readable messages, while {@code journeylocationIndex} is the position in
+     * the journey and is what move detection compares against (so moves between two journeylocations sharing
+     * the same location code are still detected).
+     */
+    private record ActivityRef(Activity activity, String locationLabel, int journeylocationIndex) {
     }
 }
