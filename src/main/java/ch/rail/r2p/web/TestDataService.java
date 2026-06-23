@@ -1,7 +1,11 @@
 package ch.rail.r2p.web;
 
+import ch.rail.r2p.api.dto.Activity;
+import ch.rail.r2p.api.dto.Journeylocation;
+import ch.rail.r2p.api.dto.PlanStatus;
 import ch.rail.r2p.api.dto.Train;
 import ch.rail.r2p.domain.TrainVersionEnriched;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -21,11 +25,14 @@ import org.springframework.stereotype.Service;
 public class TestDataService {
 
     private final TrainService trainService;
+    private final ObjectMapper objectMapper;
     private final String instanceOwner;
 
     public TestDataService(TrainService trainService,
+                           ObjectMapper objectMapper,
                            @Value("${r2p.instance-owner}") String instanceOwner) {
         this.trainService = trainService;
+        this.objectMapper = objectMapper;
         this.instanceOwner = instanceOwner;
     }
 
@@ -48,27 +55,42 @@ public class TestDataService {
             // 1b. Generate a unique train number for this day
             String trainNumber = TestDataGenerator.createUniqueTrainNumber(random, operationalDay, usedTrainNumbers);
 
-            // 1c. Build the train payload from the sample
-            Train payload = createRandomTrain(random, operationalDay, trainNumber);
+            // 1c. Decide which partners the train will be shared with. Activities may only be assigned to
+            //     shared partners, so this has to be known before activities are distributed.
+            List<String> chosenPartners = choosePartners(request.partners(), random);
+            // All partners that have access (instance owner + shared partners)
+            List<String> allPartners = new ArrayList<>();
+            allPartners.add(instanceOwner);
+            allPartners.addAll(chosenPartners);
 
-            // 1d. Create the train (main branch, owned by instanceOwner)
+            // 1d. Build the train payload. At creation the train is shared with no one yet, so every
+            //     activity is initially assigned to the Lead RU (instance owner).
+            Train payload = createRandomTrain(random, operationalDay, trainNumber);
+            constrainToPartners(payload, List.of(instanceOwner), random);
+
+            // 1e. Create the train (main branch, owned by instanceOwner / Lead RU)
             TrainVersionEnriched created = trainService.createTrain(instanceOwner, "Test data", payload);
             UUID trainId = created.trainVersion().getTrainId();
             UUID mainBranchId = created.branch().getBranchId();
             trainsCreated++;
             versionsCreated++;
 
-            // 1e. Share with 1 or 2 partners from the request list
-            List<String> chosenPartners = choosePartners(request.partners(), random);
+            // 1f. Share with the chosen partners
             for (String partner : chosenPartners) {
                 trainService.shareTrain(instanceOwner, trainId, partner, "Test data – shared");
             }
-            // All partners that have access (for branch creation)
-            List<String> allPartners = new ArrayList<>();
-            allPartners.add(instanceOwner);
-            allPartners.addAll(chosenPartners);
 
-            // 1f. ~10% chance to delete main branch (cascades to all other branches)
+            // 1g. The Lead RU now distributes activities across all shared partners
+            Train mainPayload = created.trainVersion().getPayload();
+            if (!chosenPartners.isEmpty()) {
+                Train distributed = deepCopy(mainPayload);
+                distributeToPartners(distributed, allPartners, random);
+                trainService.updateTrainBranch(instanceOwner, trainId, mainBranchId, "Test data – assign partners", distributed);
+                mainPayload = distributed;
+                versionsCreated++;
+            }
+
+            // 1h. ~10% chance to delete main branch (cascades to all other branches)
             if (random.nextDouble() < 0.1) {
                 trainService.deleteTrainBranch(instanceOwner, trainId, mainBranchId, "Test data – deleted");
                 mainBranchesDeleted++;
@@ -77,7 +99,7 @@ public class TestDataService {
                 continue;
             }
 
-            // 1g. Create 0–2 non-main branches
+            // 1i. Create 0–2 non-main branches
             int branchCount = random.nextInt(3); // 0, 1 or 2
             Set<String> usedBranchNames = new HashSet<>();
             for (int b = 0; b < branchCount; b++) {
@@ -86,19 +108,23 @@ public class TestDataService {
                 do {
                     branchName = "branch-" + (100 + random.nextInt(900));
                 } while (!usedBranchNames.add(branchName));
-                Train branchPayload = createRandomTrain(random, operationalDay, trainNumber);
+                // The Lead RU may rewrite the train freely; other partners may only edit their own
+                // activities and must leave the route (Streckenverlauf) and other partners' activities intact.
+                Train branchPayload = branchPayloadFor(random, branchOwner, mainPayload, allPartners, operationalDay, trainNumber);
 
                 TrainVersionEnriched branch = trainService.createTrainBranch(
                     branchOwner, trainId, branchName, "Test data", branchPayload);
                 UUID branchId = branch.branch().getBranchId();
+                Train branchCurrent = branchPayload;
                 branchesCreated++;
                 versionsCreated++;
 
                 // 1–3 additional updates on this branch
                 int updateCount = 1 + random.nextInt(3); // 1, 2 or 3
                 for (int u = 0; u < updateCount; u++) {
-                    Train updatePayload = createRandomTrain(random, operationalDay, trainNumber);
+                    Train updatePayload = branchPayloadFor(random, branchOwner, branchCurrent, allPartners, operationalDay, trainNumber);
                     trainService.updateTrainBranch(branchOwner, trainId, branchId, "Update " + (u + 1), updatePayload);
+                    branchCurrent = updatePayload;
                     versionsCreated++;
                 }
 
@@ -120,6 +146,76 @@ public class TestDataService {
     
     private Train createRandomTrain(Random random, LocalDate operationalDay, String trainNumber) {
         return TestDataGenerator.createTrain(random, operationalDay, trainNumber);
+    }
+
+    /**
+     * Builds a branch/update payload that respects the edit authorization rules: the Lead RU may use a freshly
+     * generated train (it is allowed to change anything), while any other partner derives the payload from
+     * {@code basePayload} and only mutates the activities assigned to it, keeping the route and other partners'
+     * activities untouched.
+     */
+    private Train branchPayloadFor(Random random, String owner, Train basePayload, List<String> allowedPartners,
+                                   LocalDate operationalDay, String trainNumber) {
+        if (owner.equals(instanceOwner)) {
+            // Lead RU may rewrite the train; only constraint is that activities stay within shared partners.
+            Train fresh = createRandomTrain(random, operationalDay, trainNumber);
+            constrainToPartners(fresh, allowedPartners, random);
+            return fresh;
+        }
+        Train copy = deepCopy(basePayload);
+        mutateOwnedActivities(copy, owner, random);
+        return copy;
+    }
+
+    /** Changes the plan status of every activity assigned to {@code owner}, leaving the route and others intact. */
+    private static void mutateOwnedActivities(Train train, String owner, Random random) {
+        forEachActivity(train, activity -> {
+            if (activity.getResponsibility() != null && owner.equals(activity.getResponsibility().getId())) {
+                activity.getResponsibility().setStatus(PlanStatus.values()[random.nextInt(PlanStatus.values().length)]);
+            }
+        });
+    }
+
+    /** Reassigns only the activities whose owner is not in {@code allowed} to a random allowed partner. */
+    private static void constrainToPartners(Train train, List<String> allowed, Random random) {
+        forEachActivity(train, activity -> {
+            if (activity.getResponsibility() == null) {
+                return;
+            }
+            String id = activity.getResponsibility().getId();
+            if (id == null || !allowed.contains(id)) {
+                activity.getResponsibility().setId(allowed.get(random.nextInt(allowed.size())));
+            }
+        });
+    }
+
+    /** Randomly (re)assigns every activity to one of the allowed partners. */
+    private static void distributeToPartners(Train train, List<String> allowed, Random random) {
+        forEachActivity(train, activity -> {
+            if (activity.getResponsibility() != null) {
+                activity.getResponsibility().setId(allowed.get(random.nextInt(allowed.size())));
+            }
+        });
+    }
+
+    private static void forEachActivity(Train train, java.util.function.Consumer<Activity> action) {
+        if (train.getJourney() == null || train.getJourney().getJourneylocations() == null) {
+            return;
+        }
+        for (Journeylocation journeylocation : train.getJourney().getJourneylocations()) {
+            if (journeylocation.getActivities() == null) {
+                continue;
+            }
+            journeylocation.getActivities().forEach(action);
+        }
+    }
+
+    private Train deepCopy(Train train) {
+        try {
+            return objectMapper.readValue(objectMapper.writeValueAsBytes(train), Train.class);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to copy train payload", e);
+        }
     }
 
     /**

@@ -39,6 +39,8 @@ public class TrainService {
     private TrainPersistence trainPersistence;
     @Autowired
     private ChangelogPersistence changelogPersistence;
+    @Autowired
+    private TrainEditPolicy editPolicy;
     @Value("${r2p.instance-owner}")
     private String instanceOwner;
 
@@ -48,6 +50,8 @@ public class TrainService {
         Objects.requireNonNull(train.getStartdate(), "Train startdate must not be null");
         UUID trainId = UUID.randomUUID();
         checkInstanceOwner(owner);
+        // At creation the train is shared with no one yet, so activities may only be assigned to the creator.
+        editPolicy.checkActivityAssignments(train, List.of(owner));
         Branch branch = Branch.createBranch(trainId, MAIN_BRANCH_NAME, owner);
         trainPersistence.insertBranch(branch);
         TrainVersion createdTrain = TrainVersion.builder()
@@ -184,6 +188,8 @@ public class TrainService {
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkSharing(partner, main);
         checkBranchState(main.branch(), BranchState.OPEN);
+        editPolicy.checkActivityAssignments(train, main.partners());
+        editPolicy.checkEditAuthorization(partner, main.trainVersion().getPayload(), train);
         Branch newBranch = Branch.createBranch(trainId, branchName, partner);
         if (trainPersistence.existsBranchByTrainIdAndName(trainId, branchName)) {
             throw new DuplicateBranchNameException(branchName);
@@ -206,6 +212,8 @@ public class TrainService {
         checkSharing(partner, branch);
         checkBranchOwner(partner, branch.branch());
         checkBranchState(branch.branch(), BranchState.OPEN);
+        editPolicy.checkActivityAssignments(train, branch.partners());
+        editPolicy.checkEditAuthorization(partner, branch.trainVersion().getPayload(), train);
         branch.trainVersion().setHead(false);
         trainPersistence.updateVersion(branch.trainVersion());
         TrainVersion newVersion = branch.trainVersion().createNewVersion(train, comment);

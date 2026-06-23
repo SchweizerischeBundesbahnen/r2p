@@ -53,15 +53,19 @@ public class Actor {
 
     public Train loadSampleTrain() {
         if (sampleTrain == null) {
-            try {
-                sampleTrain = objectMapper.readValue(
-                    this.getClass().getResourceAsStream("/openapi/sampleTrain.json"), Train.class);
-                Objects.requireNonNull(sampleTrain);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to load sample train", e);
-            }
+            sampleTrain = loadTrain("/openapi/sampleTrain.json");
         }
         return sampleTrain;
+    }
+
+    /** Loads a fresh (non-cached) Train from the given classpath resource. */
+    public Train loadTrain(String resourcePath) {
+        try {
+            Train train = objectMapper.readValue(this.getClass().getResourceAsStream(resourcePath), Train.class);
+            return Objects.requireNonNull(train);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load train from " + resourcePath, e);
+        }
     }
 
     public static String getPrefixedBranchName(PartnerToken owner, String branchName) {
@@ -69,10 +73,14 @@ public class Actor {
     }
 
     public TrainListElement createTrain(PartnerToken owner, String comment) {
-        TrainListElement train = trainController.createTrain(owner, comment, loadSampleTrain()).getBody();
-        Objects.requireNonNull(train, "createTrain returned null body");
-        trainIdsForCleanup.add(train.getTrainId());
-        return train;
+        return createTrain(owner, comment, loadSampleTrain());
+    }
+
+    public TrainListElement createTrain(PartnerToken owner, String comment, Train train) {
+        TrainListElement created = trainController.createTrain(owner, comment, train).getBody();
+        Objects.requireNonNull(created, "createTrain returned null body");
+        trainIdsForCleanup.add(created.getTrainId());
+        return created;
     }
 
     public void shareTrain(PartnerToken owner, UUID trainId, PartnerToken partner, String comment) {
@@ -80,7 +88,11 @@ public class Actor {
     }
 
     public Branch createBranch(PartnerToken owner, UUID trainId, String branchName, String comment) {
-        Branch branch = trainController.createTrainBranch(owner, trainId, branchName, comment, loadSampleTrain()).getBody();
+        return createBranch(owner, trainId, branchName, comment, loadSampleTrain());
+    }
+
+    public Branch createBranch(PartnerToken owner, UUID trainId, String branchName, String comment, Train train) {
+        Branch branch = trainController.createTrainBranch(owner, trainId, branchName, comment, train).getBody();
         Objects.requireNonNull(branch, "createTrainBranch returned null body");
         return branch;
     }

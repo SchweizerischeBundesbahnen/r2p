@@ -34,7 +34,7 @@
             ],
             "responsibility": {
               "type": "rim",
-              "id": "0085",
+              "id": "SBB",
               "status": "confirmed"
             },
             "relations": []
@@ -62,7 +62,7 @@
             ],
             "responsibility": {
               "type": "rim",
-              "id": "0085",
+              "id": "SBB",
               "status": "confirmed"
             },
             "relations": []
