@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.0.28](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.27...r2p-v0.0.28) (2026-06-23)
+
+
+### Features
+
+* add additional partners ([#158](https://github.com/SchweizerischeBundesbahnen/r2p/issues/158)) ([421f716](https://github.com/SchweizerischeBundesbahnen/r2p/commit/421f71676253f626a804143b70bcdace90a6b2b4))
+* add endpoint to determine the instanceowner ([#159](https://github.com/SchweizerischeBundesbahnen/r2p/issues/159)) ([91d1f76](https://github.com/SchweizerischeBundesbahnen/r2p/commit/91d1f7680d274f19691666dd55197ca0923e080c))
+* align train data model with train.yaml 1.0.10 ([#163](https://github.com/SchweizerischeBundesbahnen/r2p/issues/163)) ([b765705](https://github.com/SchweizerischeBundesbahnen/r2p/commit/b76570578ca2c42d3d2823aa99388d252c6d0146))
+
+
+### Bug Fixes
+
+* return 401 for unauthenticated API requests instead of 302 redirect ([#162](https://github.com/SchweizerischeBundesbahnen/r2p/issues/162)) ([cae026e](https://github.com/SchweizerischeBundesbahnen/r2p/commit/cae026ecdf57bf5faa4cf71718204a89f905cc57))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.28-SNAPSHOT ([#156](https://github.com/SchweizerischeBundesbahnen/r2p/issues/156)) ([e834a08](https://github.com/SchweizerischeBundesbahnen/r2p/commit/e834a08c235d3926cf6d9dbfb46eaf42ff498f5d))
+
+
+### Code Refactoring
+
+* remove PartnerStats.leadRU in favour of /v1/instance-owner … ([#161](https://github.com/SchweizerischeBundesbahnen/r2p/issues/161)) ([dd12739](https://github.com/SchweizerischeBundesbahnen/r2p/commit/dd12739a60467eec6f44ad48f08487b28ead255e))
+
 ## [0.0.27](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.26...r2p-v0.0.27) (2026-06-11)
 
 
