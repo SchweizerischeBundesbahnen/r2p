@@ -249,7 +249,6 @@ class ChangelogTests {
             "Test Train", // name
             OffsetDateTime.now(),  // timestamp
             new Journey(
-                java.util.List.of(),  // featuresets
                 java.util.List.of(
                     new Journeylocation(),  // minimal first location
                     new Journeylocation()   // minimal second location (min 2 required)

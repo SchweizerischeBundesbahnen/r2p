@@ -19,7 +19,6 @@
   "startdate": "2026-04-16",
   "timestamp": "2026-03-12T12:00:00+01:00",
   "journey": {
-    "featuresets": [],
     "journeylocations": [
       {
         "locations": [
@@ -37,7 +36,6 @@
         "activities": [
           {
             "id": "a1-01",
-            "type": "path.halt.11",
             "timings": [
               {
                 "type": "earliestdeparture",
@@ -59,7 +57,6 @@
           },
           {
             "id": "a1-02",
-            "type": "rollingStock",
             "timings": [],
             "responsibility": {
               "type": "tru",
@@ -71,6 +68,7 @@
               "capabilityFeatures": [],
               "featuresetRefs": [],
               "rollingStock": {
+                "activityType": "rollingStock",
                 "weight": 2868000,
                 "length": 438000,
                 "maxSpeed": 100,
@@ -123,7 +121,6 @@
           },
           {
             "id": "a1-03",
-            "type": "rollingStock.traction",
             "timings": [],
             "responsibility": {
               "type": "pru",
@@ -134,17 +131,15 @@
               "type": "staff",
               "capabilityFeatures": [],
               "featuresetRefs": [],
-              "staffs": [
-                {
-                  "type": "driver"
-                }
-              ]
+              "staff": {
+                "type": "driver",
+                "activityType": "move"
+              }
             },
             "relations": []
           },
           {
             "id": "a1-04",
-            "type": "inspect.train.technical",
             "timings": [
               {
                 "type": "dwelltime",
@@ -168,7 +163,6 @@
           },
           {
             "id": "a1-05",
-            "type": "inspect.train.operational",
             "timings": [
               {
                 "type": "dwelltime",
@@ -192,7 +186,6 @@
           },
           {
             "id": "a1-06",
-            "type": "move",
             "timings": [
               {
                 "type": "dwelltime",
@@ -232,7 +225,6 @@
         "activities": [
           {
             "id": "a2-01",
-            "type": "path.halt.11",
             "timings": [
               {
                 "type": "arrival",
@@ -249,7 +241,6 @@
           },
           {
             "id": "a2-02",
-            "type": "move",
             "timings": [
               {
                 "type": "dwelltime",
@@ -273,7 +264,6 @@
           },
           {
             "id": "a2-03",
-            "type": "shunting",
             "timings": [
               {
                 "type": "dwelltime",
