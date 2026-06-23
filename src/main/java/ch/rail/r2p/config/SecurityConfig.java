@@ -14,7 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -29,8 +31,11 @@ import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -44,27 +49,29 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // Custom AuthorizationManager that handles two authentication paths:
+        // Custom AuthorizationManager that handles two authentication mechanisms:
         //
         //  1. JWT Bearer token (REST API / Swagger-UI):
-        //     Detected by the presence of the "Authorization: Bearer ..." header.
+        //     The request authenticated as a JwtAuthenticationToken (oauth2ResourceServer).
         //     Requires both SCOPE_r2p (API consent) and ROLE_r2p_user (AD group membership).
         //
         //  2. Session cookie (browser OIDC login):
-        //     No Bearer header present. Azure AD ID tokens do not carry an 'scp' claim,
+        //     Any other (non-JWT) authentication. Azure AD ID tokens do not carry an 'scp' claim,
         //     so only ROLE_r2p_user is required.
+        //
+        // The decision keys off the authentication type rather than the Authorization header so it
+        // stays consistent with how the request was actually authenticated.
         AuthorizationManager<RequestAuthorizationContext> roleAndScope = (authSupplier, ctx) -> {
             var auth = authSupplier.get();
-            if (auth == null || !auth.isAuthenticated()) {
+            if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
                 return new AuthorizationDecision(false);
             }
             Set<String> authorities = auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toSet());
             boolean hasRole = authorities.contains("ROLE_r2p_user");
-            // Bearer token requests must also carry the API scope
-            boolean isBearerRequest = isBearerRequest(ctx.getRequest());
-            boolean granted = isBearerRequest
+            // Bearer-token (JWT) requests must also carry the API scope.
+            boolean granted = (auth instanceof JwtAuthenticationToken)
                 ? hasRole && authorities.contains("SCOPE_r2p")
                 : hasRole;
             return new AuthorizationDecision(granted);
@@ -103,6 +110,28 @@ public class SecurityConfig {
             // the session cookie.
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+            )
+            // Unauthenticated requests to protected resources must return 401, never a redirect
+            // to the IdP login page. Without this, oauth2Login's LoginUrlAuthenticationEntryPoint
+            // issues a 302 to /oauth2/authorization/azure -> login.microsoftonline.com, which an
+            // AJAX fetch follows cross-origin and the browser blocks with a CORS error (that origin
+            // has no Access-Control-Allow-Origin header).
+            //
+            // This applies to ALL protected paths, not just /v1/**: the integrated UI loads its
+            // public HTML pages, then fetches data via AJAX (/v1/** and /internal/**). On 401 the
+            // frontend itself navigates to /oauth2/authorization/azure (see r2p-api.js / router.js),
+            // which triggers the Azure redirect via OAuth2AuthorizationRequestRedirectFilter - a
+            // separate mechanism that is unaffected by this entry point.
+            //
+            // Bearer-token requests still get the RFC 6750 "WWW-Authenticate: Bearer ..." challenge:
+            // we delegate to BearerTokenAuthenticationEntryPoint for them and only fall back to the
+            // plain 401 for session-cookie (browser) requests. Note: setting a single
+            // authenticationEntryPoint replaces the configurer's delegating entry point entirely
+            // (an explicit authenticationEntryPoint short-circuits createDefaultEntryPoint, so the
+            // BearerTokenAuthenticationEntryPoint that oauth2ResourceServer auto-registers would
+            // otherwise be dropped) - hence we delegate explicitly here.
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(apiAuthenticationEntryPoint())
             );
         return http.build();
     }
@@ -111,6 +140,23 @@ public class SecurityConfig {
         String authHeader = request.getHeader("Authorization");
         return authHeader != null
             && authHeader.regionMatches(true, 0, "bearer ", 0, 7);
+    }
+
+    /**
+     * Authentication entry point for unauthenticated requests to protected resources.
+     * <p>
+     * Bearer-token API requests are delegated to {@link BearerTokenAuthenticationEntryPoint} so the
+     * RFC 6750 {@code WWW-Authenticate: Bearer ...} challenge (incl. {@code error}/
+     * {@code error_description} for invalid/expired tokens) is preserved. All other (session-cookie
+     * / browser) requests get a plain {@code 401}, never a {@code 302} redirect to the IdP — the
+     * frontend turns that 401 into a login redirect itself.
+     */
+    private static AuthenticationEntryPoint apiAuthenticationEntryPoint() {
+        AuthenticationEntryPoint bearerEntryPoint = new BearerTokenAuthenticationEntryPoint();
+        AuthenticationEntryPoint statusEntryPoint = new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED);
+        return (request, response, authException) ->
+            (isBearerRequest(request) ? bearerEntryPoint : statusEntryPoint)
+                .commence(request, response, authException);
     }
 
     /**
