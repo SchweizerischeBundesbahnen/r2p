@@ -102,6 +102,11 @@ spec:
               protocol: TCP
               name: http
           env:
+            - name: JAVA_TOOL_OPTIONS
+              value: >-
+                -XX:MaxRAMPercentage=75.0
+                -XX:MaxMetaspaceSize=256m
+                -XX:+ExitOnOutOfMemoryError
             - name: DATABASE_STORAGE
               valueFrom:
                 configMapKeyRef:
@@ -148,13 +153,22 @@ spec:
               memory: 2Gi
             requests:
               cpu: 500m
-              memory: 1Gi
+              memory: 1536Mi
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            periodSeconds: 5
+            failureThreshold: 24   # 24 × 5s = 2 min max startup time
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 15
+            initialDelaySeconds: 0
             timeoutSeconds: 5
             periodSeconds: 10
             failureThreshold: 3
@@ -163,7 +177,7 @@ spec:
               path: /actuator/health/readiness
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 15
+            initialDelaySeconds: 0
             timeoutSeconds: 5
             periodSeconds: 10
             failureThreshold: 3
