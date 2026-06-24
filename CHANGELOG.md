@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.29](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.28...r2p-v0.0.29) (2026-06-24)
+
+
+### Features
+
+* enforce edit authorization for activities and route ([#166](https://github.com/SchweizerischeBundesbahnen/r2p/issues/166)) ([f676159](https://github.com/SchweizerischeBundesbahnen/r2p/commit/f6761592245039ff7f20fc37e5665fc45300150f))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.29-SNAPSHOT ([#164](https://github.com/SchweizerischeBundesbahnen/r2p/issues/164)) ([da51cbf](https://github.com/SchweizerischeBundesbahnen/r2p/commit/da51cbf229bb93b2721c3ca28eefab404a7036e2))
+
 ## [0.0.28](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.27...r2p-v0.0.28) (2026-06-23)
 
 
