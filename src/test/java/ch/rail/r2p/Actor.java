@@ -60,9 +60,9 @@ public class Actor {
 
     /** Loads a fresh (non-cached) Train from the given classpath resource. */
     public Train loadTrain(String resourcePath) {
-        try {
-            Train train = objectMapper.readValue(this.getClass().getResourceAsStream(resourcePath), Train.class);
-            return Objects.requireNonNull(train);
+        try (var in = Objects.requireNonNull(this.getClass().getResourceAsStream(resourcePath),
+            "Train resource not found on classpath: " + resourcePath)) {
+            return Objects.requireNonNull(objectMapper.readValue(in, Train.class));
         } catch (Exception e) {
             throw new RuntimeException("Failed to load train from " + resourcePath, e);
         }

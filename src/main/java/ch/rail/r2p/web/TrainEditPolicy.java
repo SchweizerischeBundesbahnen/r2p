@@ -6,6 +6,7 @@ import ch.rail.r2p.api.dto.Location;
 import ch.rail.r2p.api.dto.Train;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,8 @@ public class TrainEditPolicy {
      */
     public void checkActivityAssignments(Train train, Collection<String> sharedPartners) {
         List<String> violations = new ArrayList<>();
+        Set<String> seenIds = new HashSet<>();
+        Set<String> duplicateIds = new TreeSet<>();
         for (Journeylocation journeylocation : journeylocations(train)) {
             String locationLabel = label(journeylocation);
             List<Activity> locationActivities = journeylocation.getActivities();
@@ -76,12 +79,23 @@ public class TrainEditPolicy {
                 continue;
             }
             for (Activity activity : locationActivities) {
+                // Activity.id is unique within a train; duplicates would let later id-indexed logic
+                // (e.g. move/modify detection) silently drop one of the activities, so reject them.
+                String id = activity == null ? null : activity.getId();
+                if (id != null && !seenIds.add(id)) {
+                    duplicateIds.add(id);
+                }
                 String owner = responsibilityId(activity);
                 if (owner != null && !sharedPartners.contains(owner)) {
-                    violations.add("activity '" + activity.getId() + "' (location " + locationLabel
-                        + ") is assigned to partner '" + owner + "' the train is not shared with");
+                    violations.add("activity '" + (activity == null ? null : activity.getId())
+                        + "' (location " + locationLabel + ") is assigned to partner '" + owner
+                        + "' the train is not shared with");
                 }
             }
+        }
+        if (!duplicateIds.isEmpty()) {
+            throw new IllegalArgumentException(
+                "Train contains duplicate activity ids: " + String.join(", ", duplicateIds));
         }
         if (!violations.isEmpty()) {
             throw new IllegalArgumentException(

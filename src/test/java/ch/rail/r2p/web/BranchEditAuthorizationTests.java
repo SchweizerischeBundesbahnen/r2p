@@ -3,7 +3,6 @@ package ch.rail.r2p.web;
 import static ch.rail.r2p.api.dto.PartnerToken.BLS;
 import static ch.rail.r2p.api.dto.PartnerToken.SBB;
 import static ch.rail.r2p.api.dto.PartnerToken.SOB;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -162,6 +161,16 @@ class BranchEditAuthorizationTests {
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("sob-path")
             .hasMessageContaining("DBC");
+    }
+
+    @Test
+    void mayNotUnshareWhilePartnerStillOwnsActivities() {
+        // bls-staff is assigned to BLS, so BLS cannot be unshared until the Lead RU reassigns it;
+        // otherwise the main content would reference a partner the train is no longer shared with.
+        assertThatThrownBy(() -> trainController.unshareTrain(SBB, train.getTrainId(), BLS.name(), "unshare BLS"))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("bls-staff")
+            .hasMessageContaining("BLS");
     }
 
     @Test

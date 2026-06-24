@@ -161,6 +161,13 @@ public class TrainService {
         TrainVersionEnriched main = trainPersistence.findHeadVersionByTrainIdAndBranchName(trainId, MAIN_BRANCH_NAME)
             .orElseThrow(() -> new NoSuchElementException("Train or Branch not found"));
         checkUnsharingAuthorization(main.partners(), partner, unshareWith);
+        // The train must not still assign activities to the partner being removed: otherwise the main
+        // content would reference a partner it is no longer shared with, and partner RUs (who may not
+        // reassign foreign activities) could never update again. Force the Lead RU to reassign first.
+        List<String> remainingPartners = main.partners().stream()
+            .filter(p -> !p.equals(unshareWith))
+            .toList();
+        editPolicy.checkActivityAssignments(main.trainVersion().getPayload(), remainingPartners);
         trainPersistence.removePartner(trainId, unshareWith);
         Changelog changelog = Changelog.forUnsharing(partner, unshareWith, main.trainVersion(), comment);
         changelogPersistence.insert(changelog);
