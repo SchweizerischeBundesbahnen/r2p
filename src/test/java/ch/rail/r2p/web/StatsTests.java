@@ -107,6 +107,39 @@ class StatsTests {
     }
 
     @Test
+    void deleting_train_with_open_merge_request_is_excluded_from_all_totals() {
+        int trainsBefore = totals().trains();
+        int openBranchesBefore = totals().openBranches();
+        int mergeRequestsBefore = totals().openMergeRequests();
+
+        // Create a train with a non-main branch that has an open merge request
+        var train = actor.createTrain(SBB, "to be deleted");
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
+        var branch = actor.createBranch(SOB, train.getTrainId(), "feature", "work");
+        trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
+
+        // While it exists it is counted
+        assertThat(totals().trains()).isEqualTo(trainsBefore + 1);
+        assertThat(totals().openBranches()).isEqualTo(openBranchesBefore);
+        assertThat(totals().openMergeRequests()).isEqualTo(mergeRequestsBefore + 1);
+
+        // Deleting the train (its main branch) cascades and closes all of its branches
+        trainController.deleteTrainBranch(SBB, train.getTrainId(),
+            train.getBranches().getFirst().getBranchId(), "delete train");
+
+        // Now nothing of it is counted any more
+        assertThat(totals().trains()).isEqualTo(trainsBefore);
+        assertThat(totals().openBranches()).isEqualTo(openBranchesBefore);
+        assertThat(totals().openMergeRequests()).isEqualTo(mergeRequestsBefore);
+    }
+
+    private PartnerStats totals() {
+        return statsController.getStats().stream()
+            .filter(s -> s.partner() == null)
+            .findFirst().orElseThrow(() -> new AssertionError("No totals row found"));
+    }
+
+    @Test
     void should_not_include_deleted_branches_in_open_count() {
         var train = actor.createTrain(SBB, "test");
         actor.shareTrain(SBB, train.getTrainId(), BLS, "sharing with BLS");

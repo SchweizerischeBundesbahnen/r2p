@@ -50,7 +50,7 @@
             ],
             "responsibility": {
               "type": "rim",
-              "id": "0085",
+              "id": "SBB",
               "status": "confirmed"
             },
             "relations": []
@@ -60,7 +60,7 @@
             "timings": [],
             "responsibility": {
               "type": "tru",
-              "id": "2185",
+              "id": "SBB",
               "status": "confirmed"
             },
             "capability": {
@@ -124,7 +124,7 @@
             "timings": [],
             "responsibility": {
               "type": "pru",
-              "id": "2185",
+              "id": "SBB",
               "status": "confirmed"
             },
             "capability": {
@@ -149,7 +149,7 @@
             ],
             "responsibility": {
               "type": "rru",
-              "id": "2185",
+              "id": "SBB",
               "status": "confirmed"
             },
             "relations": [
@@ -172,7 +172,7 @@
             ],
             "responsibility": {
               "type": "rru",
-              "id": "2185",
+              "id": "SBB",
               "status": "confirmed"
             },
             "relations": [
@@ -195,7 +195,7 @@
             ],
             "responsibility": {
               "type": "rru",
-              "id": "2185",
+              "id": "SBB",
               "status": "confirmed"
             },
             "relations": [
@@ -234,7 +234,7 @@
             ],
             "responsibility": {
               "type": "rim",
-              "id": "0085",
+              "id": "SBB",
               "status": "confirmed"
             },
             "relations": []
@@ -250,7 +250,7 @@
             ],
             "responsibility": {
               "type": "rru",
-              "id": "2185",
+              "id": "SBB",
               "status": "confirmed"
             },
             "relations": [
@@ -273,7 +273,7 @@
             ],
             "responsibility": {
               "type": "rru",
-              "id": "2185",
+              "id": "SBB",
               "status": "confirmed"
             },
             "relations": [

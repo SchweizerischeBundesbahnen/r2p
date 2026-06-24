@@ -1,0 +1,95 @@
+{
+  "id": "EDIT-AUTH-1",
+  "references": [],
+  "links": [],
+  "name": "Edit authorization demo train",
+  "startdate": "2026-04-16",
+  "timestamp": "2026-03-12T12:00:00+01:00",
+  "journey": {
+    "journeylocations": [
+      {
+        "locations": [
+          {
+            "type": "PLC",
+            "code": "CH-3527",
+            "name": "Buchs Dällikon"
+          }
+        ],
+        "activities": [
+          {
+            "id": "sbb-rim",
+            "timings": [],
+            "responsibility": {
+              "type": "rim",
+              "id": "SBB",
+              "status": "confirmed"
+            },
+            "relations": []
+          },
+          {
+            "id": "bls-staff",
+            "timings": [],
+            "responsibility": {
+              "type": "pru",
+              "id": "BLS",
+              "status": "confirmed"
+            },
+            "capability": {
+              "type": "staff",
+              "capabilityFeatures": [],
+              "featuresetRefs": [],
+              "staff": {
+                "type": "driver",
+                "activityType": "move"
+              }
+            },
+            "relations": []
+          },
+          {
+            "id": "sob-path",
+            "timings": [],
+            "responsibility": {
+              "type": "rru",
+              "id": "SOB",
+              "status": "confirmed"
+            },
+            "capability": {
+              "type": "path",
+              "capabilityFeatures": [],
+              "featuresetRefs": [],
+              "path": {
+                "id": "p1",
+                "activityType": "path.runthrough",
+                "length": 438000,
+                "weight": 2868000,
+                "maxSpeed": 100
+              }
+            },
+            "relations": []
+          }
+        ]
+      },
+      {
+        "locations": [
+          {
+            "type": "PLC",
+            "code": "CH-309",
+            "name": "Brugg AG"
+          }
+        ],
+        "activities": [
+          {
+            "id": "sbb-arr",
+            "timings": [],
+            "responsibility": {
+              "type": "rim",
+              "id": "SBB",
+              "status": "confirmed"
+            },
+            "relations": []
+          }
+        ]
+      }
+    ]
+  }
+}
