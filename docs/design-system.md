@@ -44,7 +44,7 @@ stylesheet, so most of the brand lives in tokens + a handful of component classe
 |---|---|
 | All tokens + component CSS | `src/main/resources/static/style.css` |
 | Logo / app mark / favicon | `src/main/resources/static/img/r2p-mark.svg` (the isolated navy square mark; used in the top bar **and** as `<link rel="icon">`) |
-| Roboto font (self-hosted) | `src/main/resources/static/fonts/roboto-latin-{400,500,700}-normal.woff2` — the **exact `@fontsource/roboto` files the WebClient uses**, so stroke weight matches 1:1. Wired via `@font-face` at the top of `style.css`. No web-font/CDN/webjar dependency. |
+| Roboto font (webjar) | Served from the `org.webjars.npm:fontsource__roboto` dependency at `/webjars/fontsource__roboto/files/roboto-latin-{400,500,700}-normal.woff2` — the **exact `@fontsource/roboto` files the WebClient uses**, so stroke weight matches 1:1. Wired via `@font-face` at the top of `style.css`; `webjars-locator-lite` resolves the version-less path. The `.woff2` binaries are not committed. |
 | Pages | `index.html` (traffic overview), `details.html` (train details), `train-version.html` (JSON viewer) |
 | Shared JS helpers (badges, sorter, formatting) | `static/js/r2p-utils.js` |
 
@@ -87,8 +87,8 @@ the logo sits only on navy or white.
 
 ## 4. Typography
 
-- **Family:** `'Roboto', 'Segoe UI', system-ui, sans-serif` (set on `body`). Roboto is self-hosted
-  (see §2); Segoe UI/system-ui is the graceful fallback.
+- **Family:** `'Roboto', 'Segoe UI', system-ui, sans-serif` (set on `body`). Roboto is served from
+  the `@fontsource/roboto` webjar (see §2); Segoe UI/system-ui is the graceful fallback.
 - **Weights:** 400 body, 500 medium, 700 headings/labels. Line-height ~1.5.
 - **Headings:** `h1` = 1.375rem / 700 / letter-spacing −0.3px; `h2` = 1.25rem / 700; `h3` = 1.05rem / 600.
   All **sentence case**.

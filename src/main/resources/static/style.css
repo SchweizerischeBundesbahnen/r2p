@@ -1,29 +1,30 @@
 /* R²P Console — UI styles (R²P brand) */
 
 /* ========================================
-   Roboto — self-hosted, the exact @fontsource files the WebClient uses
-   (only the 3 weights we need), so stroke weight matches the WebClient 1:1.
+   Roboto — served from the @fontsource/roboto webjar (org.webjars.npm:fontsource__roboto),
+   the exact files the WebClient uses (only the 3 weights we need), so stroke weight matches
+   the WebClient 1:1. webjars-locator-lite resolves the version-less /webjars/ path.
    ======================================== */
 @font-face {
     font-family: 'Roboto';
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url('/fonts/roboto-latin-400-normal.woff2') format('woff2');
+    src: url('/webjars/fontsource__roboto/files/roboto-latin-400-normal.woff2') format('woff2');
 }
 @font-face {
     font-family: 'Roboto';
     font-style: normal;
     font-weight: 500;
     font-display: swap;
-    src: url('/fonts/roboto-latin-500-normal.woff2') format('woff2');
+    src: url('/webjars/fontsource__roboto/files/roboto-latin-500-normal.woff2') format('woff2');
 }
 @font-face {
     font-family: 'Roboto';
     font-style: normal;
     font-weight: 700;
     font-display: swap;
-    src: url('/fonts/roboto-latin-700-normal.woff2') format('woff2');
+    src: url('/webjars/fontsource__roboto/files/roboto-latin-700-normal.woff2') format('woff2');
 }
 
 html {
