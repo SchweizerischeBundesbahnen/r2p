@@ -23,6 +23,11 @@ function detailsApp() {
         // ── Items per page (shared across both tables) ────────────────────────
         itemsPerPage: 20,
 
+        // ── Collapsible filter bars (collapsed by default, per section) ───────
+        mrFiltersExpanded:     false,
+        branchFiltersExpanded: false,
+        clFiltersExpanded:     false,
+
         // ── Branch filter / sorter / page ─────────────────────────────────────
         branchFilterStatus: '',
         branchFilterOwner:  '',
@@ -40,6 +45,19 @@ function detailsApp() {
         clFilterComment: '',
         clSorter:        makeSorter('timestamp', 'desc'),   // newest first by default
         clPage:          1,
+
+        // ── Active-filter counts (for the per-section Filters count badge) ────
+        get mrActiveFilterCount() {
+            return this.mrFilterAction ? 1 : 0;
+        },
+        get branchActiveFilterCount() {
+            return (this.branchFilterStatus ? 1 : 0) + (this.branchFilterOwner ? 1 : 0);
+        },
+        get clActiveFilterCount() {
+            return (this.clFilterAction ? 1 : 0)
+                 + (this.clFilterPartner ? 1 : 0)
+                 + (this.clFilterComment.trim() ? 1 : 0);
+        },
 
         // ── Derived: branch owners dropdown ───────────────────────────────────
         get branchOwners() {
@@ -150,7 +168,7 @@ function detailsApp() {
                 this.allMergeRequests = this.mapMergeRequests(mrData);
                 this.allChangelog     = changesData;
 
-                document.title = `Train Details - ${this.train.trainNumber} - R2P`;
+                document.title = `R²P Console — Train ${this.train.trainNumber}`;
             } catch (e) {
                 this.error = e.message;
             } finally {

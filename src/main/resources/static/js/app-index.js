@@ -29,6 +29,9 @@ function trainApp() {
         filterOpenBranches: false,
         filterOpenMRs:      false,
 
+        // ── Collapsible filter bar (collapsed by default) ─────────────────────
+        filtersExpanded: false,
+
         // ── Statistics partner selection (drives stat cards) ──────────────────
         selectedStatPartner: '',   // '' = show totals row
 
@@ -49,6 +52,16 @@ function trainApp() {
         // ── Derived: bounds of the selected timetable year ────────────────────
         get timetableYearBounds() {
             return getTimetableYearBounds(Number(this.filterTimetableYear));
+        },
+
+        // ── Derived: number of active client-side filters (for the count badge) ─
+        get activeFilterCount() {
+            let count = 0;
+            if (this.filterTrainNumber.trim()) count++;
+            if (this.filterPartner) count++;
+            if (this.filterOpenBranches) count++;
+            if (this.filterOpenMRs) count++;
+            return count;
         },
 
         // ── Derived: stats row matching the selected stat partner ─────────────
