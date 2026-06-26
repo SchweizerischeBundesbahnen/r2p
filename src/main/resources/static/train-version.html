@@ -217,7 +217,7 @@
 </head>
 <body>
     <div class="poc-banner" role="note" aria-label="PoC warning">
-        This is a PoC implementation not suitable to run in production
+        <span>This is a <strong>prototype</strong> and must not be used in production.</span>
     </div>
 
     <div id="app-shell" x-data="trainVersionApp()" x-init="init()">
@@ -228,6 +228,7 @@
                     <img src="/img/r2p-mark.svg" class="logo-tile" alt="R²P">
                     <span class="wordmark">Console</span>
                 </a>
+                <span class="version-pill">@project.version@</span>
                 <div class="topbar-spacer"></div>
                 <div class="topbar-right">
                     <!-- Temporary partner/token switcher (PoC only) -->
@@ -263,7 +264,7 @@
 
             <!-- Error State -->
             <div x-show="!loading && !!error" class="empty-state">
-                <div class="empty-state-icon">!</div>
+                <div class="empty-state-icon" aria-hidden="true">!</div>
                 <div class="empty-state-text">Could not load train version</div>
                 <div class="empty-state-subtext" x-text="error"></div>
             </div>
