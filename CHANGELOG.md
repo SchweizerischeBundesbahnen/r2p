@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.0.30](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.29...r2p-v0.0.30) (2026-06-30)
+
+
+### Features
+
+* **ui:** restyle server UI with R²P Console branding ([#171](https://github.com/SchweizerischeBundesbahnen/r2p/issues/171)) ([db5c978](https://github.com/SchweizerischeBundesbahnen/r2p/commit/db5c97864e39849ff6178d2a14a3e6449a7dad1d))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.30-SNAPSHOT ([#167](https://github.com/SchweizerischeBundesbahnen/r2p/issues/167)) ([ff685a6](https://github.com/SchweizerischeBundesbahnen/r2p/commit/ff685a681c074b8055f5c25c6a7ded3d475cd119))
+
+
+### Build System
+
+* **deps-dev:** bump the commitlint group with 2 updates ([#170](https://github.com/SchweizerischeBundesbahnen/r2p/issues/170)) ([bdd6000](https://github.com/SchweizerischeBundesbahnen/r2p/commit/bdd6000a74cb514fe9d469b3358d2a9ddeb0a1e4))
+* **deps:** bump actions/checkout from 6 to 7 ([#169](https://github.com/SchweizerischeBundesbahnen/r2p/issues/169)) ([06a6a03](https://github.com/SchweizerischeBundesbahnen/r2p/commit/06a6a036158406d726937bd22ec88f021916446a))
+
 ## [0.0.29](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.28...r2p-v0.0.29) (2026-06-24)
 
 
