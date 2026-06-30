@@ -151,8 +151,8 @@ function makeSorter(defaultCol = null, defaultDir = 'asc') {
         },
 
         indicator(col) {
-            if (this.col !== col) return '';
-            return this.dir === 'asc' ? '▲' : '▼';
+            if (this.col !== col) return '⇅';
+            return this.dir === 'asc' ? '↑' : '↓';
         },
 
         ariaSort(col) {

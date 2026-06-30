@@ -12,7 +12,7 @@ The main page displays a paginated, sortable table of all trains visible to the 
 
 * *Statistics bar* — shows the total number of trains, open branches, and open merge requests, with an optional per-partner breakdown selectable via a partner filter.
 * *Filter bar* — allows narrowing the list by train number (free-text), timetable year, operational day range, partner, and two quick checkboxes for "has open branches" and "has open merge requests".
-* *Train table* — columns: Train Number, Operational Day, Partners (colour-coded partner badges), Status (🌿 open-branch count and 🔀 open-merge-request count), Last Change timestamp.
+* *Train table* — columns: Train Number, Operational Day, Partners (colour-coded partner badges), Status (open-branch and open-merge-request count pills), Last Change timestamp.
 * Clicking a row navigates to the Train Details page for that train.
 
 == Train Details (`details.html`)
@@ -29,9 +29,9 @@ Branches::
   A paginated, sortable table of all branches of the train. Columns: Branch ID (copyable), Name, Owner, Creation Date, State (badge). Can be filtered by status and owner. Clicking a branch row opens the Train Version Viewer for the head version of that branch.
 
 Changelog::
-  A paginated, sortable table of all changelog entries for the train. Can be filtered by action type, partner, and free-text comment search. The Version ID column includes a copy button and a 🔍 button to open the version in the Train Version Viewer.
+  A paginated, sortable table of all changelog entries for the train. Can be filtered by action type, partner, and free-text comment search. The Version ID column includes a *Copy* button and a *View* button to open the version in the Train Version Viewer.
 
 == Train Version Viewer (`train-version.html`)
 
-A dedicated page (or modal) for inspecting the full `Train` payload of a specific version. The JSON payload is rendered in a collapsible, syntax-highlighted tree view. The page is reachable via the 🔍 button in the Changelog or by navigating directly to `train-version.html?version=<versionId>`.
+A dedicated page (or modal) for inspecting the full `Train` payload of a specific version. The JSON payload is rendered in a collapsible, syntax-highlighted tree view. The page is reachable via the *View* button in the Changelog or by navigating directly to `train-version.html?version=<versionId>`.
 

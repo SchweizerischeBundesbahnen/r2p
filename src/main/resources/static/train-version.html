@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Train Version - R2P</title>
+    <title>R²P Console — Train version</title>
+    <link rel="icon" type="image/svg+xml" href="/img/r2p-mark.svg">
     <link rel="stylesheet" href="style.css">
     <style>
         /* ── Fill the full viewport and use a flex column layout ──────── */
@@ -13,16 +14,24 @@
         }
 
         body {
-            padding: 0;         /* override style.css body padding */
             display: flex;
             flex-direction: column;
         }
 
-        /* Outer wrapper fills all remaining height */
+        /* App shell holds the top bar + page content, fills viewport */
+        #app-shell {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 0;
+            min-height: 0;
+        }
+
+        /* Outer wrapper fills all remaining height below the top bar */
         #page-root {
             display: flex;
             flex-direction: column;
-            height: 100%;
+            flex: 1 1 0;
+            min-height: 0;
             padding: var(--spacing-md) var(--spacing-xl);
             max-width: 1400px;
             width: 100%;
@@ -47,9 +56,10 @@
             gap: var(--spacing-sm);
             flex-wrap: wrap;
             padding: var(--spacing-sm) var(--spacing-md);
-            background-color: var(--card-background);
-            border-bottom: 1px solid var(--border-color);
-            border-radius: 8px 8px 0 0;
+            background-color: var(--white);
+            border: 1px solid var(--border-soft);
+            border-bottom: none;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
             flex-shrink: 0;     /* toolbar never shrinks */
         }
 
@@ -60,42 +70,42 @@
         }
 
         .json-viewer-toolbar .search-input {
-            padding: 0.35rem 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
+            padding: 0.45rem 0.75rem;
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-md);
+            font: inherit;
             font-size: 0.875rem;
-            color: var(--text-primary);
-            background-color: white;
+            color: var(--navy);
+            background-color: var(--white);
             min-width: 260px;
-            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .json-viewer-toolbar .search-input:focus {
             outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(244, 123, 32, 0.15);
         }
 
         .json-viewer-toolbar .search-input::placeholder {
-            color: var(--text-muted);
+            color: var(--steel);
         }
 
         .json-viewer-toolbar .toolbar-btn {
-            padding: 0.35rem 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background-color: white;
-            color: var(--text-primary);
-            font-size: 0.875rem;
-            font-weight: 500;
+            padding: 0.45rem 0.8rem;
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-md);
+            background-color: var(--white);
+            color: var(--navy);
+            font: inherit;
+            font-size: 0.8125rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s, border-color 0.2s;
             white-space: nowrap;
         }
 
         .json-viewer-toolbar .toolbar-btn:hover:not(:disabled) {
-            background-color: var(--background-color);
-            border-color: var(--accent-color);
+            background-color: var(--light-grey);
+            border-color: var(--navy);
         }
 
         .json-viewer-toolbar .toolbar-btn:disabled {
@@ -103,21 +113,21 @@
             cursor: not-allowed;
         }
 
-        .json-viewer-toolbar .toolbar-btn:focus {
-            outline: 2px solid var(--accent-color);
+        .json-viewer-toolbar .toolbar-btn:focus-visible {
+            outline: 2px solid var(--orange);
             outline-offset: 2px;
         }
 
         .json-viewer-toolbar .search-status {
             font-size: 0.8rem;
-            color: var(--text-muted);
+            color: var(--teal);
             min-width: 120px;
         }
 
         .json-viewer-toolbar .toolbar-separator {
             width: 1px;
             height: 1.5rem;
-            background-color: var(--border-color);
+            background-color: var(--border-soft);
             margin: 0 var(--spacing-xs);
         }
 
@@ -126,48 +136,28 @@
             flex: 1 1 0;
             min-height: 0;      /* allow shrinking below content size */
             overflow: auto;     /* scroll here, not on the page */
-            background-color: var(--card-background);
-            border-radius: 0 0 8px 8px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            background-color: var(--white);
+            border: 1px solid var(--border-soft);
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
             padding: var(--spacing-md) var(--spacing-lg);
         }
 
-        /* pretty-json custom element theming */
+        /* pretty-json custom element theming (functional code colours, Courier) */
         pretty-json {
-            --key-color: #cc0000;
-            --arrow-color: #737373;
-            --brace-color: #0030f0;
-            --bracket-color: #0030f0;
-            --string-color: #009900;
-            --number-color: #0000ff;
-            --null-color: #666666;
-            --boolean-color: #d23c91;
-            --comma-color: #666666;
-            --ellipsis-color: #666666;
+            --key-color: #0D1B2A;
+            --arrow-color: #8AAFC8;
+            --brace-color: #3D6880;
+            --bracket-color: #3D6880;
+            --string-color: #2E7D32;
+            --number-color: #1565C0;
+            --null-color: #8AAFC8;
+            --boolean-color: #AD1457;
+            --comma-color: #8AAFC8;
+            --ellipsis-color: #8AAFC8;
             --indent: 1.5rem;
-            --font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            --font-family: 'Courier New', Courier, monospace;
             --font-size: 0.9rem;
         }
-
-        @media (prefers-color-scheme: dark) {
-            pretty-json {
-                --key-color: #f73d3d;
-                --arrow-color: #6c6c6c;
-                --brace-color: #0690bc;
-                --bracket-color: #0690bc;
-                --string-color: #21c521;
-                --number-color: #0078b3;
-                --null-color: #8c8888;
-                --boolean-color: #c737b3;
-                --comma-color: #848181;
-                --ellipsis-color: #c2c2c2;
-            }
-
-            .json-viewer-wrapper {
-                background-color: #2d2d2d;
-            }
-        }
-
 
         /* Version meta info bar */
         .version-meta {
@@ -176,8 +166,9 @@
             gap: var(--spacing-md);
             align-items: center;
             padding: var(--spacing-sm) var(--spacing-md);
-            background-color: var(--background-color);
-            border-radius: 8px;
+            background-color: var(--white);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-lg);
             margin-bottom: var(--spacing-md);
             font-size: 0.875rem;
             color: var(--text-secondary);
@@ -191,27 +182,23 @@
         }
 
         .version-meta .meta-label {
-            font-weight: 600;
-            color: var(--text-muted);
+            font-weight: 700;
+            color: var(--teal);
             text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
+            font-size: 0.6875rem;
+            letter-spacing: 0.06em;
         }
 
         .version-meta .meta-value {
             font-family: 'Courier New', Courier, monospace;
             font-size: 0.8rem;
+            color: var(--navy);
         }
 
-        /* Compact the header on this page to save vertical space */
-        .header {
+        /* Breadcrumb on this page should not grow */
+        .breadcrumb {
             flex-shrink: 0;
-            margin-bottom: var(--spacing-sm);
-        }
-
-        .back-link {
-            flex-shrink: 0;
-            margin-bottom: var(--spacing-sm);
+            margin-top: var(--spacing-md);
         }
 
         /* Loading / error states should not grow */
@@ -229,116 +216,133 @@
     </style>
 </head>
 <body>
-    <div id="page-root" x-data="trainVersionApp()" x-init="init()">
+    <div class="poc-banner" role="note" aria-label="PoC warning">
+        <span>This is a <strong>prototype</strong> and must not be used in production.</span>
+    </div>
 
-        <!-- Back Navigation -->
-        <a :href="backUrl" class="back-link" tabindex="0">Back to Train Details</a>
-
-        <!-- Header -->
-        <header class="header compact-header" style="display:flex; align-items:center; gap:var(--spacing-md);">
-            <div style="flex:1;">
-                <h1 id="page-title" x-text="pageTitle">Train Version</h1>
-                <p class="subtitle" x-show="pageSubtitle" x-text="pageSubtitle"></p>
-            </div>
-            <!-- Temporary partner/token switcher (PoC only) -->
-            <div class="token-selector">
-                <label for="token-select">Acting as:</label>
-                <select id="token-select" class="token-select"
-                        x-model="selectedToken"
-                        @change="onTokenChange()">
-                    <template x-for="t in partnerTokens" :key="t">
-                        <option :value="t" :selected="t === selectedToken" x-text="t"></option>
-                    </template>
-                </select>
+    <div id="app-shell" x-data="trainVersionApp()" x-init="init()">
+        <!-- Top bar -->
+        <header class="topbar">
+            <div class="topbar-inner">
+                <a href="index.html" style="display:flex;align-items:center;gap:var(--spacing-md);text-decoration:none;">
+                    <img src="/img/r2p-mark.svg" class="logo-tile" alt="R²P">
+                    <span class="wordmark">Console</span>
+                </a>
+                <span class="version-pill">@project.version@</span>
+                <div class="topbar-spacer"></div>
+                <div class="topbar-right">
+                    <!-- Temporary partner/token switcher (PoC only) -->
+                    <div class="token-selector">
+                        <label for="token-select">Acting as:</label>
+                        <select id="token-select" class="token-select"
+                                x-model="selectedToken"
+                                @change="onTokenChange()">
+                            <template x-for="t in partnerTokens" :key="t">
+                                <option :value="t" :selected="t === selectedToken" x-text="t"></option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
             </div>
         </header>
 
-        <!-- Loading State -->
-        <div class="loading-state" x-show="loading"
-             style="text-align: center; padding: 2rem; color: var(--text-muted);">
-            Loading train version…
-        </div>
+        <div id="page-root">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+                <a href="index.html">Traffic overview</a>
+                <span class="breadcrumb__sep">›</span>
+                <a :href="backUrl" x-text="trainNumber ? trainNumber : 'Train details'">Train details</a>
+                <span class="breadcrumb__sep">›</span>
+                <span class="breadcrumb__current" x-text="pageTitle">Train version</span>
+            </nav>
 
-        <!-- Error State -->
-        <div x-show="!loading && !!error" class="empty-state">
-            <div class="empty-state-icon">⚠️</div>
-            <div class="empty-state-text">Could not load train version</div>
-            <div class="empty-state-subtext" x-text="error"></div>
-        </div>
-
-        <!-- Main Content: flex column, fills all remaining height -->
-        <div id="main-content" x-show="!loading && !error && !!trainData">
-
-            <!-- Version meta bar -->
-            <div class="version-meta">
-                <div class="meta-item" x-show="branchName">
-                    <span class="meta-label">Branch</span>
-                    <span class="meta-value" x-text="branchName"></span>
-                </div>
-                <div class="meta-item" x-show="versionId">
-                    <span class="meta-label">Version ID</span>
-                    <span class="meta-value id-cell">
-                        <span class="id-truncated" :title="versionId"
-                              x-text="versionId && truncateId(versionId)"></span>
-                        <button class="clipboard-btn" @click="copyToClipboard(versionId)"
-                                aria-label="Copy version ID" title="Copy full ID">📋</button>
-                    </span>
-                </div>
-                <div class="meta-item" x-show="trainNumber">
-                    <span class="meta-label">Train</span>
-                    <span class="meta-value" x-text="trainNumber"></span>
-                </div>
-                <div class="meta-item" x-show="operationalDay">
-                    <span class="meta-label">Operational Day</span>
-                    <span class="meta-value" x-text="operationalDay && formatDate(operationalDay)"></span>
-                </div>
-                <div class="meta-item" style="margin-left: auto;">
-                    <button class="button button-secondary" @click="copyToClipboard(jsonString)"
-                            title="Copy raw JSON to clipboard">📋 Copy JSON</button>
-                </div>
+            <!-- Loading State -->
+            <div class="loading-state" x-show="loading"
+                 style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                Loading train version…
             </div>
 
-            <!-- JSON Viewer Card: flex column filling remaining height -->
-            <div class="json-viewer-section">
-                <!-- Toolbar: search + expand/collapse — always visible -->
-                <div class="json-viewer-toolbar">
-                    <div class="toolbar-group">
-                        <input type="search"
-                               class="search-input"
-                               placeholder="Search in JSON…"
-                               x-model="searchQuery"
-                               @keydown.enter.prevent="searchResults.length ? searchNext() : doSearch()"
-                               @input.debounce.400ms="doSearch()"
-                               aria-label="Search in JSON">
-                        <button class="toolbar-btn" @click="doSearch()"
-                                title="Find first match">🔍 Search</button>
-                        <button class="toolbar-btn"
-                                :disabled="searchResults.length === 0"
-                                @click="searchPrev()"
-                                aria-label="Previous match"
-                                title="Previous match">‹ Prev</button>
-                        <button class="toolbar-btn"
-                                :disabled="searchResults.length === 0"
-                                @click="searchNext()"
-                                aria-label="Next match"
-                                title="Next match">Next ›</button>
-                        <span class="search-status" x-text="searchStatus" aria-live="polite"></span>
+            <!-- Error State -->
+            <div x-show="!loading && !!error" class="empty-state">
+                <div class="empty-state-icon" aria-hidden="true">!</div>
+                <div class="empty-state-text">Could not load train version</div>
+                <div class="empty-state-subtext" x-text="error"></div>
+            </div>
+
+            <!-- Main Content: flex column, fills all remaining height -->
+            <div id="main-content" x-show="!loading && !error && !!trainData">
+
+                <!-- Version meta bar -->
+                <div class="version-meta">
+                    <div class="meta-item" x-show="branchName">
+                        <span class="meta-label">Branch</span>
+                        <span class="meta-value" x-text="branchName"></span>
                     </div>
-
-                    <div class="toolbar-separator"></div>
-
-                    <div class="toolbar-group">
-                        <button class="toolbar-btn" @click="expandAll()"
-                                title="Expand all JSON nodes">⊞ Expand all</button>
-                        <button class="toolbar-btn" @click="collapseAll()"
-                                title="Collapse all JSON nodes">⊟ Collapse all</button>
+                    <div class="meta-item" x-show="versionId">
+                        <span class="meta-label">Version ID</span>
+                        <span class="meta-value id-cell">
+                            <span class="id-truncated" :title="versionId"
+                                  x-text="versionId && truncateId(versionId)"></span>
+                            <button class="clipboard-btn" @click="copyToClipboard(versionId)"
+                                    aria-label="Copy version ID" title="Copy full ID">Copy</button>
+                        </span>
+                    </div>
+                    <div class="meta-item" x-show="trainNumber">
+                        <span class="meta-label">Train</span>
+                        <span class="meta-value" x-text="trainNumber"></span>
+                    </div>
+                    <div class="meta-item" x-show="operationalDay">
+                        <span class="meta-label">Operational day</span>
+                        <span class="meta-value" x-text="operationalDay && formatDate(operationalDay)"></span>
+                    </div>
+                    <div class="meta-item" style="margin-left: auto;">
+                        <button class="button button-secondary" @click="copyToClipboard(jsonString)"
+                                title="Copy raw JSON to clipboard">Copy JSON</button>
                     </div>
                 </div>
 
-                <!-- JSON Viewer: scrollable, fills all remaining height -->
-                <div class="json-viewer-wrapper" id="json-viewer"></div>
-            </div>
+                <!-- JSON Viewer Card: flex column filling remaining height -->
+                <div class="json-viewer-section">
+                    <!-- Toolbar: search + expand/collapse — always visible -->
+                    <div class="json-viewer-toolbar">
+                        <div class="toolbar-group">
+                            <input type="search"
+                                   class="search-input"
+                                   placeholder="Search in JSON…"
+                                   x-model="searchQuery"
+                                   @keydown.enter.prevent="searchResults.length ? searchNext() : doSearch()"
+                                   @input.debounce.400ms="doSearch()"
+                                   aria-label="Search in JSON">
+                            <button class="toolbar-btn" @click="doSearch()"
+                                    title="Find first match">Search</button>
+                            <button class="toolbar-btn"
+                                    :disabled="searchResults.length === 0"
+                                    @click="searchPrev()"
+                                    aria-label="Previous match"
+                                    title="Previous match">‹ Prev</button>
+                            <button class="toolbar-btn"
+                                    :disabled="searchResults.length === 0"
+                                    @click="searchNext()"
+                                    aria-label="Next match"
+                                    title="Next match">Next ›</button>
+                            <span class="search-status" x-text="searchStatus" aria-live="polite"></span>
+                        </div>
 
+                        <div class="toolbar-separator"></div>
+
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" @click="expandAll()"
+                                    title="Expand all JSON nodes">Expand all</button>
+                            <button class="toolbar-btn" @click="collapseAll()"
+                                    title="Collapse all JSON nodes">Collapse all</button>
+                        </div>
+                    </div>
+
+                    <!-- JSON Viewer: scrollable, fills all remaining height -->
+                    <div class="json-viewer-wrapper" id="json-viewer"></div>
+                </div>
+
+            </div>
         </div>
     </div>
 
@@ -354,4 +358,3 @@
     <script defer src="/webjars/alpinejs/dist/cdn.min.js"></script>
 </body>
 </html>
-
