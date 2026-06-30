@@ -623,7 +623,7 @@ p {
 .btn-danger {
     background-color: var(--white);
     color: #C62828;
-    border-color: var(--partner-sbb);
+    border-color: currentColor;
 }
 
 .btn-danger:hover {
@@ -882,6 +882,11 @@ p {
 .tooltip-anchor:hover .tooltip-box,
 .tooltip-anchor:focus .tooltip-box {
     display: block;
+}
+
+.tooltip-anchor:focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
 }
 
 .section {
@@ -1369,7 +1374,7 @@ tbody td {
 }
 
 .text-muted {
-    color: var(--teal);
+    color: var(--text-muted);
     font-style: italic;
 }
 
