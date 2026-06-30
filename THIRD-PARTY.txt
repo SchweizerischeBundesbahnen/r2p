@@ -1,5 +1,6 @@
 
-Lists of 116 third-party dependencies.
+Lists of 117 third-party dependencies.
+     (Apache-2.0) @fontsource/roboto (org.webjars.npm:fontsource__roboto:5.1.0 - https://www.webjars.org)
      (MIT) @vue/reactivity (org.webjars.npm:vue__reactivity:3.2.0-beta.8 - https://www.webjars.org)
      (MIT) @vue/shared (org.webjars.npm:vue__shared:3.2.0-beta.8 - https://www.webjars.org)
      (MIT) alpinejs (org.webjars.npm:alpinejs:3.15.12 - https://www.webjars.org)
