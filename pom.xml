@@ -27,7 +27,7 @@
     </scm>
     <properties>
         <java.version>25</java.version>
-        <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
+        <springdoc-openapi.version>3.1.0</springdoc-openapi.version>
         <openapi-generator-maven-plugin.version>7.23.0</openapi-generator-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
         <asciidoctorj.version>3.0.1</asciidoctorj.version>
