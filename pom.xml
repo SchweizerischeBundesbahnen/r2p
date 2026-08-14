@@ -36,7 +36,7 @@
         <maven-antrun-plugin.version>3.2.0</maven-antrun-plugin.version>
         <exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
         <alpinejs.version>3.15.12</alpinejs.version>
-        <fontsource-roboto.version>5.1.0</fontsource-roboto.version>
+        <fontsource-roboto.version>5.2.6</fontsource-roboto.version>
         <license-maven-plugin.version>2.7.1</license-maven-plugin.version>
     </properties>
     <dependencies>
