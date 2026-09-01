@@ -266,10 +266,18 @@ class PrettyJSON extends HTMLElement {
         return typeof input !== "object" || input === null;
     }
 
+    /**
+     * Only http(s) URLs are considered valid links. Any other scheme
+     * (javascript:, data:, vbscript:, ...) is rendered as plain text to
+     * avoid script execution through crafted payload values.
+     *
+     * @param {string} input
+     * @returns {boolean}
+     */
     #isValidStringURL(input) {
         try {
-            new URL(input);
-            return true;
+            const url = new URL(input);
+            return url.protocol === "http:" || url.protocol === "https:";
         } catch (error) {
             return false;
         }
