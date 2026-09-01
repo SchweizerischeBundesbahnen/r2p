@@ -1,20 +1,13 @@
 openapi: 3.0.3
 info:
-  title: SBB R2P Train Data Model
+  title: R2P Train Data Model
   description: |
-    Data model (schema components) for the SBB R2P Train domain: the train and its journey, activities, capabilities, and requirements.
+    Data model (schema components) for the R2P Train domain: the train and its journey, activities, capabilities, and requirements.
     These schemas are referenced by the API specification in r2p-spec.yaml; this file does not define API paths itself.
-  termsOfService: https://developer.sbb.ch/license
-  contact:
-    name: TMSC Team
-    email: tmsc@sbbcargo.com
   license:
-    name: SBB API Management Licence and Terms and Conditions of Use
-    url: https://developer.sbb.ch/license
-  version: 1.0.10
-externalDocs:
-  description: CARIS2 - Canonical Data Model - Train
-  url: https://confluence.sbb.ch/x/XM6nyw
+    name: CC BY-ND 4.0
+    url: https://creativecommons.org/licenses/by-nd/4.0/
+  version: 1.0.0
 # ---------------------------------------------- components -------------------------------------------------------------------------------------
 # ---------------------------------------------- ---------- -------------------------------------------------------------------------------------
 components:
