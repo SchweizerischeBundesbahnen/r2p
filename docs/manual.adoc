@@ -56,7 +56,7 @@ The endpoint is accessible at `/internal/test-data/generate` and can be invoked 
 
 === Deploy on OpenShift
 
-The Docker image is available at `ghcr-private.docker.bin.sbb.ch/schweizerischebundesbahnen/r2p:latest`.
+The Docker image is available at `ghcr.io/schweizerischebundesbahnen/r2p:latest`.
 
 Check the deployment.yaml file and adjust the values in the ConfigMap and in the Secret.
 
