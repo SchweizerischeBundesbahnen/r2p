@@ -1361,7 +1361,7 @@ components:
         type:
           $ref: "#/components/schemas/LocationType"
         typeCode:
-          description: Used to specify the subtype of the location identifyer, e.g. type=SLC, typeCode='37' for a loading point.
+          description: Used to specify the subtype of the location identifier, e.g. type=SLC, typeCode='37' for a loading point.
           type: string
           example: '37'
         code:
@@ -1735,7 +1735,7 @@ components:
 # ---------------------------------------------- ENUM LocationType -------------------------------------------------------------------------------------
     LocationType:
       description: |
-        Determines the type of the location identifyer:
+        Determines the type of the location identifier:
         * PLC - Primary Location Code (PLC): The single, pan-European, unique identifier for an Operational Point (OP) in the TAF/TAP TSI ecosystem. 
                 It is the canonical code used in TAF/TAP messages and in the Common Location Database (CLD).
         * SLC - Subsidiary Location Code (SLC): Any additional/alternate code for a PLC, coming from another coding scheme (national, sectoral, 
