@@ -95,7 +95,7 @@ docker run -it -p 8080:8080 ghcr.io/schweizerischebundesbahnen/r2p:latest
 
 By default, the prototype uses an H2 in-memory database (data is lost on restart). To persist data to a file, set the environment variable:
 ```bash
-DATABASE_STORAGE=file:C:/devsbb/h2/r2p
+DATABASE_STORAGE=file:C:/dev/h2/r2p
 ```
 
 ## Development
@@ -103,10 +103,6 @@ DATABASE_STORAGE=file:C:/devsbb/h2/r2p
 ### Design decisions
 
 See Architecture Decision Records (ADRs) in [docs/adr/](docs/adr/) for detailed explanations of key design choices.
-
-### Commit Messages
-
-See [Commit Message Guidelines](CONTRIBUTING.md#commit-message-guidelines).
 
 ### REST endpoints
 

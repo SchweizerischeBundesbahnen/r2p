@@ -30,14 +30,12 @@ the prototype uses Java and H2 (no need for a dedicated database server).
 * Swagger UI: http://localhost:8080/swagger-ui/index.html
 * OpenAPI Spec: http://localhost:8080/v3/api-docs
 
-Note: in order to access secured endpoints, you need to be a member of the AD-group `DG_SEC_DEV_R2P_Admin`.
-
 ==== Database
 
 By default, the prototype uses a H2 in-memory database, so its content is lost when the application is stopped.
 In order to persist the data in a file, configure a corresponding datasource via an environment variable, for example:
 ----
-DATABASE_STORAGE=file:C:/devsbb/h2/r2p
+DATABASE_STORAGE=file:C:/dev/h2/r2p
 ----
 
 In order to automatically clean the database in case of a validation error encountered by Flyway, the following environment variable can be set:
