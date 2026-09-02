@@ -14,7 +14,7 @@ This is a PoC implementation not suitable to run in production.
 ## Overview
 
 - Status: PoC
-- Primary maintainers: R2P Projectteam
+- Primary maintainers: R2P project team
 - Support channel: mailto:r2p@rail.ch
 - License: Apache 2.0
 
