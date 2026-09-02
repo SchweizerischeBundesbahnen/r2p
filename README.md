@@ -2,7 +2,7 @@
 
 Prototype for RU - RU - Partner communication
 
-![CI]([https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/build.yml/badge.svg](https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/build.yml/badge.svg))
+[![CI](https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/build.yml/badge.svg)](https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/build.yml)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
 
 See also the companion webclient that you find here: https://github.com/SchweizerischeBundesbahnen/r2p-webclient
