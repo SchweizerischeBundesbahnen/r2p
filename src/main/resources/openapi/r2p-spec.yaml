@@ -1,3 +1,4 @@
+# This API is licensed under https://creativecommons.org/licenses/by-nd/4.0/
 openapi: 3.0.3
 info:
   title: R2P Train API
@@ -753,7 +754,7 @@ paths:
         - name: from
           in: query
           required: false
-          description: change timestamp from (inlusive)
+          description: change timestamp from (inclusive)
           schema:
             type: string
             format: date-time
@@ -801,14 +802,14 @@ paths:
         - name: from
           in: query
           required: true
-          description: change timestamp from (inlusive)
+          description: change timestamp from (inclusive)
           schema:
             type: string
             format: date-time
         - name: to
           in: query
           required: true
-          description: change timestamp to (inlusive)
+          description: change timestamp to (inclusive)
           schema:
             type: string
             format: date-time

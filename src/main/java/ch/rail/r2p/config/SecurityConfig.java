@@ -77,6 +77,25 @@ public class SecurityConfig {
             return new AuthorizationDecision(granted);
         };
         http
+            // Defence in depth against XSS: scripts and styles may only come from this origin.
+            // 'unsafe-eval' is required by the Alpine.js CDN build (it compiles x-* expressions
+            // with the Function constructor); 'unsafe-inline' is required for the inline style
+            // attributes used by the static pages and by Swagger UI. Note that neither of these
+            // keywords re-enables "javascript:" URLs - those are only allowed by an explicit
+            // script-src 'unsafe-inline', which is deliberately not set.
+            .headers(headers -> headers
+                .contentSecurityPolicy(csp -> csp.policyDirectives(
+                    "default-src 'self'; "
+                        + "script-src 'self' 'unsafe-eval'; "
+                        + "style-src 'self' 'unsafe-inline'; "
+                        + "img-src 'self' data:; "
+                        + "font-src 'self'; "
+                        + "connect-src 'self'; "
+                        + "frame-ancestors 'none'; "
+                        + "base-uri 'self'; "
+                        + "form-action 'self'; "
+                        + "object-src 'none'"))
+            )
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf
                 // CSRF protection is enforced for session-authenticated (browser) requests,

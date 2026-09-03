@@ -1,20 +1,13 @@
 openapi: 3.0.3
 info:
-  title: SBB R2P Train Data Model
+  title: R2P Train Data Model
   description: |
-    Data model (schema components) for the SBB R2P Train domain: the train and its journey, activities, capabilities, and requirements.
+    Data model (schema components) for the R2P Train domain: the train and its journey, activities, capabilities, and requirements.
     These schemas are referenced by the API specification in r2p-spec.yaml; this file does not define API paths itself.
-  termsOfService: https://developer.sbb.ch/license
-  contact:
-    name: TMSC Team
-    email: tmsc@sbbcargo.com
   license:
-    name: SBB API Management Licence and Terms and Conditions of Use
-    url: https://developer.sbb.ch/license
-  version: 1.0.10
-externalDocs:
-  description: CARIS2 - Canonical Data Model - Train
-  url: https://confluence.sbb.ch/x/XM6nyw
+    name: CC BY-ND 4.0
+    url: https://creativecommons.org/licenses/by-nd/4.0/
+  version: 1.0.0
 # ---------------------------------------------- components -------------------------------------------------------------------------------------
 # ---------------------------------------------- ---------- -------------------------------------------------------------------------------------
 components:
@@ -1361,7 +1354,7 @@ components:
         type:
           $ref: "#/components/schemas/LocationType"
         typeCode:
-          description: Used to specify the subtype of the location identifyer, e.g. type=SLC, typeCode='37' for a loading point.
+          description: Used to specify the subtype of the location identifier, e.g. type=SLC, typeCode='37' for a loading point.
           type: string
           example: '37'
         code:
@@ -1735,7 +1728,7 @@ components:
 # ---------------------------------------------- ENUM LocationType -------------------------------------------------------------------------------------
     LocationType:
       description: |
-        Determines the type of the location identifyer:
+        Determines the type of the location identifier:
         * PLC - Primary Location Code (PLC): The single, pan-European, unique identifier for an Operational Point (OP) in the TAF/TAP TSI ecosystem. 
                 It is the canonical code used in TAF/TAP messages and in the Common Location Database (CLD).
         * SLC - Subsidiary Location Code (SLC): Any additional/alternate code for a PLC, coming from another coding scheme (national, sectoral, 

@@ -2,26 +2,38 @@
 
 Prototype for RU - RU - Partner communication
 
-[![Build and Test](https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/build.yml/badge.svg)](https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/build.yml)
-[![Lint Commit Messages](https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/lint-commit-messages.yml/badge.svg)](https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/lint-commit-messages.yml)
+[![CI](https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/build.yml/badge.svg)](https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/build.yml)
+![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
+
+See also the companion webclient that you find here: https://github.com/SchweizerischeBundesbahnen/r2p-webclient
 
 ## Disclaimer
+
 This is a PoC implementation not suitable to run in production.
 
 ## Overview
 
-R2P is a Spring Boot 4.0 prototype demonstrating railway (RU - Railway Undertaking) partner communication. The prototype uses:
+- Status: PoC
+- Primary maintainers: R2P project team
+- Support channel: mailto:r2p@rail.ch
+- License: Apache 2.0
+
+## Getting Started
+
+The prototype uses:
 - **H2 embedded database** (no need for a dedicated database server)
 - **OpenAPI-first approach** with code generation
 - **OAuth2/JWT authentication** via Azure AD
 - **Flyway** for database migrations
 - **Spring Data JDBC** for data access
 
-## Prerequisites
+### Prerequisites
 
 - Java 25 or higher
 - Maven 3.6+
 - (Optional) Node.js/npm for commit message validation
+- (Optional) Docker for containerized deployment
+
 
 ## Quickstart
 
@@ -29,6 +41,7 @@ R2P is a Spring Boot 4.0 prototype demonstrating railway (RU - Railway Undertaki
 ```bash
 mvn clean verify
 ```
+
 This runs the complete build including code generation, tests, and documentation.
 
 ### Run the Application Locally (without Azure)
@@ -57,8 +70,8 @@ Access the application:
 - **OpenAPI Spec**: http://localhost:8080/v3/api-docs
 - **Keycloak Admin Console**: http://localhost:8180/ (admin / admin)
 - **Documentation**: `target/docs/`
-  - `r2p-manual.html` / `r2p-manual.pdf` - User manual
-  - `r2p-api.html` / `r2p-api.pdf` - API documentation
+    - `r2p-manual.html` / `r2p-manual.pdf` - User manual
+    - `r2p-api.html` / `r2p-api.pdf` - API documentation
 
 ### Run the Application with Azure AD
 
@@ -95,7 +108,7 @@ docker run -it -p 8080:8080 ghcr.io/schweizerischebundesbahnen/r2p:latest
 
 By default, the prototype uses an H2 in-memory database (data is lost on restart). To persist data to a file, set the environment variable:
 ```bash
-DATABASE_STORAGE=file:C:/devsbb/h2/r2p
+DATABASE_STORAGE=file:C:/dev/h2/r2p
 ```
 
 ## Development
@@ -103,10 +116,6 @@ DATABASE_STORAGE=file:C:/devsbb/h2/r2p
 ### Design decisions
 
 See Architecture Decision Records (ADRs) in [docs/adr/](docs/adr/) for detailed explanations of key design choices.
-
-### Commit Messages
-
-See [Commit Message Guidelines](CONTRIBUTING.md#commit-message-guidelines).
 
 ### REST endpoints
 
@@ -120,9 +129,9 @@ See [R2P Server Domain Model](https://github.com/SchweizerischeBundesbahnen/r2p/
 - Releases are automated via [release-please](https://github.com/googleapis/release-please-action)
 - Merging to `main` triggers release creation based on commit messages
 - Each release includes:
-  - Docker image (`ghcr.io/schweizerischebundesbahnen/r2p`)
-  - Native executables for Linux, Windows, and macOS
-  - Documentation (HTML + PDF)
+    - Docker image (`ghcr.io/schweizerischebundesbahnen/r2p`)
+    - Native executables for Linux, Windows, and macOS
+    - Documentation (HTML + PDF)
 
 See [RELEASE.md](RELEASE.md) for more details.
 
@@ -139,7 +148,6 @@ Deploy to OpenShift - see [docs/manual.adoc](docs/manual.adoc) for details.
 * `src/test/java/` - Unit and integration tests
 * `.github/workflows/` - CI/CD pipelines
 
-## License
+## Contributing
 
-See [LICENSE](LICENSE)
-
+See [CONTRIBUTING.md](CONTRIBUTING.md) for reporting bugs, proposing changes, and submitting pull requests.

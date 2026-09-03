@@ -401,7 +401,7 @@
                                 <phase>pre-clean</phase>
                                 <configuration>
                                     <target>
-                                        <!-- Entfernt rekursiv das ReadOnly-Attribut in target/dist -->
+<!-- Recursively removes the read-only attribute in target/dist -->
                                         <exec executable="cmd">
                                             <arg value="/c"/>
                                             <arg value="if exist &quot;${project.build.directory}\dist&quot; attrib -R /S /D &quot;${project.build.directory}\dist\*&quot;"/>

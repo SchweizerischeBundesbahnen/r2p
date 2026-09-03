@@ -1,20 +1,47 @@
 # Repository Coding Standards
 
-The purpose of the Coding Standards is to create a baseline for collaboration and review within various aspects of our open source project and community, from core code to themes to plugins.
+## General Principles
 
-Coding standards help avoid common coding errors, improve the readability of code, and simplify modification. They ensure that files within the project appear as if they were created by a single common unit.
+- Prefer simple, maintainable solutions over clever ones.
+- Optimize for readability and safe change review.
+- Keep public behavior explicit and documented.
+- Avoid introducing dependencies without a clear maintenance benefit.
 
-Following the standards means anyone will be able to understand a section of code and modify it, if needed, without regard to when it was written or by whom.
+## Required for Every Change
 
-If you are planning to contribute, you need to familiarize yourself with these standards, as any code you submit will need to comply with them.
+- Tests must cover bug fixes and non-trivial features where automated testing is practical.
+- User-visible behavior changes must be documented in the relevant README, docs, or changelog entry.
+- Breaking changes must be called out explicitly in pull requests and release notes.
+- Security-sensitive changes must include a short explanation of the threat model or risk being addressed.
 
-## Language-specific Standards
-* Language 1
-* Language 2
+## Code Style
 
-## Tool-specific Settings
-* Tool 1 settings
-* Tool 2 settings
+- Follow the formatter, linter, and editor settings configured in the repository.
+- Use descriptive names for modules, functions, variables, tests, and commits.
+- Keep functions focused. If a function is doing multiple unrelated things, split it.
+- Remove dead code rather than commenting it out.
+- Keep comments rare and useful. Explain intent or non-obvious tradeoffs, not obvious syntax.
 
-For reference please check the following repos:
-* https://github.com/sbb-design-systems/sbb-angular/blob/main/CODING_STANDARDS.md
+## Dependencies
+
+- Prefer standard library or existing repository dependencies before adding new packages.
+- New dependencies must be actively maintained, appropriately licensed, and justified in the pull request.
+- Pin or constrain dependencies according to the ecosystem norms used by the repository.
+
+## API and Compatibility
+
+- Treat public interfaces as contracts.
+- When changing a public API, document the migration path.
+- Maintain backward compatibility unless there is an explicit decision to break it.
+
+## Documentation
+
+- Keep setup instructions accurate.
+- Document required environment variables, configuration, and external services.
+- Update architecture or design references when the implementation materially changes.
+
+## Security
+
+- Do not hardcode secrets, credentials, or tokens.
+- Apply the principle of least privilege to workflows, bots, and integrations.
+- Review third-party GitHub Actions and pin them to trusted versions or SHAs where organizational policy requires it.

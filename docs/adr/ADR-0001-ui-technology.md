@@ -5,7 +5,6 @@
 | status          | decided                                 |
 | date            | 20.02.2026                              |
 | decision-makers | Project Team R2P                        |
-| jira            | https://flow.sbb.ch/browse/BPSGLO-13861 |
 
 # Server Web Interface Technology
 
