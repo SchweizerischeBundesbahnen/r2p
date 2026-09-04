@@ -218,6 +218,5 @@ outlines the coding standards that you should follow when contributing to the pr
 
 ## Code of Conduct
 
-To ensure that the project is a welcoming and an inclusive environment for all contributors, you, it
-has established a good [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+To ensure that the project is a welcoming and inclusive environment for all contributors, it has established a [Code of Conduct](CODE_OF_CONDUCT.md).
 
