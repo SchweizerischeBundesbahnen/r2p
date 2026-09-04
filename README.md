@@ -17,7 +17,7 @@ The functionality covers:
 <br>
 
 R<sup>2</sup>P is an encompassing digital communication
-- for service, train and ressource harmonization among RUs and their partners.
+- for service, train and resource harmonization among RUs and their partners.
 - It is open for RUs and their partners to participate both during the setup and the operation!
 
 It is not 
