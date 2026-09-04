@@ -57,4 +57,4 @@ R<sup>2</sup>P currently uses a single responsible coordination model. The conta
 
 - If you are not sure whether a contribution is appropriate, ask first at <mailto:r2p@rail.ch>.
 - If the GitHub projects are not yet available, use the contact email for coordination and issue triage.
-- This document will be updated as the R2P project evolves.
+- This document will be updated as the R<sup>2</sup>P project evolves.
