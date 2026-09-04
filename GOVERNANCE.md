@@ -241,7 +241,7 @@ Meetings are held in English. TSC meeting minutes are published in the repositor
 
 ### 3.3 Licensing
 
-R<sup>2</sup>P specification documents are published under [Creative Commons Attribution 4.0 (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).  
+R<sup>2</sup>P specification documents are published under [Creative Commons Attribution-NoDerivatives 4.0 (CC BY-ND 4.0)](https://creativecommons.org/licenses/by-nd/4.0/).
 R<sup>2</sup>P reference implementation source code is published under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
 ### 3.4 Language and Multilingualism
