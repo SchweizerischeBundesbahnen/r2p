@@ -1,31 +1,80 @@
-# R2P
-
-Prototype for RU - RU - Partner communication
+# RU - RU - Partner Communication (R<sup>2</sup>P)
 
 [![CI](https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/build.yml/badge.svg)](https://github.com/SchweizerischeBundesbahnen/r2p/actions/workflows/build.yml)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
 
-See also the companion webclient that you find here: https://github.com/SchweizerischeBundesbahnen/r2p-webclient
+R<sup>2</sup>P defines a standardized communication framework for information exchange between Railway Undertakings (RUs) and their partners. It enables collaborative planning, operational coordination, disruption management, and settlement processes across organizational boundaries.
+
+The functionality covers:
+
+- Exchange of train and service information
+- Coordination of timetable paths and resources
+- Synchronization of planning changes
+- Operational communication during disruptions
+- Sharing of actual, forecast, and settlement data
+- Common data model, processes, governance, and security rules
+
+<br>
+
+R<sup>2</sup>P is an encompassing digital communication
+- for service, train and resource harmonization among RUs and their partners.
+- It is open for RUs and their partners to participate both during the setup and the operation!
+
+It is not 
+- a replacement of any path ordering tools, like the national PM systems and PCS for ordering international paths.
+- a solution for digitalization of IM harmonization
+<br>
+<br>
+<br>
+
+R<sup>2</sup>P provides a common business data model that establishes a shared understanding of railway services, train operations, resources, and operational events. The model is defined through a Business Object Model (BOM), structured attributes, and JSON representations, ensuring consistent data exchange between systems and organizations.
+
+The data model contains the following elements
+- Identifiers
+- Train
+  - Trip points
+  - Resources
+    - Formations
+    - Personnel
+  - Services
+
+
+
+<br>
+<br>
+
+# Specification
+
+The specification comprises 
+- specification
+- OpenAPI definition (YAML)
+- Data model
+- Sample data
+
+
+## License
+
+This specification is licensed under [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/)
+
+
+
+# Reference implementation
 
 ## Disclaimer
-
-This is a PoC implementation not suitable to run in production.
+**This is a PoC implementation not suitable to run in production.**
 
 ## Overview
 
-- Status: PoC
-- Primary maintainers: R2P project team
-- Support channel: mailto:r2p@rail.ch
-- License: Apache 2.0
+See also the companion webclient that you find here: https://github.com/SchweizerischeBundesbahnen/r2p-webclient
 
-## Getting Started
-
-The prototype uses:
+R<sup>2</sup>P is a Spring Boot 4.0 prototype demonstrating railway (RU - Railway Undertaking) partner communication. The prototype uses:
 - **H2 embedded database** (no need for a dedicated database server)
 - **OpenAPI-first approach** with code generation
 - **OAuth2/JWT authentication** via Azure AD
 - **Flyway** for database migrations
 - **Spring Data JDBC** for data access
+
+## Getting-Started
 
 ### Prerequisites
 
@@ -34,14 +83,10 @@ The prototype uses:
 - (Optional) Node.js/npm for commit message validation
 - (Optional) Docker for containerized deployment
 
-
-## Quickstart
-
 ### Build and Test
 ```bash
 mvn clean verify
 ```
-
 This runs the complete build including code generation, tests, and documentation.
 
 ### Run the Application Locally (without Azure)
@@ -70,8 +115,8 @@ Access the application:
 - **OpenAPI Spec**: http://localhost:8080/v3/api-docs
 - **Keycloak Admin Console**: http://localhost:8180/ (admin / admin)
 - **Documentation**: `target/docs/`
-    - `r2p-manual.html` / `r2p-manual.pdf` - User manual
-    - `r2p-api.html` / `r2p-api.pdf` - API documentation
+  - `r2p-manual.html` / `r2p-manual.pdf` - User manual
+  - `r2p-api.html` / `r2p-api.pdf` - API documentation
 
 ### Run the Application with Azure AD
 
@@ -108,7 +153,7 @@ docker run -it -p 8080:8080 ghcr.io/schweizerischebundesbahnen/r2p:latest
 
 By default, the prototype uses an H2 in-memory database (data is lost on restart). To persist data to a file, set the environment variable:
 ```bash
-DATABASE_STORAGE=file:C:/dev/h2/r2p
+DATABASE_STORAGE=file:C:/devsbb/h2/r2p
 ```
 
 ## Development
@@ -129,9 +174,9 @@ See [R2P Server Domain Model](https://github.com/SchweizerischeBundesbahnen/r2p/
 - Releases are automated via [release-please](https://github.com/googleapis/release-please-action)
 - Merging to `main` triggers release creation based on commit messages
 - Each release includes:
-    - Docker image (`ghcr.io/schweizerischebundesbahnen/r2p`)
-    - Native executables for Linux, Windows, and macOS
-    - Documentation (HTML + PDF)
+  - Docker image (`ghcr.io/schweizerischebundesbahnen/r2p`)
+  - Native executables for Linux, Windows, and macOS
+  - Documentation (HTML + PDF)
 
 See [RELEASE.md](RELEASE.md) for more details.
 
@@ -148,6 +193,30 @@ Deploy to OpenShift - see [docs/manual.adoc](docs/manual.adoc) for details.
 * `src/test/java/` - Unit and integration tests
 * `.github/workflows/` - CI/CD pipelines
 
+## Documentation
+
+Please consider the following information:
+
+- [CODING_STANDARDS.md](CODING_STANDARDS.md)
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+
+
+## License
+
+This project is licensed under [Apache 2.0](LICENSE).
+
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for reporting bugs, proposing changes, and submitting pull requests.
+Open-source projects thrive on collaboration and contributions from the community. All
+contributors are requested to read the [CONTRIBUTING.md](CONTRIBUTING.md) file as it outlines how to
+contribute to the project, including how to submit bug reports, feature requests, and pull requests.
+
+## Coding Standards
+
+All contributors are requested to read the [CODING_STANDARDS.md](CODING_STANDARDS.md) file that
+outlines the coding standards that you should follow when contributing to the project.
+
+## Code of Conduct
+
+To ensure that the project is a welcoming and inclusive environment for all contributors, it has established a [Code of Conduct](CODE_OF_CONDUCT.md).
+
