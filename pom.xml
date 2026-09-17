@@ -34,7 +34,7 @@
         <asciidoctor-maven-plugin.version>3.2.0</asciidoctor-maven-plugin.version>
         <asciidoctorj.pdf.version>2.3.23</asciidoctorj.pdf.version>
         <maven-antrun-plugin.version>3.2.0</maven-antrun-plugin.version>
-        <exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
+        <exec-maven-plugin.version>3.6.4</exec-maven-plugin.version>
         <alpinejs.version>3.17.1</alpinejs.version>
         <fontsource-roboto.version>5.2.6</fontsource-roboto.version>
         <license-maven-plugin.version>2.7.1</license-maven-plugin.version>
