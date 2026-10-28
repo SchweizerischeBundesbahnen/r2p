@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.0.32](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.31...r2p-v0.0.32) (2026-10-28)
+
+
+### Features
+
+* (Re-)Configure AGENTS.md ([#211](https://github.com/SchweizerischeBundesbahnen/r2p/issues/211)) ([3de5403](https://github.com/SchweizerischeBundesbahnen/r2p/commit/3de54033c2507bb1e0b07ea57398c82d7da748ce))
+* error page for oidc errors and logging ([#214](https://github.com/SchweizerischeBundesbahnen/r2p/issues/214)) ([7043780](https://github.com/SchweizerischeBundesbahnen/r2p/commit/70437802f9b2dcab52c08fd296db6cfbffdb838f))
+
+
+### Bug Fixes
+
+* improve based on pr feedback ([#215](https://github.com/SchweizerischeBundesbahnen/r2p/issues/215)) ([b4d946d](https://github.com/SchweizerischeBundesbahnen/r2p/commit/b4d946d9a7acd00c38161e665e33c6934e10baeb))
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.32-SNAPSHOT ([#202](https://github.com/SchweizerischeBundesbahnen/r2p/issues/202)) ([757b0a3](https://github.com/SchweizerischeBundesbahnen/r2p/commit/757b0a32a3bfa04628ea7582f1359cd5b4c0f4f5))
+
+
+### Build System
+
+* **deps-dev:** bump fast-uri from 3.1.8 to 3.1.9 ([#213](https://github.com/SchweizerischeBundesbahnen/r2p/issues/213)) ([43dfb43](https://github.com/SchweizerischeBundesbahnen/r2p/commit/43dfb4386f34e96e94f1f094c1253be0ba9c992b))
+* **deps-dev:** bump org.openapitools:openapi-generator-maven-plugin ([#209](https://github.com/SchweizerischeBundesbahnen/r2p/issues/209)) ([3292eb6](https://github.com/SchweizerischeBundesbahnen/r2p/commit/3292eb6b526db827d3dffba5ef25d5f690f45b2f))
+* **deps-dev:** bump the commitlint group with 2 updates ([#205](https://github.com/SchweizerischeBundesbahnen/r2p/issues/205)) ([53473f0](https://github.com/SchweizerischeBundesbahnen/r2p/commit/53473f02e43b96679caff1056352ffb6ca4533b2))
+* **deps-dev:** bump the commitlint group with 2 updates ([#212](https://github.com/SchweizerischeBundesbahnen/r2p/issues/212)) ([6035a7d](https://github.com/SchweizerischeBundesbahnen/r2p/commit/6035a7d59fd3211b5970380ce0a2857dacc36fff))
+* **deps:** bump keycloak/keycloak from 26.7.3 to 26.8.1 ([#210](https://github.com/SchweizerischeBundesbahnen/r2p/issues/210)) ([af82995](https://github.com/SchweizerischeBundesbahnen/r2p/commit/af82995591e8baccc445a3b114acbf3b88fbd201))
+* **deps:** bump org.apache.maven:apache-maven from 3.9.16 to 3.10.0 ([#206](https://github.com/SchweizerischeBundesbahnen/r2p/issues/206)) ([f166c3c](https://github.com/SchweizerischeBundesbahnen/r2p/commit/f166c3c163efd95ef294d7a50abaeb7c48f35239))
+* **deps:** bump org.webjars.npm:alpinejs from 3.17.2 to 3.17.4 ([#207](https://github.com/SchweizerischeBundesbahnen/r2p/issues/207)) ([614539b](https://github.com/SchweizerischeBundesbahnen/r2p/commit/614539b50a2a73577f646b892a00b7ec71ab8ed9))
+
 ## [0.0.31](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.30...r2p-v0.0.31) (2026-09-18)
 
 
