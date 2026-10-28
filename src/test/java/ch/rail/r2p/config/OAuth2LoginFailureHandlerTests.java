@@ -72,5 +72,7 @@ class OAuth2LoginFailureHandlerTests {
     @Test
     void login_error_page_is_public() throws Exception {
         mockMvc.perform(get("/login-error.html")).andExpect(status().isOk());
+        // Logo and favicon of the error page must load without a session as well.
+        mockMvc.perform(get("/img/r2p-mark.svg")).andExpect(status().isOk());
     }
 }
