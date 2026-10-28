@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -27,6 +28,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -35,11 +38,13 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthen
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -48,7 +53,7 @@ public class SecurityConfig {
     private List<String> allowedOrigins;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         // Custom AuthorizationManager that handles two authentication mechanisms:
         //
         //  1. JWT Bearer token (REST API / Swagger-UI):
@@ -61,7 +66,7 @@ public class SecurityConfig {
         //
         // The decision keys off the authentication type rather than the Authorization header so it
         // stays consistent with how the request was actually authenticated.
-        AuthorizationManager<RequestAuthorizationContext> roleAndScope = (authSupplier, ctx) -> {
+        AuthorizationManager<RequestAuthorizationContext> roleAndScope = (authSupplier, _) -> {
             var auth = authSupplier.get();
             if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
                 return new AuthorizationDecision(false);
@@ -122,6 +127,10 @@ public class SecurityConfig {
             // application roles from the ID token to ROLE_* granted authorities.
             .oauth2Login(oauth2 -> oauth2
                 .defaultSuccessUrl("/index.html", true)
+                // The default failure URL (/login?error) points to Spring's generated login page,
+                // which is not served here (404). Log the cause and show a static error page that
+                // does not call the API (otherwise a 401 would loop straight back into the login).
+                .failureHandler(oauth2LoginFailureHandler())
                 .userInfoEndpoint(userInfo -> userInfo.oidcUserService(oidcUserService()))
             )
             // Stateless JWT Bearer token validation for REST API clients (e.g. Swagger-UI, curl).
@@ -153,6 +162,27 @@ public class SecurityConfig {
                 .authenticationEntryPoint(apiAuthenticationEntryPoint())
             );
         return http.build();
+    }
+
+    static final String LOGIN_ERROR_PAGE = "/login-error.html";
+
+    /**
+     * Handles failures of the browser OIDC login (e.g. invalid client secret, redirect URI
+     * mismatch, lost authorization request). The full OAuth2 error (code, description, URI) is
+     * logged for operators; the user only gets the generic {@value #LOGIN_ERROR_PAGE}.
+     */
+    static AuthenticationFailureHandler oauth2LoginFailureHandler() {
+        return (request, response, exception) -> {
+            if (exception instanceof OAuth2AuthenticationException oauth2Ex) {
+                OAuth2Error error = oauth2Ex.getError();
+                log.warn("OAuth2 login failed: code={}, description={}, uri={}, message={}",
+                    error.getErrorCode(), error.getDescription(), error.getUri(),
+                    exception.getMessage(), exception);
+            } else {
+                log.warn("OAuth2 login failed: {}", exception.getMessage(), exception);
+            }
+            response.sendRedirect(request.getContextPath() + LOGIN_ERROR_PAGE);
+        };
     }
 
     private static boolean isBearerRequest(HttpServletRequest request) {
