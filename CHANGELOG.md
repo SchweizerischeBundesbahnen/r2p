@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.33](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.32...r2p-v0.0.33) (2026-11-19)
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.33-SNAPSHOT ([#216](https://github.com/SchweizerischeBundesbahnen/r2p/issues/216)) ([b1617e6](https://github.com/SchweizerischeBundesbahnen/r2p/commit/b1617e6a7a023f038793f1e0bd0640ce0c6a1280))
+
+
+### Build System
+
+* **deps-dev:** bump org.codehaus.mojo:license-maven-plugin ([#222](https://github.com/SchweizerischeBundesbahnen/r2p/issues/222)) ([b978b90](https://github.com/SchweizerischeBundesbahnen/r2p/commit/b978b90efbf45a41425e5efacb5ee71609eb05a6))
+* **deps-dev:** bump org.openapitools:openapi-generator-maven-plugin ([#221](https://github.com/SchweizerischeBundesbahnen/r2p/issues/221)) ([4fe432c](https://github.com/SchweizerischeBundesbahnen/r2p/commit/4fe432cfd61ccb4f429d0a2129592bcb75ec5236))
+* **deps:** bump org.springframework.boot:spring-boot-starter-parent ([#218](https://github.com/SchweizerischeBundesbahnen/r2p/issues/218)) ([a01ecea](https://github.com/SchweizerischeBundesbahnen/r2p/commit/a01ecea1849aa956d813bd75ff937bdf48fbb173))
+* **deps:** bump org.webjars.npm:alpinejs from 3.17.4 to 3.17.5 ([#220](https://github.com/SchweizerischeBundesbahnen/r2p/issues/220)) ([9d2609f](https://github.com/SchweizerischeBundesbahnen/r2p/commit/9d2609fe7532cf2035b0293e3fb78f4550dd5640))
+
 ## [0.0.32](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.31...r2p-v0.0.32) (2026-10-28)
 
 
