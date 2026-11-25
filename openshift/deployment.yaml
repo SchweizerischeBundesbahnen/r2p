@@ -1,0 +1,234 @@
+# OpenShift Deployment Example using Deployment (Kubernetes standard)
+# Note: Update the ConfigMap values according to your environment before applying
+
+---
+# ImageStream for automatic image updates
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: r2p
+  labels:
+    app: r2p
+spec:
+  tags:
+    - name: latest
+      from:
+        kind: DockerImage
+        name: ghcr.io/schweizerischebundesbahnen/r2p:latest
+      importPolicy:
+        scheduled: true # by default every 15 minutes clusterwide
+
+---
+# ConfigMap for application configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: r2p-config
+data:
+  DATABASE_STORAGE: "file:/h2data/r2p"
+  R2P_INSTANCE_OWNER: "REPLACE_ME"
+  TZ: "Europe/Zurich"
+  R2P_CORS_ALLOWED_ORIGINS: "REPLACE_ME"
+  R2P_TEST_DATA_ENABLED: "true"
+
+---
+# Secret for Azure Client
+kind: Secret
+apiVersion: v1
+metadata:
+  name: r2p-azure-client
+stringData:
+  clientId: "REPLACE_ME"
+  clientSecret: "REPLACE_ME"
+  issuerUri: "REPLACE_ME"
+type: Opaque
+
+---
+# PersistentVolumeClaim for H2 Database
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: r2p-h2-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: r2p-sa
+
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: r2p
+  labels:
+    app: r2p
+    app.kubernetes.io/name: r2p
+    app.kubernetes.io/component: backend
+  annotations:
+    # This annotation enables automatic deployment when ImageStream is updated
+    image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"r2p:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"r2p\")].image"}]'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: r2p
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: r2p
+    spec:
+      serviceAccountName: r2p-sa
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: r2p
+          image: ghcr.io/schweizerischebundesbahnen/r2p:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: http
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: >-
+                -XX:MaxRAMPercentage=75.0
+                -XX:MaxMetaspaceSize=256m
+                -XX:+ExitOnOutOfMemoryError
+            - name: DATABASE_STORAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: r2p-config
+                  key: DATABASE_STORAGE
+            - name: R2P_INSTANCE_OWNER
+              valueFrom:
+                configMapKeyRef:
+                  name: r2p-config
+                  key: R2P_INSTANCE_OWNER
+            - name: R2P_TEST_DATA_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: r2p-config
+                  key: R2P_TEST_DATA_ENABLED
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: r2p-config
+                  key: TZ
+            - name: R2P_AZURE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: r2p-azure-client
+                  key: clientId
+            - name: R2P_AZURE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: r2p-azure-client
+                  key: clientSecret
+            - name: R2P_AZURE_ISSUER_URI
+              valueFrom:
+                secretKeyRef:
+                  name: r2p-azure-client
+                  key: issuerUri
+            - name: R2P_CORS_ALLOWED_ORIGINS
+              valueFrom:
+                configMapKeyRef:
+                  name: r2p-config
+                  key: R2P_CORS_ALLOWED_ORIGINS
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+            requests:
+              cpu: 500m
+              memory: 1536Mi
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            periodSeconds: 5
+            failureThreshold: 24   # 24 × 5s = 2 min max startup time
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 0
+            timeoutSeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 0
+            timeoutSeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: h2-data
+              mountPath: /h2data
+      volumes:
+        - name: h2-data
+          persistentVolumeClaim:
+            claimName: r2p-h2-pvc
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: r2p
+  labels:
+    app: r2p
+spec:
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: r2p
+  type: ClusterIP
+
+---
+# Route
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: r2p
+  labels:
+    app: r2p
+spec:
+  to:
+    kind: Service
+    name: r2p
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+
