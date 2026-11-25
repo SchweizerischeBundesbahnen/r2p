@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.34](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.33...r2p-v0.0.34) (2026-11-25)
+
+
+### Miscellaneous Chores
+
+* **main:** release r2p 0.0.34-SNAPSHOT ([#232](https://github.com/SchweizerischeBundesbahnen/r2p/issues/232)) ([417d584](https://github.com/SchweizerischeBundesbahnen/r2p/commit/417d584ba83cb2d0feae3755c59e62343eb02672))
+
 ## [0.0.33](https://github.com/SchweizerischeBundesbahnen/r2p/compare/r2p-v0.0.32...r2p-v0.0.33) (2026-11-19)
 
 
