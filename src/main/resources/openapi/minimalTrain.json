@@ -1,0 +1,74 @@
+{
+  "id": "72",
+  "references": [
+    {
+      "type": "tttReferenceTrain",
+      "name": "TR2185990010000000000021"
+    }
+  ],
+  "links": [],
+  "name": "Zug 11062 Buchs Dällikon – Brugg AG",
+  "startdate": "2026-04-16",
+  "timestamp": "2026-03-12T12:00:00+01:00",
+  "journey": {
+    "featuresets": [],
+    "journeylocations": [
+      {
+        "locations": [
+          {
+            "type": "PLC",
+            "code": "CH-3527",
+            "name": "Buchs Dällikon"
+          }
+        ],
+        "activities": [
+          {
+            "id": "a1-01",
+            "type": "path.halt.11",
+            "timings": [
+              {
+                "type": "earliestdeparture",
+                "duration": "PT8H30M",
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rim",
+              "id": "SBB",
+              "status": "confirmed"
+            },
+            "relations": []
+          }
+        ]
+      },
+      {
+        "locations": [
+          {
+            "type": "PLC",
+            "code": "CH-309",
+            "name": "Brugg AG"
+          }
+        ],
+        "activities": [
+          {
+            "id": "a2-01",
+            "type": "path.halt.11",
+            "timings": [
+              {
+                "type": "arrival",
+                "duration": "PT4H2M",
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rim",
+              "id": "SBB",
+              "status": "confirmed"
+            },
+            "relations": []
+          }
+        ]
+      }
+    ]
+  }
+}

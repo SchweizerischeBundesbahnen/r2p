@@ -1,0 +1,160 @@
+package ch.rail.r2p.web;
+
+import static ch.rail.r2p.api.dto.PartnerToken.BLS;
+import static ch.rail.r2p.api.dto.PartnerToken.SBB;
+import static ch.rail.r2p.api.dto.PartnerToken.SOB;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import ch.rail.r2p.Actor;
+import ch.rail.r2p.NoAuthSpringBootTest;
+import ch.rail.r2p.persistence.TrainPersistence;
+import java.util.List;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+
+@NoAuthSpringBootTest
+class StatsTests {
+
+    @Autowired
+    private StatsController statsController;
+
+    @Autowired
+    private TrainController trainController;
+
+    @Autowired
+    private Actor actor;
+
+    @MockitoSpyBean
+    private TrainPersistence trainPersistence;
+
+    @BeforeEach
+    void setUp() {
+        actor.setup();
+    }
+
+    @AfterEach
+    void tearDown() {
+        actor.cleanup();
+    }
+
+    @Test
+    void should_return_totals_row_with_null_partner() {
+        actor.createTrain(SBB, "test");
+
+        List<PartnerStats> stats = statsController.getStats();
+
+        PartnerStats totals = stats.stream()
+            .filter(s -> s.partner() == null)
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("No totals row found"));
+
+        assertThat(totals.trains()).isGreaterThanOrEqualTo(1);
+    }
+
+    @Test
+    void should_count_trains_per_partner_after_sharing() {
+        var train = actor.createTrain(SBB, "test");
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
+
+        List<PartnerStats> stats = statsController.getStats();
+
+        PartnerStats sobStats = stats.stream()
+            .filter(s -> SOB.name().equals(s.partner()))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("No stats row for SOB"));
+
+        assertThat(sobStats.trains()).isGreaterThanOrEqualTo(1);
+    }
+
+    @Test
+    void should_count_open_branches_per_partner_after_branch_creation() {
+        var train = actor.createTrain(SBB, "test");
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
+        actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
+
+        List<PartnerStats> stats = statsController.getStats();
+
+        PartnerStats sobStats = stats.stream()
+            .filter(s -> SOB.name().equals(s.partner()))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("No stats row for SOB"));
+
+        assertThat(sobStats.openBranches()).isGreaterThanOrEqualTo(1);
+    }
+
+    @Test
+    void should_include_open_branches_in_totals() {
+        var train = actor.createTrain(SBB, "test");
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
+        actor.createBranch(SOB, train.getTrainId(), "myBranch", "test");
+
+        List<PartnerStats> stats = statsController.getStats();
+
+        PartnerStats totals = stats.stream()
+            .filter(s -> s.partner() == null)
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("No totals row found"));
+
+        int sumOfPartnerOpenBranches = stats.stream()
+            .filter(s -> s.partner() != null)
+            .mapToInt(PartnerStats::openBranches)
+            .sum();
+
+        assertThat(totals.openBranches()).isEqualTo(sumOfPartnerOpenBranches);
+    }
+
+    @Test
+    void deleting_train_with_open_merge_request_is_excluded_from_all_totals() {
+        int trainsBefore = totals().trains();
+        int openBranchesBefore = totals().openBranches();
+        int mergeRequestsBefore = totals().openMergeRequests();
+
+        // Create a train with a non-main branch that has an open merge request
+        var train = actor.createTrain(SBB, "to be deleted");
+        actor.shareTrain(SBB, train.getTrainId(), SOB, "sharing with SOB");
+        var branch = actor.createBranch(SOB, train.getTrainId(), "feature", "work");
+        trainController.requestMerge(SOB, train.getTrainId(), branch.getBranchId(), "please merge");
+
+        // While it exists it is counted
+        assertThat(totals().trains()).isEqualTo(trainsBefore + 1);
+        assertThat(totals().openBranches()).isEqualTo(openBranchesBefore);
+        assertThat(totals().openMergeRequests()).isEqualTo(mergeRequestsBefore + 1);
+
+        // Deleting the train (its main branch) cascades and closes all of its branches
+        trainController.deleteTrainBranch(SBB, train.getTrainId(),
+            train.getBranches().getFirst().getBranchId(), "delete train");
+
+        // Now nothing of it is counted any more
+        assertThat(totals().trains()).isEqualTo(trainsBefore);
+        assertThat(totals().openBranches()).isEqualTo(openBranchesBefore);
+        assertThat(totals().openMergeRequests()).isEqualTo(mergeRequestsBefore);
+    }
+
+    private PartnerStats totals() {
+        return statsController.getStats().stream()
+            .filter(s -> s.partner() == null)
+            .findFirst().orElseThrow(() -> new AssertionError("No totals row found"));
+    }
+
+    @Test
+    void should_not_include_deleted_branches_in_open_count() {
+        var train = actor.createTrain(SBB, "test");
+        actor.shareTrain(SBB, train.getTrainId(), BLS, "sharing with BLS");
+        var branch = actor.createBranch(BLS, train.getTrainId(), "myBranch", "test");
+
+        // Delete the branch
+        trainController.deleteTrainBranch(BLS, train.getTrainId(), branch.getBranchId(), "cleanup");
+
+        List<PartnerStats> stats = statsController.getStats();
+
+        PartnerStats blsStats = stats.stream()
+            .filter(s -> BLS.name().equals(s.partner()))
+            .findFirst()
+            .orElseThrow();
+        assertThat(blsStats.openBranches()).isZero();
+    }
+}
+

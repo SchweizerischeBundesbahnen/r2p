@@ -1,0 +1,292 @@
+{
+  "id": "72",
+  "references": [
+    {
+      "type": "tttReferenceTrain",
+      "name": "TR2185990010000000000021"
+    },
+    {
+      "type": "tttRoute",
+      "name": "RO2185990010000000000026"
+    },
+    {
+      "type": "plannedTrainNumber",
+      "name": "11062"
+    }
+  ],
+  "links": [],
+  "name": "Zug 11062 Buchs Dällikon – Brugg AG",
+  "startdate": "2026-04-16",
+  "timestamp": "2026-03-12T12:00:00+01:00",
+  "journey": {
+    "journeylocations": [
+      {
+        "locations": [
+          {
+            "type": "PLC",
+            "code": "CH-3527",
+            "name": "Buchs Dällikon"
+          },
+          {
+            "type": "SLC",
+            "code": "51",
+            "name": "Gleis 3"
+          }
+        ],
+        "activities": [
+          {
+            "id": "a1-01",
+            "timings": [
+              {
+                "type": "earliestdeparture",
+                "duration": "PT8H30M",
+                "focus": "planning"
+              },
+              {
+                "type": "dwelltime",
+                "duration": "PT30M",
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rim",
+              "id": "SBB",
+              "status": "confirmed"
+            },
+            "relations": []
+          },
+          {
+            "id": "a1-02",
+            "timings": [],
+            "responsibility": {
+              "type": "tru",
+              "id": "SBB",
+              "status": "confirmed"
+            },
+            "capability": {
+              "type": "rollingStock",
+              "capabilityFeatures": [],
+              "featuresetRefs": [],
+              "rollingStock": {
+                "activityType": "rollingStock",
+                "weight": 2868000,
+                "length": 438000,
+                "maxSpeed": 100,
+                "brakingRatio": 70.0,
+                "brakeType": "G",
+                "units": [
+                  {
+                    "id": "u1-loco-1",
+                    "carbodies": [
+                      {
+                        "type": "6185",
+                        "vehiclenumber": "918061850020",
+                        "weight": 84000,
+                        "length": 18900,
+                        "traction": "electric",
+                        "capabilityFeatures": []
+                      }
+                    ],
+                    "capabilityFeatures": [],
+                    "featuresetRefs": []
+                  },
+                  {
+                    "id": "u1-loco-2",
+                    "carbodies": [
+                      {
+                        "type": "6185",
+                        "vehiclenumber": "918061850037",
+                        "weight": 84000,
+                        "length": 18900,
+                        "traction": "electric",
+                        "capabilityFeatures": []
+                      }
+                    ],
+                    "capabilityFeatures": [],
+                    "featuresetRefs": []
+                  },
+                  {
+                    "id": "u1-wagons",
+                    "wagoncount": 10,
+                    "weight": 2700000,
+                    "length": 400000,
+                    "carbodies": [],
+                    "capabilityFeatures": [],
+                    "featuresetRefs": []
+                  }
+                ]
+              }
+            },
+            "relations": []
+          },
+          {
+            "id": "a1-03",
+            "timings": [],
+            "responsibility": {
+              "type": "pru",
+              "id": "SBB",
+              "status": "confirmed"
+            },
+            "capability": {
+              "type": "staff",
+              "capabilityFeatures": [],
+              "featuresetRefs": [],
+              "staff": {
+                "type": "driver",
+                "activityType": "move"
+              }
+            },
+            "relations": []
+          },
+          {
+            "id": "a1-04",
+            "timings": [
+              {
+                "type": "dwelltime",
+                "duration": "PT30M",
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rru",
+              "id": "SBB",
+              "status": "confirmed"
+            },
+            "relations": [
+              {
+                "activityid": "a1-05",
+                "type": "end-start",
+                "focus": "planning",
+                "lag": "PT30M"
+              }
+            ]
+          },
+          {
+            "id": "a1-05",
+            "timings": [
+              {
+                "type": "dwelltime",
+                "duration": "PT30M",
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rru",
+              "id": "SBB",
+              "status": "confirmed"
+            },
+            "relations": [
+              {
+                "activityid": "a1-01",
+                "type": "end-end",
+                "focus": "planning",
+                "lag": "PT45M"
+              }
+            ]
+          },
+          {
+            "id": "a1-06",
+            "timings": [
+              {
+                "type": "dwelltime",
+                "duration": "PT1H30M",
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rru",
+              "id": "SBB",
+              "status": "confirmed"
+            },
+            "relations": [
+              {
+                "activityid": "a1-04",
+                "type": "end-start",
+                "focus": "planning",
+                "lag": "PT5M"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "locations": [
+          {
+            "type": "PLC",
+            "code": "CH-309",
+            "name": "Brugg AG"
+          },
+          {
+            "type": "SLC",
+            "code": "51",
+            "name": "Gleis 2"
+          }
+        ],
+        "activities": [
+          {
+            "id": "a2-01",
+            "timings": [
+              {
+                "type": "arrival",
+                "duration": "PT4H2M",
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rim",
+              "id": "SBB",
+              "status": "confirmed"
+            },
+            "relations": []
+          },
+          {
+            "id": "a2-02",
+            "timings": [
+              {
+                "type": "dwelltime",
+                "duration": "PT30M",
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rru",
+              "id": "SBB",
+              "status": "confirmed"
+            },
+            "relations": [
+              {
+                "activityid": "a2-03",
+                "type": "end-start",
+                "focus": "planning",
+                "lag": "PT10M"
+              }
+            ]
+          },
+          {
+            "id": "a2-03",
+            "timings": [
+              {
+                "type": "dwelltime",
+                "duration": "PT5M",
+                "focus": "planning"
+              }
+            ],
+            "responsibility": {
+              "type": "rru",
+              "id": "SBB",
+              "status": "confirmed"
+            },
+            "relations": [
+              {
+                "activityid": "a2-01",
+                "type": "start-start",
+                "focus": "planning",
+                "lag": "PT1H"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

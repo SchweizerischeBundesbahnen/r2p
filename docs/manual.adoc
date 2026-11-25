@@ -1,0 +1,74 @@
+= R2P Manual
+:toc: left
+:toclevels: 3
+:sectnums:
+:source-highlighter: coderay
+:icons: font
+:revnumber: 0.0.19-SNAPSHOT
+:revdate: {localdate}
+
+== Disclaimer
+This is a PoC implementation not suitable to run in production.
+
+== Overview
+
+R2P is a prototype demonstrating RU - RU - partner communication. To keep things lightweight and portable,
+the prototype uses Java and H2 (no need for a dedicated database server).
+
+== Quick Start
+
+=== Test and execute the release on Windows, Linux or MacOS
+
+* Download the latest https://github.com/SchweizerischeBundesbahnen/r2p/releases[R2P release] for your platform from the GitHub repository and extract it.
+* Define the environment variable `R2P_INSTANCE_OWNER`.
+* Define the environment variables for Azure AD authentication:
+** `R2P_AZURE_CLIENT_ID`
+** `R2P_AZURE_CLIENT_SECRET`
+** `R2P_AZURE_ISSUER_URI`
+* Start the application, e.g. `r2p.exe`.
+* Visit: http://localhost:8080/
+* Swagger UI: http://localhost:8080/swagger-ui/index.html
+* OpenAPI Spec: http://localhost:8080/v3/api-docs
+
+==== Database
+
+By default, the prototype uses a H2 in-memory database, so its content is lost when the application is stopped.
+In order to persist the data in a file, configure a corresponding datasource via an environment variable, for example:
+----
+DATABASE_STORAGE=file:C:/dev/h2/r2p
+----
+
+In order to automatically clean the database in case of a validation error encountered by Flyway, the following environment variable can be set:
+----
+FLYWAY_CLEAN_ON_VALIDATION_ERROR=true
+----
+
+==== Test Data Generation
+
+It is possible to activate an endpoint for generating test data, which can be used to quickly populate the database
+with sample trains (including different branches) for testing purposes.
+
+In order to activate it, define the environment variable `R2P_TEST_DATA_ENABLED=true`.
+
+The endpoint is accessible at `/internal/test-data/generate` and can be invoked e.g. from Swagger UI.
+
+=== Deploy on OpenShift
+
+The Docker image is available at `ghcr.io/schweizerischebundesbahnen/r2p:latest`.
+
+Check the deployment.yaml file and adjust the values in the ConfigMap and in the Secret.
+
+[source,bash]
+----
+cd openshift
+oc project r2p
+oc apply -f deployment.yaml
+----
+
+include::user-interface.adoc[leveloffset=+1]
+
+== Limitations of current implementation
+* Performance of train list endpoint is not optimized (n+1 pattern to get partners, no paging)
+* Concurrent modifications/merging/deleting of a train may lead to problems (no optimistic or pessimistic locking implemented yet)
+* Strong authorization checks are not yet fully implemented
+** Authorization relies on manual check methods in TrainService (e.g. checkInstanceOwner), which are prone to being omitted at call sites
