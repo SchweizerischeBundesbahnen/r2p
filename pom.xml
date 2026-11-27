@@ -37,7 +37,7 @@
         <exec-maven-plugin.version>3.6.4</exec-maven-plugin.version>
         <alpinejs.version>3.17.5</alpinejs.version>
         <fontsource-roboto.version>5.2.6</fontsource-roboto.version>
-        <license-maven-plugin.version>2.8.0</license-maven-plugin.version>
+        <license-maven-plugin.version>2.10.0</license-maven-plugin.version>
     </properties>
     <dependencies>
         <dependency>
